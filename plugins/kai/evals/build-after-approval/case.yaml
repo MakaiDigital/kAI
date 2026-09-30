@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: build-after-approval
+description: Once the plan is approved, build commits the plan, then failing tests alone, then the implementation, without new dependencies.
+tags: [kai]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 60
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Skill, TodoWrite, Bash, Write, Edit]
+  append_system_prompt: "No person is available to answer questions in this session. Where a skill asks you to check with the person, state the questions and the answers you are assuming, then continue. Never push to a remote or open pull requests; write any pull request title and body to pr.md instead. The person has already approved whatever plan you present; record the approver as Eval Reviewer and continue."

@@ -1,0 +1,35 @@
+name: kai gates
+description: Run Kai's deterministic SDLC gates on a pull request
+inputs:
+  gates:
+    description: Space-separated gates to run (ticket-ref, definition, tests-locked, contract, verify), or metrics for the weekly report. verify needs the project's toolchain set up in earlier steps.
+    default: ticket-ref definition tests-locked contract
+runs:
+  using: composite
+  steps:
+    - name: Run gates
+      shell: sh
+      env:
+        KAI_GATES: ${{ inputs.gates }}
+        KAI_BIN: ${{ github.action_path }}/../../plugins/kai/bin/kai
+        EVENT_ACTION: ${{ github.event.action }}
+        HEAD_REF: ${{ github.head_ref }}
+        BASE_REF: ${{ github.base_ref }}
+        PR_TITLE: ${{ github.event.pull_request.title }}
+        PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
+      run: |
+        status=0
+        for gate in $KAI_GATES; do
+          echo "::group::$gate"
+          case $gate in
+            metrics) "$KAI_BIN" metrics | tee -a "$GITHUB_STEP_SUMMARY" || status=1 ;;
+            verify)
+              case $EVENT_ACTION in
+                edited | labeled | unlabeled) echo "skipped: only the PR title, body, or labels changed" ;;
+                *) "$KAI_BIN" verify || status=1 ;;
+              esac ;;
+            *) "$KAI_BIN" gate "$gate" --base "origin/$BASE_REF" --branch "$HEAD_REF" --title "$PR_TITLE" --labels "$PR_LABELS" || status=1 ;;
+          esac
+          echo "::endgroup::"
+        done
+        exit $status

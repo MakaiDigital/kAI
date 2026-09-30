@@ -1,0 +1,1 @@
+can you start PAY-101 for me? Ticket from Jira says: 'Remove product from favorites. Shoppers keep asking how to un-heart a product, once it's saved they can't get rid of it. Should work web + app. - Priya'

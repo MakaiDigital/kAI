@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: prove-missing-test
+description: Prove quotes passing lines, flags a planned test that was never written as MISSING, and does not call the work done.
+tags: [kai]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 60
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Skill, TodoWrite, Bash, Write, Edit]
+  append_system_prompt: "No person is available to answer questions in this session. Where a skill asks you to check with the person, state the questions and the answers you are assuming, then continue. Never push to a remote or open pull requests; write any pull request title and body to pr.md instead."
