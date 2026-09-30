@@ -1,0 +1,41 @@
+name: kai review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  review:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    env:
+      HAS_CREDENTIAL: ${{ secrets.ANTHROPIC_API_KEY != '' || secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
+      HAS_MARKETPLACE_TOKEN: ${{ secrets.KAI_MARKETPLACE_TOKEN != '' }}
+    steps:
+      - if: env.HAS_CREDENTIAL != 'true'
+        run: echo "::notice::Kai review skipped. Add an ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN repository secret to enable it."
+      - if: env.HAS_CREDENTIAL == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Only while the Kai marketplace repository is private: a read-only token for it lets the action install Kai.
+      - if: env.HAS_CREDENTIAL == 'true' && env.HAS_MARKETPLACE_TOKEN == 'true'
+        env:
+          KAI_MARKETPLACE_TOKEN: ${{ secrets.KAI_MARKETPLACE_TOKEN }}
+        run: git config --global url."https://x-access-token:${KAI_MARKETPLACE_TOKEN}@github.com/__ACTION_REPO__".insteadOf "https://github.com/__ACTION_REPO__"
+      # Use a Claude endpoint your security team has approved (API key, Claude subscription token, Bedrock, or Vertex).
+      - if: env.HAS_CREDENTIAL == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          plugin_marketplaces: https://github.com/__ACTION_REPO__.git
+          plugins: kai@makaidigital
+          use_sticky_comment: true
+          prompt: |
+            Review this pull request as Kai's independent reviewer. Run the kai:contract-reviewer agent, and the kai:spec-critic agent if specs/<KEY>/spec.md exists. Post one comment with the contract-reviewer verdict and blocking findings first, then notes, then spec-critic gaps as open questions for product and engineering. Do not change any files.

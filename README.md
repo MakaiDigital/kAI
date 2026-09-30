@@ -1,0 +1,158 @@
+# kAI
+
+Makai's AI-native SDLC for Claude Code. Every change moves through a chain of committed artifacts (intent, plan, failing tests, code, evidence), and the rules that must always hold are enforced by hooks and CI rather than left to the model.
+
+Kai is deliberately thin. It supplies the workflow, templates, and guardrails, and builds on pinned upstream plugins for the heavy lifting: [Superpowers](https://github.com/obra/superpowers) for test-driven development and verification discipline, and Anthropic's `feature-dev` agents for codebase exploration.
+
+- **Developers:** [Using Kai](docs/using-kai.md) walks through a change step by step, from ticket to release.
+- **Trying it in a repository:** [Piloting Kai](docs/pilot.md) covers installing, measuring a baseline, and sending feedback.
+
+## Commands
+
+| Command | What it does | Output |
+|---|---|---|
+| `/kai:intent <KEY>` | Reads the ticket, interviews the originator, captures the problem, outcome, and constraints ([why an intent as well as the ticket](docs/using-kai.md#why-an-intent-when-we-already-have-the-ticket)) | `specs/<KEY>/intent.md` |
+| `/kai:spec` | Turns the intent into numbered EARS criteria and a contract mapping each to a test (level 2) | `spec.md` |
+| `/kai:adr` | Records an architecture decision with options and trade-offs, when one is needed (level 2) | `docs/adr/NNNN-*.md` |
+| `/kai:build` | Plans (stops for approval), commits failing tests, then implements the minimum | `plan.md`, tests, code |
+| `/kai:prove` | Runs the team's checks and maps each planned test (and spec criterion) to its result | `evidence.md` |
+| `/kai:ship` | Runs the CI gates locally, gets an independent review, then pushes and opens the PR with the contract (level 3) | pull request |
+| `/kai:accept <KEY>` | After merge, runs the spec's end-to-end steps in integration and records them for a person to judge (level 4) | `accept.md` |
+| `/kai:retro` | Turns recurring review, acceptance, and metrics findings into hooks, skills, ADRs, or CLAUDE.md lines (level 4) | `docs/retros/<date>.md` |
+
+Two read-only review agents back `/kai:ship` and the CI review: `kai:contract-reviewer` (every PASS has evidence, every change traces to a criterion) and `kai:spec-critic` (behavior no criterion covers, proposed as EARS criteria).
+
+The skills also trigger from plain requests such as "start PAY-123" or "let's build this".
+
+Guardrail hooks run in every session:
+
+- **Stop** runs `kai verify` and keeps Claude working until the configured checks pass (it gives up with a warning after a few attempts).
+- **PreToolUse (Bash)** blocks skipping git hooks (`--no-verify`, `core.hooksPath`) and production deploys without a named release approval. Pushes to `main` are stopped by GitHub branch protection, not by Kai.
+- **PreToolUse (Edit, Write)** at level 3 blocks edits to tests locked by the `<KEY>: failing tests` commit.
+- **SessionStart** tells Claude which ticket the branch is for and what the next step is.
+
+## Kai for Product (claude.ai and Cowork)
+
+`kai-product` lets product managers and other non-engineers write the intent and acceptance criteria in claude.ai or Cowork, without git or a terminal. Its `intent` and `spec` skills produce the same `specs/<KEY>/intent.md` and `spec.md` files engineering's Kai reads, and deliver them as the Definition PR:
+
+- With a GitHub connector, it opens the PR after the person approves its title and body.
+- Without one, it hands over the files and a note for the engineering lead.
+
+It bundles no connectors: it uses whichever Jira, Linear, or GitHub connectors your organization has approved and enabled. An organization admin adds `kai-product` from the `makaidigital` marketplace in claude.ai's organization settings. It has no `bin/` or hooks, which claude.ai and Cowork require. Anthropic's product-management plugin can be installed alongside it for roadmaps and stakeholder updates.
+
+## Install into a repository
+
+Requirements: Claude Code, `git`, and `jq`. Nothing to clone.
+
+1. Install the plugin, once per machine:
+
+   ```sh
+   claude plugin marketplace add MakaiDigital/kAI
+   claude plugin install kai@makaidigital
+   ```
+
+2. Open the repository in Claude Code and run `/kai:setup`. Claude works out the ticket system, prefixes, and test commands, previews the changes, writes them with `kai init`, and proposes high-risk paths for `.kai/tiers`.
+
+To script it instead, Claude can run `kai init` directly, for example `kai init --provider jira --prefixes "PAY OPS" --level 1`. `kai init --help` lists every option.
+
+Setup adds:
+
+| Path | Purpose | Ownership |
+|---|---|---|
+| `.kai/config` | Level, ticket provider, allowed prefixes, verify commands | Yours; never overwritten |
+| `.kai/tiers` | Path patterns that make a change low, medium, or high risk | Yours; never overwritten |
+| `.kai/constraints.md` | The minimal-code standard | Kai's; if yours differs, the new version lands in `*.kai-new` |
+| `CLAUDE.md` | A short kai block between markers | Only the block is managed |
+| `.claude/settings.json` | Registers the `makaidigital` marketplace, enables `kai`, defaults to plan mode | Merged; your keys are kept |
+| `.github/workflows/kai.yml` | Runs the gates on pull requests | Kai's; same `*.kai-new` rule |
+| `REVIEW.md` (level 3) | What the reviewer checks and how it rates findings; owned by the tech lead | Yours; never overwritten |
+| `.github/workflows/kai-review.yml` (level 3) | AI review comment on trusted PRs through `claude-code-action` | Kai's; same `*.kai-new` rule |
+| `.github/workflows/kai-metrics.yml` (level 4) | Weekly `kai metrics` report in the job summary | Kai's; same `*.kai-new` rule |
+
+Run `/kai:setup` again to upgrade; `kai init --dry-run` shows what would change. It never overwrites a file: when one of Kai's files differs from the new version, it writes `<file>.kai-new` next to it for you to merge.
+
+To uninstall, delete `.kai/`, the kai block in `CLAUDE.md`, the `makaidigital` and `kai@makaidigital` entries in `.claude/settings.json`, `.github/workflows/kai*.yml`, and `REVIEW.md`.
+
+Teammates who open the repository in Claude Code are prompted to install `kai` from the `makaidigital` marketplace, which also installs the pinned dependencies.
+
+## The `kai` CLI
+
+The plugin puts `kai` on Claude's PATH. The same script backs the hooks and the CI action.
+
+```
+kai key [TEXT]              ticket key from TEXT or the current branch
+kai verify [--evidence F]   run KAI_VERIFY_CMDS; optionally write the evidence to F
+kai tier [--base REF]       risk tier of the change, from .kai/tiers
+kai metrics [--weeks N]     weekly speed and quality report from the specs/ history
+kai gate ticket-ref         CI gate: branch or PR title must reference a ticket
+kai gate definition         CI gate (level 2): medium/high-tier code needs a merged intent and spec
+kai gate tests-locked       CI gate (level 3): tests from the failing-tests commit are unchanged
+kai gate contract           CI gate (level 3): every criterion and planned test is PASS with evidence
+```
+
+## Repository layout
+
+```
+.claude-plugin/marketplace.json   the makaidigital marketplace: kai plus pinned upstream plugins
+plugins/kai/                      the plugin: skills, hooks, templates, bin/kai, scripts
+plugins/kai-product/              Kai for Product: intent and spec skills for claude.ai and Cowork
+actions/kai-gates/                composite GitHub Action used by the installed workflow
+plugins/kai/template/             files kai init writes into a repository
+tests/bats/                       tests for the CLI, hooks, gates, and kai init
+```
+
+## Development
+
+```sh
+brew install shellcheck bats-core    # or apt-get install shellcheck bats
+shellcheck plugins/kai/bin/kai plugins/kai/scripts/*/*.sh
+bats tests/bats
+claude plugin validate . && claude plugin validate plugins/kai && claude plugin validate plugins/kai-product
+```
+
+Upstream plugins are pinned by commit in `.claude-plugin/marketplace.json`. Bump a pin in its own pull request so the change is reviewed on its own.
+
+### Skill evals
+
+`plugins/kai/evals/` holds one case per skill behavior, run by `claude plugin eval`. Each case builds a small fixture repository (`_fixture/make_repo.sh`), sends a realistic prompt, and grades the resulting files and git commands. Run them whenever a skill, template, or hook changes:
+
+```sh
+claude plugin eval plugins/kai --scaffold --allow-tools Bash Write Edit --trust-plugin
+```
+
+This makes real model calls with your credentials (by default 3 runs per case, plus the same again without the plugin for comparison). Add `--runs 1 --ablation none` for a quick check.
+
+Run the suite on Linux (a CI runner, WSL, or a container). On macOS the eval sandbox blocks Apple's `/usr/bin/git` wrapper, so every case that commits fails there.
+
+The plugin's dependencies (Superpowers, feature-dev) are declared on its marketplace entry rather than in `plugin.json`. Installing `kai@makaidigital` still pulls them in, but loading the plugin directly, as evals and `--plugin-dir` do, doesn't require them. Keep it that way, or the plugin won't load in evals.
+
+## Levels
+
+Set `KAI_LEVEL` in `.kai/config` (or `--level` when installing).
+
+1. **Intent, build, prove.** Guardrail hooks, `kai verify` in the Stop hook and `/kai:prove`, and the `ticket-ref` gate in CI.
+2. **Specs and tiers.** `/kai:spec` and `/kai:adr`. Medium and high tier changes take two PRs: a Definition PR with `intent.md` and `spec.md`, then the Change PR with the code. The `definition` gate enforces the order.
+
+Kai adds only one gate at level 2. The rest comes from GitHub settings you configure once per repository (at any level):
+
+- **Branch protection on `main`:** require a pull request, at least one approval, and the `kai` check. This is what stops direct pushes, for people and agents alike.
+- **CODEOWNERS**, for example `specs/**/intent.md @your-org/product` and `specs/ @your-org/product @your-org/eng-leads`, so product and engineering both sign off on the Definition PR.
+- **High-risk paths:** list them in CODEOWNERS with the tech leads and require two approvals, so a human reads that code.
+
+3. **Independent verification.** Tests are locked once committed: a hook blocks Claude from editing them, and the `tests-locked` gate fails if they change, unless a reviewer adds the `kai:tests-changed` label. The `contract` gate requires every criterion and planned test to be PASS with evidence. `/kai:ship` opens the PR after a read-only review, and `kai-review.yml` posts the same review on trusted PRs (not forks or bots). The review informs the human approver; it never blocks or approves the merge by itself.
+
+The CI review needs a Claude credential as a repository secret (`ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`, or switch the action to Bedrock or Vertex), pointed at an endpoint your security team has approved. It skips with a notice when neither is set. While the repository hosting the Kai marketplace is private, also add a `KAI_MARKETPLACE_TOKEN` secret: a fine-grained token with read-only Contents access to that repository, so the review can install Kai.
+
+4. **Close the loop.** After merge, `/kai:accept` runs the spec's end-to-end procedure in integration and records it in `accept.md`; a person judges it, fills in the verdict, and adds the `accepted` label to the merged PR. `kai metrics` reports speed next to quality every week, and `/kai:retro` turns what recurs into the most deterministic fix that fits, and prunes instructions nobody needed.
+
+Releases take only accepted changes. Release processes differ, so Kai doesn't gate them itself; a release job can list what's still waiting with:
+
+```sh
+gh pr list --state merged --base main --search "merged:>=<last release date> -label:accepted"
+```
+
+Measure a baseline before turning on levels 3 and 4, and keep reading speed and quality together: `kai metrics` shows lead time next to rework on purpose.
+
+## License
+
+Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

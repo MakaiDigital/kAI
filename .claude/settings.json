@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(shellcheck:*)",
+      "Bash(bats:*)",
+      "Bash(claude plugin validate:*)",
+      "Bash(claude plugin details:*)",
+      "Bash(jq:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(./plugins/kai/bin/kai:*)"
+    ],
+    "ask": [
+      "Bash(claude plugin eval:*)",
+      "Bash(claude plugin install:*)",
+      "Bash(claude plugin marketplace:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)"
+    ]
+  },
+  "enabledPlugins": {
+    "plugin-dev@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true
+  }
+}
