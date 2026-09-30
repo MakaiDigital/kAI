@@ -1,0 +1,44 @@
+#!/bin/sh
+# shellcheck disable=SC2034
+set -eu
+
+KAI_ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+. "$KAI_ROOT/scripts/lib/common.sh"
+
+usage() {
+  cat <<'EOF'
+usage: kai <command> [args]
+
+  init [options]          set Kai up in this repository (kai init --help for options)
+  key [TEXT]              ticket key found in TEXT (default: the current branch)
+  verify [--evidence F]   run KAI_VERIFY_CMDS; optionally write the evidence to F
+  tier [--base REF]       risk tier of the change (low, medium, high) from .kai/tiers
+  metrics [--weeks N]     weekly speed and quality report from the specs/ history
+  gate <name> [args]      CI gate: ticket-ref, definition, tests-locked or contract
+  hook <name>             Claude Code hook: session-start, guard-bash, protect-tests or stop
+EOF
+}
+
+cmd=${1:-help}
+[ $# -gt 0 ] && shift
+case $cmd in
+  init | key | verify | tier | metrics) script="cmd/$cmd" ;;
+  gate | hook) script="${cmd}s/${1:-}"; [ $# -gt 0 ] && shift ;;
+  help | -h | --help) usage; exit 0 ;;
+  *) usage >&2; exit 64 ;;
+esac
+[ -f "$KAI_ROOT/scripts/$script.sh" ] || { usage >&2; exit 64; }
+
+if [ "$cmd" = hook ]; then
+  {
+    IFS= read -r hook_cwd || :
+    IFS= read -r session || :
+    IFS= read -r hook_file || :
+    hook_command=$(cat)
+  } <<EOF
+$(jq -r '(.cwd // ""), (.session_id // "default"), (.tool_input.file_path // ""), (.tool_input.command // "")')
+EOF
+  [ -z "$hook_cwd" ] || cd "$hook_cwd" 2>/dev/null || true
+  kai_load_config || exit 0
+fi
+. "$KAI_ROOT/scripts/$script.sh"

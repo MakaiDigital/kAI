@@ -1,0 +1,35 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck and bats
+        run: |
+          if [ "$RUNNER_OS" = macOS ]; then brew install shellcheck bats-core; else sudo apt-get update -q && sudo apt-get install -yq shellcheck bats; fi
+      - run: shellcheck plugins/kai/bin/kai plugins/kai/scripts/*/*.sh
+      - run: bats tests/bats
+
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install -g @anthropic-ai/claude-code
+      - run: claude plugin validate .
+      - run: claude plugin validate plugins/kai
+      - run: claude plugin validate plugins/kai-product
