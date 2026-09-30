@@ -1,0 +1,12 @@
+# Risk tiers: <glob> <low|medium|high>. Unmatched files are medium; a change takes its highest file tier.
+# Tiers only go up: when a file matches several lines, the highest tier wins.
+
+specs/* low
+docs/* low
+*.md low
+
+# Examples of high-risk surfaces; adjust to this repository.
+# src/auth/* high
+# src/payments/* high
+# migrations/* high
+# .github/workflows/* high

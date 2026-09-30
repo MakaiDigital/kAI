@@ -1,0 +1,60 @@
+name: kai review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  review:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    env:
+      HAS_CREDENTIAL: ${{ secrets.ANTHROPIC_API_KEY != '' || secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
+    steps:
+      - if: env.HAS_CREDENTIAL != 'true'
+        run: echo "::notice::Kai review skipped. Add an ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN repository secret to enable it."
+      - if: env.HAS_CREDENTIAL == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Use a Claude endpoint your security team has approved (API key, Claude subscription token, Bedrock, or Vertex).
+      - id: claude
+        if: env.HAS_CREDENTIAL == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: --disallowedTools Agent
+          prompt: |
+            You are Kai's independent reviewer for this pull request, in a fresh session that did not write the change. Do the review yourself, in this session:
+            1. Follow the instructions in .claude/agents/contract-reviewer.md.
+            2. If specs/<KEY>/spec.md exists, follow the instructions in .claude/agents/spec-critic.md.
+            Finish the review before you reply. Your final message is posted as the review comment, so make it the complete review in Markdown: the contract-reviewer verdict and blocking findings first, then notes, then spec-critic gaps as open questions for product and engineering. Do not post comments or change files.
+      # Kai owns one comment, found by its marker, so it never collides with other Claude workflows' comments.
+      - if: env.HAS_CREDENTIAL == 'true' && always() && steps.claude.outputs.execution_file != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+          PR: ${{ github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo '<!-- kai-review -->'
+            echo '## Kai review'
+            echo
+            jq -r '[.[] | select(.type == "result")] | last | .result // "The review produced no output."' "$EXECUTION_FILE"
+            echo
+            echo "<sub>[View run]($RUN_URL)</sub>"
+          } >"$RUNNER_TEMP/kai-review.md"
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
+            --jq '.[] | select(.body | startswith("<!-- kai-review -->")) | .id' | head -n 1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@"$RUNNER_TEMP/kai-review.md" >/dev/null
+          else
+            gh pr comment "$PR" --body-file "$RUNNER_TEMP/kai-review.md"
+          fi

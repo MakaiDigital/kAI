@@ -1,0 +1,1 @@
+favorites live in memory right now so they vanish on every deploy. we need to persist them. options are sqlite, a json file on disk, or calling the existing user-profile service which already stores user preferences. can you write up the decision for PAY-104?
