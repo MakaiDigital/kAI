@@ -1,0 +1,1 @@
+I'm the PM for the shopping app. Can you help me write up PAY-201 for engineering? The ticket says: "Shoppers who saved products before we moved them to a different regional store still see those favorites, but they're from the old region's catalog and adding them to the cart fails. Clean this up. Support has had 40+ complaints this month." We don't have GitHub hooked up here.

@@ -1,0 +1,19 @@
+name: kai
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Your tests run locally (Stop hook, /kai:prove) and in your own CI. If nothing else runs them in CI,
+      # set up the toolchain here and pass `gates: ticket-ref definition tests-locked contract verify`.
+      - uses: __ACTION_REPO__/actions/kai-gates@__ACTION_REF__

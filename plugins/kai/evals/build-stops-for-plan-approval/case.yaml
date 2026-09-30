@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: build-stops-for-plan-approval
+description: Build presents a plan with named tests and stops for approval before touching code or tests.
+tags: [kai]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 60
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Skill, TodoWrite, Bash, Write, Edit]
+  append_system_prompt: "No person is available in this session. Never push to a remote or open pull requests."
