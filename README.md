@@ -4,8 +4,32 @@ Makai's AI-native SDLC for Claude Code. Every change moves through a chain of co
 
 Kai is deliberately thin. It supplies the workflow, templates, and guardrails, and builds on pinned upstream plugins for the heavy lifting: [Superpowers](https://github.com/obra/superpowers) for test-driven development and verification discipline, and Anthropic's `feature-dev` agents for codebase exploration.
 
-- **Developers:** [Using Kai](docs/using-kai.md) walks through a change step by step, from ticket to release.
+- **Developers:** [Using Kai](docs/using-kai.md) walks through a change step by step, from ticket to done.
 - **Trying it in a repository:** [Piloting Kai](docs/pilot.md) covers installing, measuring a baseline, and sending feedback.
+
+## The flow
+
+```
+ticket ──▶ /kai:spec ──▶ /kai:implement ──▶ merge + deploy ──▶ /kai:accept ──▶ done
+          (spec + ADR,    (plan ▸ tests ▸     (a person        (verify ▸ QA ▸
+           or skipped      code ▸ prove ▸      approves)        fix loop ▸ retro ▸
+           for simple      review ▸ PR ▸                        cleanup PR)
+           tickets)        answer reviews)
+```
+
+The ticket is the intent; there is no separate intent document. `/kai:spec` reads it and either writes a spec (and an ADR when the change needs a decision) for a Definition PR, or says why the ticket is simple enough to skip it. `/kai:implement` asks for approval once, at the plan, then carries the work to a reviewed, green PR. After a person merges it and it is deployed, `/kai:accept` verifies it in integration, tries to break it, and finishes with a cleanup PR that removes the ticket's working documents. Only ADRs remain as documentation; the rest is read from the code.
+
+## Upgrading from 0.5
+
+| Before | Now |
+|---|---|
+| `/kai:intent`, `/kai:spec` | `/kai:spec <KEY or ticket URL>` |
+| `/kai:build`, `/kai:ship` | `/kai:implement` |
+| `/kai:accept` (a person judged the run) | `/kai:accept` (verifies, QA, fixes, then opens the cleanup PR) |
+| `docs/retros/<date>.md` | the retro report lives in the PR description |
+| `kai-product:intent` | `kai-product:spec` |
+
+Re-run `/kai:setup` to refresh the `CLAUDE.md` block (`kai init` writes `*.kai-new` next to a file that differs). Specs already merged with an `intent.md` keep working: the `definition` gate now needs only `spec.md`.
 
 ## Commands
 
@@ -129,7 +153,7 @@ The plugin's dependencies (Superpowers, feature-dev) are declared on its marketp
 
 Set `KAI_LEVEL` in `.kai/config` (or `--level` when installing).
 
-1. **Build, prove.** Guardrail hooks, `kai verify` in the Stop hook and `/kai:prove`, and the `ticket-ref` gate in CI.
+1. **Implement, prove.** Guardrail hooks, `kai verify` in the Stop hook and `/kai:prove`, and the `ticket-ref` gate in CI.
 2. **Specs and tiers.** `/kai:spec` and `/kai:adr`. Medium and high tier changes take two PRs: a Definition PR with `spec.md` (and any ADR), then the Change PR with the code. The `definition` gate enforces the order.
 
 Kai adds only one gate at level 2. The rest comes from GitHub settings you configure once per repository (at any level):

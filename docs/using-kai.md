@@ -1,6 +1,6 @@
 # Using Kai
 
-This guide walks a developer through one change, from ticket to release. Kai does the drafting, planning, testing, and checking; you decide what gets built and confirm it works.
+This guide walks a developer through one change, from ticket to done. Kai does the drafting, planning, testing, and checking; you decide what gets built and confirm it works.
 
 Kai is already set up in your repository if it has a `.kai/config`. If not, install the plugin (`claude plugin marketplace add MakaiDigital/kAI`, then `claude plugin install kai@makaidigital`) and run `/kai:setup`. To trial it first, see [pilot.md](pilot.md).
 
@@ -14,13 +14,23 @@ Kai is already set up in your repository if it has a `.kai/config`. If not, inst
 | 1 | Implement, prove, guardrail hooks |
 | 2 | Specs, risk tiers, the two-PR flow |
 | 3 | Locked tests, contract check, local gates and review, AI review in CI |
-| 4 | Acceptance in integration, retros, metrics |
+| 4 | Verify, QA and cleanup in integration (`/kai:accept`), retros, metrics |
 
 - **Know your risk tiers.** `.kai/tiers` maps paths to `low`, `medium`, or `high`. Files it doesn't list count as medium. A change takes the highest tier of any file it touches, and `kai tier` prints it with the reason for each file.
 
-You can type the commands below, or just describe what you want ("start PAY-123", "let's build it", "does it work?"). Claude picks the matching skill.
+You can type the commands below, or just describe what you want ("start PAY-123", "let's implement it", "does it work?"). Claude picks the matching skill.
 
 ## The workflow
+
+You ask Claude for four things, and each ends in a pull request you review:
+
+| Step | Command | You review |
+|---|---|---|
+| 1. Specify | `/kai:spec PAY-123` | The Definition PR: the spec's **Review here** list, and any ADR (or Claude's one-line reason for skipping) |
+| 2. Implement | `/kai:implement` | The plan, once, before any code; then the finished PR |
+| 3. Merge and deploy | (your process) | The PR, as a code owner |
+| 4. Accept | `/kai:accept PAY-123` | The cleanup PR; merging it ends the ticket |
+
 
 ### 1. Start from the ticket (all levels)
 

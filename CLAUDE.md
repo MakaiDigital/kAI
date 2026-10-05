@@ -22,4 +22,5 @@ claude plugin validate . && claude plugin validate plugins/kai && claude plugin 
 - Bump `version` in a plugin's `plugin.json` whenever you change it. Installed users only receive a new version.
 - Skill evals (`claude plugin eval plugins/kai --scaffold --allow-tools Bash Write Edit --trust-plugin`) cost real model calls. On macOS the eval sandbox breaks Apple's git wrapper, so the cases that commit only pass on Linux.
 - `kai init` copies `plugins/kai/agents/*.md` into repositories (level 3) so the CI review needs no plugin install. Keep those agents self-contained: no `kai` commands or plugin paths.
+- `/kai:accept` deletes a ticket's `specs/<KEY>/`, so anything that reads specs from the base branch (`kai metrics`, gates, retros) must also work from git history or tolerate their absence. The gates exempt a `<KEY>-cleanup*` branch only when it deletes that ticket's `spec.md` or `evidence.md`.
 - Everything else that ends up in a user's repository lives in `plugins/kai/template/`. `kai init` never overwrites a file; it writes `*.kai-new` next to one that differs. Keep its `CLAUDE.md` block markers unchanged, or existing repositories get a second block.

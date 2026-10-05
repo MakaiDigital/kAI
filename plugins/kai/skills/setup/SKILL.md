@@ -24,7 +24,7 @@ Ask in one batch (AskUserQuestion when available), with your detected defaults p
 
 - Ticket system (`jira`, `linear`, or `github`) and project prefixes.
 - The commands that must pass before work is done.
-- The adoption level, from `$ARGUMENTS` if given. Recommend **1** for a team new to Kai: build and prove, with guardrail hooks. Raise it later by re-running setup. Level 2 adds specs and risk tiers, 3 adds locked tests and AI review, 4 adds acceptance, retros, and metrics.
+- The adoption level, from `$ARGUMENTS` if given. Recommend **1** for a team new to Kai: implement and prove, with guardrail hooks. Raise it later by re-running setup. Level 2 adds specs and risk tiers, 3 adds locked tests and AI review, 4 adds acceptance, retros, and metrics.
 
 ## 3. Preview, then write
 
