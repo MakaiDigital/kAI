@@ -15,8 +15,8 @@ Kai is deliberately thin. It supplies the workflow, templates, and guardrails, a
 | `/kai:adr` | Records an architecture decision with options and trade-offs. `/kai:spec` runs it when needed; call it directly for a decision outside a spec (level 2) | `docs/adr/NNNN-*.md` |
 | `/kai:implement` | Plans (stops for approval), commits failing tests, implements the minimum, proves it, gets an independent review and fixes it, opens the PR, then answers every reviewer on the PR (fixing what is right, defending with evidence what is not) until reviews are satisfied and checks are green | `plan.md`, tests, code, `evidence.md`, pull request |
 | `/kai:prove` | Runs the team's checks and maps each planned test (and spec criterion) to its result. `/kai:implement` calls it; run it alone to re-check | `evidence.md` |
-| `/kai:accept <KEY>` | After merge, runs the spec's end-to-end steps in integration and records them for a person to judge (level 4) | `accept.md` |
-| `/kai:retro` | Turns recurring review, acceptance, and metrics findings into hooks, skills, ADRs, or CLAUDE.md lines (level 4) | `docs/retros/<date>.md` |
+| `/kai:accept <KEY>` | After the change is deployed to integration, verifies it, tries to break it, fixes failures through `/kai:implement`, then runs the retro and opens a cleanup PR that deletes the ticket's specs (keeping ADRs) and applies the lessons (level 4) | cleanup pull request |
+| `/kai:retro` | Finds the lessons worth keeping in a ticket or a period and applies them as separate commits. `/kai:accept` runs it; run it alone for a sprint view (level 4) | hook, skill, ADR, or CLAUDE.md changes |
 
 Two read-only review agents back `/kai:implement` and the CI review: `kai:contract-reviewer` (every PASS has evidence, every change traces to a criterion) and `kai:spec-critic` (behavior no criterion covers, proposed as EARS criteria).
 
@@ -142,9 +142,9 @@ Kai adds only one gate at level 2. The rest comes from GitHub settings you confi
 
 The CI review needs a Claude credential as a repository secret (`ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`, or switch the action to Bedrock or Vertex), pointed at an endpoint your security team has approved. It skips with a notice when neither is set. The review uses the `contract-reviewer` and `spec-critic` agents that setup copies into `.claude/agents/`, so it installs nothing and works whether or not the Kai repository is public.
 
-4. **Close the loop.** After merge, `/kai:accept` runs the spec's end-to-end procedure in integration and records it in `accept.md`; a person judges it, fills in the verdict, and adds the `accepted` label to the merged PR. `kai metrics` reports speed next to quality every week, and `/kai:retro` turns what recurs into the most deterministic fix that fits, and prunes instructions nobody needed.
+4. **Close the loop.** Once the change is deployed to integration, the engineer runs `/kai:accept`: Claude verifies it, tries to break it, fixes failures through the same PR flow, and when it passes opens a cleanup PR that deletes the ticket's specs (only ADRs stay as documentation) and applies what the retro learned. A person merges it, and that is the end of the ticket. `kai metrics` reports speed next to quality every week, reading ticket history from git, which survives the deletion.
 
-Releases take only accepted changes. Release processes differ, so Kai doesn't gate them itself; a release job can list what's still waiting with:
+Releases take only accepted changes: a person adds the `accepted` label after reviewing the cleanup PR. Release processes differ, so Kai doesn't gate them itself; a release job can list what's still waiting with:
 
 ```sh
 gh pr list --state merged --base main --search "merged:>=<last release date> -label:accepted"

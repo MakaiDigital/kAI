@@ -75,3 +75,23 @@ definition() { "$KAI" gate definition --base main "$@"; }
   [ "$status" -eq 0 ]
   [[ "$output" == *"exempt"* ]]
 }
+
+@test "a cleanup branch that deletes the ticket's spec is exempt" {
+  write_definition
+  echo e >specs/PAY-1/evidence.md
+  git add -A && git commit -qm "PAY-1: done"
+  git switch -qc PAY-1-cleanup
+  git rm -rq specs/PAY-1
+  echo x >app.js
+  git add -A && git commit -qm "PAY-1: cleanup"
+  run definition
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"exempt"* ]]
+}
+
+@test "a cleanup-named branch that deletes nothing is not exempt" {
+  git switch -qc PAY-1-cleanup
+  echo x >app.js
+  run definition
+  [ "$status" -eq 1 ]
+}

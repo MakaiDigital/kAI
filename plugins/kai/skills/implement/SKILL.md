@@ -73,7 +73,7 @@ Treat each finding as in step 7. A blocking contract-reviewer finding is a bug: 
 
 ```markdown
 ## Outcome
-<one-paragraph summary> ([spec](specs/<KEY>/spec.md), or the ticket link when there is no spec)
+<one-paragraph summary> ([spec](specs/<KEY>/spec.md), or the ticket link when there is no spec). Success metric: <target, how measured, evaluation date, from the spec, or "none stated">
 
 ## Contract
 <the spec's Contract table, or the plan's Tests table when there is no spec, with the evidence column filled>

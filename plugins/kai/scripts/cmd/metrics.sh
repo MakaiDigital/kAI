@@ -16,14 +16,14 @@ cd "$KAI_REPO_ROOT" || exit 1
 now=${KAI_NOW:-$(date +%s)}
 added() { git log "$ref" --diff-filter=A --format=%ct -- "$1" | tail -n 1; }
 
-tickets=$(git ls-tree -d --name-only "$ref" specs/ 2>/dev/null | while IFS= read -r dir; do
+tickets=$(git log "$ref" --diff-filter=A --name-only --format= -- ':(top)specs/*/evidence.md' | sed 's#/evidence.md$##' | sort -u | while IFS= read -r dir; do
   done_at=$(added "$dir/evidence.md")
   [ -n "$done_at" ] || continue
   plan=$(added "$dir/plan.md")
   start=$(printf '%s\n%s\n' "$(added "$dir/spec.md")" "$plan" | grep . | sort -n | head -n 1)
   spec_after_plan=0
-  [ -z "$plan" ] || spec_after_plan=$(git log "$ref" --format=%ct -- "$dir/spec.md" | awk -v p="$plan" '$1 > p' | wc -l)
-  after_done=$(git log "$ref" --format=%ct -- "$dir" | awk -v d="$done_at" '$1 > d' | wc -l)
+  [ -z "$plan" ] || spec_after_plan=$(git log "$ref" --diff-filter=AM --format=%ct -- "$dir/spec.md" | awk -v p="$plan" '$1 > p' | wc -l)
+  after_done=$(git log "$ref" --diff-filter=AM --format=%ct -- "$dir" | awk -v d="$done_at" '$1 > d' | wc -l)
   week=$(((now - done_at) / 604800))
   [ "$week" -lt "$weeks" ] || continue
   reworked=0
@@ -68,4 +68,4 @@ printf '%s\n' "$tickets" | awk -v weeks="$weeks" '
   esac
 done
 
-printf '\nLead time runs from the first of `spec.md` and `plan.md` to `evidence.md` landing on the base branch. A ticket counts as reworked when its spec changed after the plan, or its specs changed again after the evidence landed. ▲ marks a week whose median lead time is more than two standard deviations above the mean for the period.\n'
+printf '\nLead time runs from the first of `spec.md` and `plan.md` to `evidence.md` landing on the base branch. A ticket counts as reworked when its spec changed after the plan, or its specs changed again after the evidence landed (deleting them at acceptance does not count). ▲ marks a week whose median lead time is more than two standard deviations above the mean for the period.\n'
