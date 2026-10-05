@@ -1,5 +1,5 @@
 schema_version: "1.1"
-name: build-stops-for-plan-approval
+name: implement-stops-for-plan-approval
 description: Build presents a plan with named tests and stops for approval before touching code or tests.
 tags: [kai]
 context:

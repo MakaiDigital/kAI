@@ -13,9 +13,9 @@ dir="$KAI_REPO_ROOT/specs/$key"
 if [ "$KAI_LEVEL" -ge 2 ] && [ ! -f "$dir/spec.md" ] && [ ! -f "$dir/plan.md" ]; then
   next="/kai:spec $key (it skips itself for simple tickets and bugs; medium and high tier changes need a merged spec before code)"
 elif [ ! -f "$dir/plan.md" ]; then
-  next="/kai:build (plan first, then tests, then code)"
+  next="/kai:implement (plan first, then tests, code, review, and the PR)"
 elif [ "$KAI_LEVEL" -ge 3 ] && [ -f "$dir/evidence.md" ]; then
-  next="/kai:ship once /kai:prove passes"
+  next="/kai:implement to review the change, open the PR, and answer its reviews"
 else
   next="/kai:prove before calling the work done"
 fi

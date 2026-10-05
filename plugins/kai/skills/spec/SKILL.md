@@ -19,12 +19,12 @@ If the repository has no `.kai/config`, it does not use Kai. Say so and help dir
 
 ## 2. Decide whether a spec is needed
 
-Say the decision in one line with its reason, so the person can overrule it: `Skipping the spec: <reason>. Going to /kai:build.` or `Writing a spec: <reason>.`
+Say the decision in one line with its reason, so the person can overrule it: `Skipping the spec: <reason>. Going to /kai:implement.` or `Writing a spec: <reason>.`
 
-- **Skip** a bug with a clear reproduction and an obvious fix, a typo, docs, config or dependency housekeeping with no behavior change, and any other change that `.kai/tiers` would put in the low tier. The ticket is then the intent; `/kai:build` reads it directly.
+- **Skip** a bug with a clear reproduction and an obvious fix, a typo, docs, config or dependency housekeeping with no behavior change, and any other change that `.kai/tiers` would put in the low tier. The ticket is then the intent; `/kai:implement` reads it directly.
 - **Write a spec** for a new behavior or interface, a bug whose right behavior is disputed or whose fix touches sign-in, payments, personal data, or a public API, and anything `.kai/tiers` would make medium or high.
 - When unsure, write one. A skipped spec on a change that turns out medium or high tier fails the `definition` CI gate (at `KAI_LEVEL` 2 or higher); if that happens, stop and write the spec then.
-- Below `KAI_LEVEL` 2 there are no Definition PRs. Skip unless the person asks, and go to `/kai:build`.
+- Below `KAI_LEVEL` 2 there are no Definition PRs. Skip unless the person asks, and go to `/kai:implement`.
 
 ## 3. Gather context
 
@@ -76,4 +76,4 @@ The spec is approved by merging it on its own, before any code. That merge is th
 1. Work on a branch that contains the key, for example `<KEY>-definition`, so the `ticket-ref` gate recognizes it.
 2. Commit `specs/<KEY>/spec.md` (plus any ADR) with the message `<KEY>: spec`.
 3. Open a pull request with only those files, titled `<KEY>: definition`, whose description starts with the **Review here** list. Product confirms the criteria capture the ticket. Engineering confirms they are complete and testable.
-4. After it merges, build on a fresh branch with `/kai:build`.
+4. After it merges, build on a fresh branch with `/kai:implement`.
