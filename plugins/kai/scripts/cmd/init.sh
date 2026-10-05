@@ -10,7 +10,7 @@ init_usage() {
 usage: kai init [options]
 
   --target DIR          repository to install into (default: current directory)
-  --level N             1 (intent, build, prove), 2 (adds specs and tiers), 3 (adds locked
+  --level N             1 (build, prove), 2 (adds specs and tiers), 3 (adds locked
                         tests, contract gate, /kai:ship, and CI review), or 4 (adds
                         /kai:accept, /kai:retro, and weekly metrics); default 1
   --provider NAME       jira | linear | github (default: jira)
@@ -115,7 +115,7 @@ fi
 cat >"$work/config" <<EOF
 # Kai configuration, sourced by POSIX sh. Quote values that contain spaces.
 
-# 1 = intent, build, prove. 2 = adds specs, tiers and the definition gate. 3 = adds locked tests, the contract gate and review. 4 = adds acceptance, retros and metrics.
+# 1 = build, prove. 2 = adds specs, tiers and the definition gate. 3 = adds locked tests, the contract gate and review. 4 = adds acceptance, retros and metrics.
 KAI_LEVEL=$level
 
 # Ticket system: jira | linear | github

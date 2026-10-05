@@ -1,45 +1,6 @@
 # Builds the eval fixture: a tiny Node "product favorites" service with Kai configured.
 # Usage (from a case's scaffold.sh, run in the empty workspace): make_repo <variant> [level]
-# Variants: plain (no kai), fresh, level2-intent, build, prove, accept (prove, merged, with a spec)
-
-intent_md() {
-  mkdir -p "specs/$1"
-  cat >"specs/$1/intent.md" <<EOF
-# Intent: $1 Remove a product from favorites
-
-- **Ticket:** $1
-- **Author:** Priya (product)
-- **Status:** Approved
-
-## Problem
-
-Shoppers can heart a product to save it, but cannot remove it again. Support tickets show shoppers asking how to clear old favorites after their plans change.
-
-## Proposed outcome
-
-A signed-in shopper can remove a product from their favorites, and it no longer appears in their list.
-
-## Success metric
-
-Support tickets about stuck favorites drop to zero within a month of release.
-
-## Affected users and systems
-
-Signed-in shoppers on web and app; the favorites service.
-
-## Constraints
-
-Signed-out shoppers must not be able to change favorites.
-
-## Out of scope
-
-Bulk removal; sharing favorites.
-
-## Open questions
-
-None.
-EOF
-}
+# Variants: plain (no kai), fresh, level2, build, prove, accept (prove, merged, with a spec)
 
 make_repo() {
   variant=$1
@@ -87,7 +48,7 @@ test("rejects_add_when_signed_out", () => {
 EOF
   if [ "$variant" != plain ]; then
     level=${2:-1}
-    [ "$variant" != level2-intent ] || level=2
+    [ "$variant" != level2 ] || level=2
     mkdir -p .kai
     cat >.kai/config <<EOF
 KAI_LEVEL=$level
@@ -102,29 +63,24 @@ EOF
 ## How we deliver (Kai)
 
 - Every change is keyed to a ticket; branch names contain the key. Artifacts live in `specs/<KEY>/`.
-- Start with `/kai:intent <KEY>`, build with `/kai:build`, and finish with `/kai:prove`.
+- Start with `/kai:spec <KEY>`, build with `/kai:build`, and finish with `/kai:prove`.
 - "Done" means `kai verify` passed and its output is in `specs/<KEY>/evidence.md`.
 EOF
   fi
   git add -A && git commit -qm "Initial app"
 
   case $variant in
-    level2-intent)
-      intent_md PAY-101
-      git add -A && git commit -qm "PAY-101: intent"
-      ;;
+    level2) ;;
     build)
       git switch -qc PAY-102-remove-favorite
-      intent_md PAY-102
-      git add -A && git commit -qm "PAY-102: intent"
       ;;
     prove | accept)
       git switch -qc PAY-103-remove-favorite
-      intent_md PAY-103
+      mkdir -p specs/PAY-103
       cat >specs/PAY-103/plan.md <<'EOF'
 # Plan: PAY-103 Remove a product from favorites
 
-- **Intent:** [intent.md](intent.md)
+- **Spec:** PAY-103
 - **Status:** Approved
 - **Approved by:** Sam (engineering)
 
@@ -155,7 +111,7 @@ Add `removeFavorite(userId, productId)` next to `addFavorite`, with the same sig
 
 None significant; in-memory only.
 EOF
-      git add -A && git commit -qm "PAY-103: intent and plan"
+      git add -A && git commit -qm "PAY-103: plan"
       sed -i.bak 's/^function listFavorites/function removeFavorite(userId, productId) {\
   if (!userId) throw new Error("sign in required");\
   favorites.get(userId)?.delete(productId);\
@@ -181,7 +137,7 @@ EOF
         cat >specs/PAY-103/spec.md <<'EOF'
 # Spec: PAY-103 Remove a product from favorites
 
-- **Intent:** [intent.md](intent.md)
+- **Ticket:** PAY-103
 - **Tier:** medium
 - **Status:** Approved
 

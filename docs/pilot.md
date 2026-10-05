@@ -6,7 +6,7 @@ How to install Kai in a real repository to try it, measure it, and send back fee
 
 - **Tools.** You need Claude Code, `git`, and `jq`, and read access to `MakaiDigital/kAI` on GitHub while it is private.
 - **The pilot repository.** Pick one that has a working test command and a few upcoming tickets. Small to medium changes are ideal.
-- **Approval.** Kai builds on Superpowers, a community plugin, and its intent skill can read Jira or Linear through connectors. Check with your security team that both are approved before they touch company code.
+- **Approval.** Kai builds on Superpowers, a community plugin, and its spec skill can read Jira or Linear through connectors. Check with your security team that both are approved before they touch company code.
 - **A pilot branch.** Work on a separate branch in the pilot repository, for example `kai-pilot`, so nothing Kai-specific reaches its main branch until you decide to keep it.
 
 ## 2. Record a baseline
@@ -52,7 +52,7 @@ Follow [using-kai.md](using-kai.md) for each ticket, and raise the level once th
 
 | Week | Level | Try |
 |---|---|---|
-| 1 | 1 | `/kai:intent`, `/kai:build`, `/kai:prove` on two or three tickets |
+| 1 | 1 | `/kai:spec`, `/kai:build`, `/kai:prove` on two or three tickets |
 | 2 | 2 | `/kai:spec` for medium-risk tickets, the two-PR flow, tuning `.kai/tiers` |
 | 3 | 3 | Locked tests, the `contract` check, `/kai:ship` (the CI review needs hosting, see below) |
 | 4 | 4 | `/kai:accept` after a deploy, `/kai:retro`, `kai metrics` |
@@ -77,7 +77,7 @@ Keep one entry per ticket in a notes file outside the repository, or in a shared
 - Skills that didn't start when they should have, or started when they shouldn't:
 - Hook or check blocks that were wrong, or ones that should have fired and didn't:
 - Plans that were too big or too vague, or tests that didn't match what you meant:
-- Intents, specs, or evidence you had to rewrite, and why:
+- Specs, or evidence you had to rewrite, and why:
 
 ### Evidence
 <paste the relevant part of the transcript, a screenshot, or the file you had to fix>

@@ -21,13 +21,9 @@ if [ "$tier" = low ]; then
 fi
 [ -n "$key" ] || kai_die "definition: no ticket key in branch or title (see the ticket-ref gate)"
 
-missing=
-for f in intent.md spec.md; do
-  git cat-file -e "$base:specs/$key/$f" 2>/dev/null || missing="$missing $f"
-done
-if [ -n "$missing" ]; then
-  printf 'definition: %s is a %s-tier change, but%s not approved yet.\nMerge specs/%s/ with intent.md and spec.md into %s in a Definition PR first (/kai:spec writes the spec).\n' \
-    "$key" "$tier" "$missing" "$key" "$base" >&2
+if ! git cat-file -e "$base:specs/$key/spec.md" 2>/dev/null; then
+  printf 'definition: %s is a %s-tier change, but its spec is not approved yet.\nMerge specs/%s/spec.md into %s in a Definition PR first (/kai:spec writes the spec).\n' \
+    "$key" "$tier" "$key" "$base" >&2
   exit 1
 fi
-printf 'definition: %s (%s tier) has an approved intent and spec\n' "$key" "$tier"
+printf 'definition: %s (%s tier) has an approved spec\n' "$key" "$tier"

@@ -1,12 +1,12 @@
 # Plan: {{KEY}} <title>
 
-- **Intent:** [intent.md](intent.md)
+- **Spec:** [spec.md](spec.md) <!-- or the ticket link, when the change needed no spec -->
 - **Status:** Proposed <!-- Proposed | Approved | Done -->
 - **Approved by:** <name, date>
 
 ## Summary
 
-<Two or three sentences: the approach and why it is the smallest change that achieves the intent.>
+<Two or three sentences: the approach and why it is the smallest change that achieves the outcome.>
 
 ## Files touched
 
@@ -25,7 +25,7 @@ Smallest first. Each task ends green.
 
 ## Tests
 
-Named by behavior. Every test maps to a spec criterion (or, without a spec, an intent outcome); every criterion has at least one test.
+Named by behavior. Every test maps to a spec criterion (or, without a spec, a ticket outcome); every criterion has at least one test.
 
 | Criterion | Test | File |
 |---|---|---|

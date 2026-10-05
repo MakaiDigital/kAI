@@ -9,7 +9,7 @@ setup() {
 }
 
 write_definition() {
-  mkdir -p specs/PAY-1 && echo i >specs/PAY-1/intent.md && echo s >specs/PAY-1/spec.md
+  mkdir -p specs/PAY-1 && echo s >specs/PAY-1/spec.md
 }
 
 definition() { "$KAI" gate definition --base main "$@"; }
@@ -38,7 +38,7 @@ definition() { "$KAI" gate definition --base main "$@"; }
   [ "$status" -eq 0 ]
 }
 
-@test "code for a medium change fails until intent and spec are merged to base" {
+@test "code for a medium change fails until the spec is merged to base" {
   git switch -qc PAY-1-work
   write_definition
   echo x >app.js
@@ -46,17 +46,17 @@ definition() { "$KAI" gate definition --base main "$@"; }
   run definition
   [ "$status" -eq 1 ]
   [[ "$output" == *"PAY-1 is a medium-tier change"* ]]
-  [[ "$output" == *"intent.md spec.md not approved"* ]]
+  [[ "$output" == *"its spec is not approved yet"* ]]
 }
 
-@test "code passes once intent and spec are on the base branch" {
+@test "code passes once the spec is on the base branch" {
   write_definition
   git add -A && git commit -qm "PAY-1: definition"
   git switch -qc PAY-1-work
   echo x >app.js
   run definition
   [ "$status" -eq 0 ]
-  [[ "$output" == *"approved intent and spec"* ]]
+  [[ "$output" == *"has an approved spec"* ]]
 }
 
 @test "uses the PR title when the branch has no key" {

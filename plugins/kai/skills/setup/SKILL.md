@@ -24,7 +24,7 @@ Ask in one batch (AskUserQuestion when available), with your detected defaults p
 
 - Ticket system (`jira`, `linear`, or `github`) and project prefixes.
 - The commands that must pass before work is done.
-- The adoption level, from `$ARGUMENTS` if given. Recommend **1** for a team new to Kai: intent, build, and prove, with guardrail hooks. Raise it later by re-running setup. Level 2 adds specs and risk tiers, 3 adds locked tests and AI review, 4 adds acceptance, retros, and metrics.
+- The adoption level, from `$ARGUMENTS` if given. Recommend **1** for a team new to Kai: build and prove, with guardrail hooks. Raise it later by re-running setup. Level 2 adds specs and risk tiers, 3 adds locked tests and AI review, 4 adds acceptance, retros, and metrics.
 
 ## 3. Preview, then write
 
@@ -40,5 +40,5 @@ Run `kai init --dry-run` with the answers (`--provider`, `--prefixes`, `--verify
 - Tell the person what happens next:
   - Teammates who open the repository in Claude Code are prompted to install Kai.
   - On GitHub, protect the main branch: require a pull request, an approval, and the `kai` check.
-  - Start the first change with `/kai:intent <KEY>`.
+  - Start the first change with `/kai:spec <KEY>`.
 - If any `*.kai-new` files were written, list them and offer to merge each one.

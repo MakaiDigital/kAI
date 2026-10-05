@@ -3,7 +3,7 @@ load helpers
 PRODUCT="$REPO_ROOT/plugins/kai-product"
 
 @test "kai-product templates match kai's, so both produce the same artifacts" {
-  for t in intent.md spec.md; do
+  for t in spec.md; do
     cmp "$REPO_ROOT/plugins/kai/templates/$t" "$PRODUCT/templates/$t"
   done
 }

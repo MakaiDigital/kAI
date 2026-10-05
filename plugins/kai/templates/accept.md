@@ -19,6 +19,6 @@ Shows: C1, C2. Observed: <what happened>
 
 ## Criteria
 
-| Criterion | Observed | Matches intent? |
+| Criterion | Observed | Matches the outcome? |
 |---|---|---|
 | C1 | <what the person saw> | yes / no / unclear |

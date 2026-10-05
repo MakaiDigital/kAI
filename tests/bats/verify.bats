@@ -43,7 +43,7 @@ touch ran-second"
   write_config jira PAY true
   "$KAI" verify
   before=$(cat "$(git rev-parse --absolute-git-dir)/kai/verified")
-  mkdir -p specs/PAY-1 && echo x >specs/PAY-1/intent.md
+  mkdir -p specs/PAY-1 && echo x >specs/PAY-1/spec.md
   . "$REPO_ROOT/plugins/kai/scripts/lib/common.sh"
   kai_load_config
   [ "$(kai_fingerprint)" = "$before" ]

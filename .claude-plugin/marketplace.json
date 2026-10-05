@@ -8,7 +8,7 @@
     {
       "name": "kai",
       "source": "./plugins/kai",
-      "description": "AI-native SDLC workflow: intent, spec, adr, build, prove, ship, accept and retro skills, review agents, metrics, and guardrail hooks",
+      "description": "AI-native SDLC workflow: spec, adr, build, prove, ship, accept and retro skills, review agents, metrics, and guardrail hooks",
       "category": "workflow",
       "dependencies": [
         "superpowers",
@@ -18,7 +18,7 @@
     {
       "name": "kai-product",
       "source": "./plugins/kai-product",
-      "description": "Kai for product managers in claude.ai and Cowork: intent and acceptance criteria, delivered as a Definition PR",
+      "description": "Kai for product managers in claude.ai and Cowork: acceptance criteria, delivered as a Definition PR",
       "category": "workflow"
     },
     {

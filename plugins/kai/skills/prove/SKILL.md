@@ -32,7 +32,7 @@ After the final verify run, since each run rewrites the file, append this sectio
 
 - **PASS** needs the quoted output line that shows the test passing. The quote is what makes it checkable by someone else.
 - **MISSING** means the test is not in the output. It was never written, never ran, or was renamed without updating the plan. Treat it as a failure.
-- **Tests can't show some behaviors** named in the intent or spec, such as a UI flow or a real integration. Run the end-to-end procedure (or describe exactly what you checked) and record what you observed.
+- **Tests can't show some behaviors** named in the ticket or spec, such as a UI flow or a real integration. Run the end-to-end procedure (or describe exactly what you checked) and record what you observed.
 
 If `specs/<KEY>/spec.md` exists, bring its Contract table in line. Set a row to PASS only when it has a quoted output line or recorded observation, and fill its Evidence column. Change only the Status and Evidence columns, and keep every criterion's row: dropping a row would quietly redefine the feature. Every quoted line must appear in the `evidence.md` committed with it, so redo this step after any later `kai verify` run: quotes from an earlier run are the stale evidence reviewers send back.
 
@@ -40,4 +40,4 @@ If `specs/<KEY>/spec.md` exists, bring its Contract table in line. Set a row to 
 
 - Commit `evidence.md` and any spec contract updates as `<KEY>: evidence`.
 - Give the result in one line (PASS or FAIL, with counts), point to `specs/<KEY>/evidence.md`, and list anything failing or MISSING.
-- Only when everything passes, point to the next step: `/kai:ship` at `KAI_LEVEL` 3 or higher, otherwise push the branch and open a pull request that links the intent, spec, plan, and evidence.
+- Only when everything passes, point to the next step: `/kai:ship` at `KAI_LEVEL` 3 or higher, otherwise push the branch and open a pull request that links the ticket, spec, plan, and evidence.
