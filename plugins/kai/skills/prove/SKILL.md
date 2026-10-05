@@ -40,4 +40,4 @@ If `specs/<KEY>/spec.md` exists, bring its Contract table in line. Set a row to 
 
 - Commit `evidence.md` and any spec contract updates as `<KEY>: evidence`.
 - Give the result in one line (PASS or FAIL, with counts), point to `specs/<KEY>/evidence.md`, and list anything failing or MISSING.
-- Only when everything passes, point to the next step: `/kai:ship` at `KAI_LEVEL` 3 or higher, otherwise push the branch and open a pull request that links the ticket, spec, plan, and evidence.
+- Only when everything passes, point to the next step: `/kai:implement` continues from here (independent review, the pull request, and answering its reviews). Called on its own, push the branch and open a pull request that links the ticket, spec, plan, and evidence.

@@ -52,10 +52,10 @@ Follow [using-kai.md](using-kai.md) for each ticket, and raise the level once th
 
 | Week | Level | Try |
 |---|---|---|
-| 1 | 1 | `/kai:spec`, `/kai:build`, `/kai:prove` on two or three tickets |
+| 1 | 1 | `/kai:spec`, `/kai:implement` on two or three tickets |
 | 2 | 2 | `/kai:spec` for medium-risk tickets, the two-PR flow, tuning `.kai/tiers` |
-| 3 | 3 | Locked tests, the `contract` check, `/kai:ship` (the CI review needs hosting, see below) |
-| 4 | 4 | `/kai:accept` after a deploy, `/kai:retro`, `kai metrics` |
+| 3 | 3 | Locked tests, the `contract` check, local review in `/kai:implement` (the CI review needs hosting, see below) |
+| 4 | 4 | `/kai:accept` after a deploy (verify, QA, cleanup PR), `/kai:retro` for a sprint view, `kai metrics` |
 
 To change level, run `/kai:setup <level>` again, or edit `KAI_LEVEL` in `.kai/config`.
 

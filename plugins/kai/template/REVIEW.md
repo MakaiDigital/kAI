@@ -1,6 +1,6 @@
 # Review guidelines
 
-Read by the `contract-reviewer` agent locally (`/kai:ship`) and in CI. Owned by the tech lead; tune it when reviews get noisy or miss things.
+Read by the `contract-reviewer` agent locally (`/kai:implement`) and in CI. Owned by the tech lead; tune it when reviews get noisy or miss things.
 
 ## What to review
 

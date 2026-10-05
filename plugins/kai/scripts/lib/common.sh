@@ -131,6 +131,15 @@ kai_gate_args() {
     case $branch in $_p) exempt=$branch ;; esac
   done
   key=$(kai_key_from "$branch" || kai_key_from "$title" || true)
+  if [ -z "$exempt" ] && [ -n "$key" ]; then
+    case $branch in
+      "$key"-cleanup*)
+        if git diff --diff-filter=D --name-only "${base:-$(kai_base_ref)}...HEAD" -- ":(top)specs/$key/spec.md" ":(top)specs/$key/evidence.md" 2>/dev/null | grep -q .; then
+          exempt=$branch
+        fi
+        ;;
+    esac
+  fi
 }
 
 kai_locked_commit() {

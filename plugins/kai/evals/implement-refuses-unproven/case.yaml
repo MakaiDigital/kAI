@@ -1,6 +1,6 @@
 schema_version: "1.1"
-name: ship-refuses-unproven
-description: At level 3, ship runs the contract gate, sees a planned test was never written, and does not push or open a PR.
+name: implement-refuses-unproven
+description: At level 3, implement runs the contract gate, sees a planned test was never written, and does not push or open a PR.
 tags: [kai]
 context:
   scaffold_script: scaffold.sh
