@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: pm-acceptance-criteria
-description: A product manager gets numbered EARS criteria with unhappy paths and a contract row per criterion from an agreed intent.
+description: A product manager gets numbered EARS criteria with unhappy paths and a contract row per criterion from a ticket.
 tags: [kai-product]
 execution:
   max_turns: 25

@@ -1,6 +1,6 @@
 # kAI
 
-Makai's AI-native SDLC for Claude Code. Every change moves through a chain of committed artifacts (intent, plan, failing tests, code, evidence), and the rules that must always hold are enforced by hooks and CI rather than left to the model.
+Makai's AI-native SDLC for Claude Code. Every change moves through a chain of committed artifacts (spec, plan, failing tests, code, evidence), and the rules that must always hold are enforced by hooks and CI rather than left to the model.
 
 Kai is deliberately thin. It supplies the workflow, templates, and guardrails, and builds on pinned upstream plugins for the heavy lifting: [Superpowers](https://github.com/obra/superpowers) for test-driven development and verification discipline, and Anthropic's `feature-dev` agents for codebase exploration.
 
@@ -11,9 +11,8 @@ Kai is deliberately thin. It supplies the workflow, templates, and guardrails, a
 
 | Command | What it does | Output |
 |---|---|---|
-| `/kai:intent <KEY>` | Reads the ticket, interviews the originator, captures the problem, outcome, and constraints ([why an intent as well as the ticket](docs/using-kai.md#why-an-intent-when-we-already-have-the-ticket)) | `specs/<KEY>/intent.md` |
-| `/kai:spec` | Turns the intent into numbered EARS criteria and a contract mapping each to a test (level 2) | `spec.md` |
-| `/kai:adr` | Records an architecture decision with options and trade-offs, when one is needed (level 2) | `docs/adr/NNNN-*.md` |
+| `/kai:spec <KEY>` | Reads the ticket, decides whether it needs a spec (simple tickets and bugs skip it), then writes numbered EARS criteria, a contract mapping each to a test, and a short "Review here" list of what a person must judge. Drafts an ADR when the change needs one (level 2) | `specs/<KEY>/spec.md`, `docs/adr/NNNN-*.md` |
+| `/kai:adr` | Records an architecture decision with options and trade-offs. `/kai:spec` runs it when needed; call it directly for a decision outside a spec (level 2) | `docs/adr/NNNN-*.md` |
 | `/kai:build` | Plans (stops for approval), commits failing tests, then implements the minimum | `plan.md`, tests, code |
 | `/kai:prove` | Runs the team's checks and maps each planned test (and spec criterion) to its result | `evidence.md` |
 | `/kai:ship` | Runs the CI gates locally, gets an independent review, then pushes and opens the PR with the contract (level 3) | pull request |
@@ -33,7 +32,7 @@ Guardrail hooks run in every session:
 
 ## Kai for Product (claude.ai and Cowork)
 
-`kai-product` lets product managers and other non-engineers write the intent and acceptance criteria in claude.ai or Cowork, without git or a terminal. Its `intent` and `spec` skills produce the same `specs/<KEY>/intent.md` and `spec.md` files engineering's Kai reads, and deliver them as the Definition PR:
+`kai-product` lets product managers and other non-engineers write the spec and acceptance criteria in claude.ai or Cowork, without git or a terminal. Its `spec` skill produces the same `specs/<KEY>/spec.md` file engineering's Kai reads, and deliver them as the Definition PR:
 
 - With a GitHub connector, it opens the PR after the person approves its title and body.
 - Without one, it hands over the files and a note for the engineering lead.
@@ -86,7 +85,7 @@ kai verify [--evidence F]   run KAI_VERIFY_CMDS; optionally write the evidence t
 kai tier [--base REF]       risk tier of the change, from .kai/tiers
 kai metrics [--weeks N]     weekly speed and quality report from the specs/ history
 kai gate ticket-ref         CI gate: branch or PR title must reference a ticket
-kai gate definition         CI gate (level 2): medium/high-tier code needs a merged intent and spec
+kai gate definition         CI gate (level 2): medium/high-tier code needs a merged spec
 kai gate tests-locked       CI gate (level 3): tests from the failing-tests commit are unchanged
 kai gate contract           CI gate (level 3): every criterion and planned test is PASS with evidence
 ```
@@ -96,7 +95,7 @@ kai gate contract           CI gate (level 3): every criterion and planned test 
 ```
 .claude-plugin/marketplace.json   the makaidigital marketplace: kai plus pinned upstream plugins
 plugins/kai/                      the plugin: skills, hooks, templates, bin/kai, scripts
-plugins/kai-product/              Kai for Product: intent and spec skills for claude.ai and Cowork
+plugins/kai-product/              Kai for Product: spec skill for claude.ai and Cowork
 actions/kai-gates/                composite GitHub Action used by the installed workflow
 plugins/kai/template/             files kai init writes into a repository
 tests/bats/                       tests for the CLI, hooks, gates, and kai init
@@ -131,13 +130,13 @@ The plugin's dependencies (Superpowers, feature-dev) are declared on its marketp
 
 Set `KAI_LEVEL` in `.kai/config` (or `--level` when installing).
 
-1. **Intent, build, prove.** Guardrail hooks, `kai verify` in the Stop hook and `/kai:prove`, and the `ticket-ref` gate in CI.
-2. **Specs and tiers.** `/kai:spec` and `/kai:adr`. Medium and high tier changes take two PRs: a Definition PR with `intent.md` and `spec.md`, then the Change PR with the code. The `definition` gate enforces the order.
+1. **Build, prove.** Guardrail hooks, `kai verify` in the Stop hook and `/kai:prove`, and the `ticket-ref` gate in CI.
+2. **Specs and tiers.** `/kai:spec` and `/kai:adr`. Medium and high tier changes take two PRs: a Definition PR with `spec.md` (and any ADR), then the Change PR with the code. The `definition` gate enforces the order.
 
 Kai adds only one gate at level 2. The rest comes from GitHub settings you configure once per repository (at any level):
 
 - **Branch protection on `main`:** require a pull request, at least one approval, and the `kai` check. This is what stops direct pushes, for people and agents alike.
-- **CODEOWNERS**, for example `specs/**/intent.md @your-org/product` and `specs/ @your-org/product @your-org/eng-leads`, so product and engineering both sign off on the Definition PR.
+- **CODEOWNERS**, for example `specs/**/spec.md @your-org/product` and `specs/ @your-org/product @your-org/eng-leads`, so product and engineering both sign off on the Definition PR.
 - **High-risk paths:** list them in CODEOWNERS with the tech leads and require two approvals, so a human reads that code.
 
 3. **Independent verification.** Tests are locked once committed: a hook blocks Claude from editing them, and the `tests-locked` gate fails if they change, unless a reviewer adds the `kai:tests-changed` label. The `contract` gate requires every criterion and planned test to be PASS with evidence. `/kai:ship` opens the PR after a read-only review, and `kai-review.yml` posts the same review on trusted PRs (not forks or bots). The review informs the human approver; it never blocks or approves the merge by itself.

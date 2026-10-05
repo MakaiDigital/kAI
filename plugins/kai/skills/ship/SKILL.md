@@ -6,7 +6,7 @@ argument-hint: [TICKET-KEY]
 
 # Ship
 
-Open the pull request for a proven change, so the human approver sees the intent, the contract, and the evidence in one place and can judge the change against them instead of reading every line.
+Open the pull request for a proven change, so the human approver sees the outcome, the contract, and the evidence in one place and can judge the change against them instead of reading every line.
 
 If the repository has no `.kai/config`, it does not use Kai. Say so and help directly.
 
@@ -34,8 +34,8 @@ Handle what comes back:
 - Open the PR with `gh pr create`, titled `<KEY>: <short summary>`, with this body:
 
 ```markdown
-## Intent
-<one-paragraph summary> ([intent](specs/<KEY>/intent.md))
+## Outcome
+<one-paragraph summary> ([spec](specs/<KEY>/spec.md), or the ticket link when there is no spec)
 
 ## Contract
 <the spec's Contract table, or the plan's Tests table when there is no spec, with the evidence column filled>

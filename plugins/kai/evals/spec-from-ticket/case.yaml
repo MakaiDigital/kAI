@@ -1,6 +1,6 @@
 schema_version: "1.1"
-name: spec-from-intent
-description: Spec writes EARS criteria with unhappy paths and a FAIL contract row per criterion, on a ticket branch, ready for a Definition PR.
+name: spec-from-ticket
+description: Spec reads the ticket, then writes EARS criteria with unhappy paths and a FAIL contract row per criterion, on a ticket branch, ready for a Definition PR.
 tags: [kai]
 context:
   scaffold_script: scaffold.sh

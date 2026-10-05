@@ -18,14 +18,14 @@ at() {
 }
 
 @test "reports shipped tickets, lead time, and rework side by side" {
-  at PAY-1 intent.md $((NOW - 20 * DAY))
+  at PAY-1 spec.md $((NOW - 20 * DAY))
   at PAY-1 plan.md $((NOW - 19 * DAY))
   at PAY-1 evidence.md $((NOW - 18 * DAY))
-  at PAY-2 intent.md $((NOW - 10 * DAY))
+  at PAY-2 spec.md $((NOW - 10 * DAY))
   at PAY-2 plan.md $((NOW - 9 * DAY))
   at PAY-2 spec.md $((NOW - 8 * DAY))
   at PAY-2 evidence.md $((NOW - 6 * DAY))
-  at PAY-3 intent.md $((NOW - 3 * DAY))
+  at PAY-3 spec.md $((NOW - 3 * DAY))
   at PAY-3 evidence.md $((NOW - 2 * DAY))
   at PAY-3 evidence.md $((NOW - 1 * DAY))
   run "$KAI" metrics --weeks 4 --base main
@@ -36,8 +36,8 @@ at() {
 }
 
 @test "ignores tickets without evidence and those outside the window" {
-  at PAY-1 intent.md $((NOW - 2 * DAY))
-  at PAY-2 intent.md $((NOW - 70 * DAY))
+  at PAY-1 spec.md $((NOW - 2 * DAY))
+  at PAY-2 spec.md $((NOW - 70 * DAY))
   at PAY-2 evidence.md $((NOW - 60 * DAY))
   run "$KAI" metrics --weeks 4 --base main
   [[ "$output" == *"No tickets shipped in this period."* ]]
@@ -45,10 +45,10 @@ at() {
 
 @test "flags a week whose lead time is far above the rest" {
   for w in 1 2 3 4 5 6; do
-    at "PAY-$w" intent.md $((NOW - (w * 7 + 2) * DAY))
+    at "PAY-$w" spec.md $((NOW - (w * 7 + 2) * DAY))
     at "PAY-$w" evidence.md $((NOW - (w * 7 + 1) * DAY))
   done
-  at PAY-9 intent.md $((NOW - 40 * DAY))
+  at PAY-9 spec.md $((NOW - 40 * DAY))
   at PAY-9 evidence.md $((NOW - 1 * DAY))
   run "$KAI" metrics --weeks 8 --base main
   [[ "$output" == *"39.0 ▲"* ]]

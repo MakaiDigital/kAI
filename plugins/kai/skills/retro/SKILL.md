@@ -15,7 +15,7 @@ If the repository has no `.kai/config`, it does not use Kai. Say so and help dir
 The period comes from `$ARGUMENTS` (default: the last two weeks).
 
 - `kai metrics` for speed next to quality. Look at weeks marked ▲ and at the reworked share.
-- Intents whose success metric's **Evaluated** date falls in the period: did the metric reach its target? Check with the source named under **Measured by**, or ask the product owner. A feature that shipped cleanly but missed its target is a lesson about the intent, not the code.
+- Specs whose success metric's **Evaluated** date falls in the period: did the metric reach its target? Check with the source named in the metric, or ask the product owner. A feature that shipped cleanly but missed its target is a lesson about the spec, not the code.
 - Merged PRs in the period (`gh pr list --state merged --search "merged:>=<date>"`), their review comments from `contract-reviewer` and `spec-critic`, and any human review comments.
 - Tickets whose specs changed after the plan or after evidence landed: that is where criteria were incomplete.
 - `specs/*/accept.md` from the period: what acceptance caught that tests did not.

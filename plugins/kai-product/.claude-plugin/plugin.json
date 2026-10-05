@@ -1,8 +1,8 @@
 {
   "name": "kai-product",
   "displayName": "Kai for Product",
-  "version": "0.1.0",
-  "description": "Kai for product managers in claude.ai and Cowork: turn a ticket or idea into an intent and testable acceptance criteria, delivered to engineering as a Definition PR",
+  "version": "0.2.0",
+  "description": "Kai for product managers in claude.ai and Cowork: turn a ticket or idea into a spec of testable acceptance criteria, delivered to engineering as a Definition PR",
   "author": {
     "name": "Makai Engineering"
   },
