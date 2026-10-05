@@ -22,7 +22,7 @@ fi
 
 locked=$(kai_locked_commit "$key")
 if [ -z "$locked" ]; then
-  printf 'tests-locked: %s is a %s-tier change without a "%s: failing tests" commit.\nCommit the planned tests on their own, before the implementation (/kai:build does this).\n' "$key" "$tier" "$key" >&2
+  printf 'tests-locked: %s is a %s-tier change without a "%s: failing tests" commit.\nCommit the planned tests on their own, before the implementation (/kai:implement does this).\n' "$key" "$tier" "$key" >&2
   exit 1
 fi
 changed=$(kai_locked_files "$locked" | while IFS= read -r f; do

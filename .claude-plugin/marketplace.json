@@ -8,7 +8,7 @@
     {
       "name": "kai",
       "source": "./plugins/kai",
-      "description": "AI-native SDLC workflow: spec, adr, build, prove, ship, accept and retro skills, review agents, metrics, and guardrail hooks",
+      "description": "AI-native SDLC workflow: spec, adr, implement, prove, accept and retro skills, review agents, metrics, and guardrail hooks",
       "category": "workflow",
       "dependencies": [
         "superpowers",

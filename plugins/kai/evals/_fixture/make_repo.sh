@@ -63,7 +63,7 @@ EOF
 ## How we deliver (Kai)
 
 - Every change is keyed to a ticket; branch names contain the key. Artifacts live in `specs/<KEY>/`.
-- Start with `/kai:spec <KEY>`, build with `/kai:build`, and finish with `/kai:prove`.
+- Start with `/kai:spec <KEY>`, implement with `/kai:implement`, and finish with `/kai:prove`.
 - "Done" means `kai verify` passed and its output is in `specs/<KEY>/evidence.md`.
 EOF
   fi

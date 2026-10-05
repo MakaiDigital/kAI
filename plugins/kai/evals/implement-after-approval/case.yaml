@@ -1,6 +1,6 @@
 schema_version: "1.1"
-name: build-after-approval
-description: Once the plan is approved, build commits the plan, then failing tests alone, then the implementation, without new dependencies.
+name: implement-after-approval
+description: Once the plan is approved, implement commits the plan, then failing tests alone, then the implementation, without new dependencies.
 tags: [kai]
 context:
   scaffold_script: scaffold.sh

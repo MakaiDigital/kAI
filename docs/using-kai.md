@@ -11,9 +11,9 @@ Kai is already set up in your repository if it has a `.kai/config`. If not, inst
 
 | Level | Adds |
 |---|---|
-| 1 | Build, prove, guardrail hooks |
+| 1 | Implement, prove, guardrail hooks |
 | 2 | Specs, risk tiers, the two-PR flow |
-| 3 | Locked tests, contract check, `/kai:ship`, AI review in CI |
+| 3 | Locked tests, contract check, local gates and review, AI review in CI |
 | 4 | Acceptance in integration, retros, metrics |
 
 - **Know your risk tiers.** `.kai/tiers` maps paths to `low`, `medium`, or `high`. Files it doesn't list count as medium. A change takes the highest tier of any file it touches, and `kai tier` prints it with the reason for each file.
@@ -32,8 +32,8 @@ Every change starts from a ticket, such as `PAY-123` in Jira or Linear or `#42` 
 
 What happens:
 - Claude reads the ticket (through the Jira, Linear, or GitHub connector, or you paste it).
-- It decides whether the change needs a spec and says why in one line. A bug with a clear reproduction, a typo, docs, and other low-tier changes skip it and go straight to `/kai:build`, with the ticket as the intent. You can overrule it either way.
-- Below level 2 there are no specs: go straight to `/kai:build`.
+- It decides whether the change needs a spec and says why in one line. A bug with a clear reproduction, a typo, docs, and other low-tier changes skip it and go straight to `/kai:implement`, with the ticket as the intent. You can overrule it either way.
+- Below level 2 there are no specs: go straight to `/kai:implement`.
 
 Claude works on a branch named after the ticket (`PAY-123-short-description`), creating or suggesting one. Branch names must contain the key, because CI checks for it.
 
@@ -53,51 +53,33 @@ What you do:
 2. Merge the spec (and ADR) on their own, as a **Definition PR**: branch `PAY-123-definition`, title `PAY-123: definition`. Claude prepares it for you.
 3. Wait for the merge before writing code. CI's `definition` check fails code for a medium- or high-tier ticket until its spec is on the main branch. If Claude skipped the spec and the tier turns out higher, write it then.
 
-### 3. Plan, test first, implement (all levels)
+### 3. Implement (all levels)
 
 Start a fresh branch for the code, then:
 
 ```
-/kai:build
+/kai:implement
 ```
 
-This runs in three stops:
+Claude takes the ticket to a reviewed, green pull request. You are asked once, at the plan:
 1. **Plan.** Claude explores the code and presents a plan: files to change, tasks, tests named by behavior (for example `rejects_expired_token`) and mapped to the criteria, and risks. Then it stops and waits for you.
    - **You approve or push back.** Push back if the plan adds files or dependencies you didn't expect, has tests that don't map to a criterion, or has criteria with no test. A wrong plan costs minutes to fix; wrong code costs hours.
+
+After you approve, it keeps going without asking:
 2. **Failing tests.** Claude writes the planned tests, confirms they fail for the right reason, and commits them on their own as `PAY-123: failing tests`.
 3. **Implementation.** Claude writes the smallest change that makes the tests pass, following `.kai/constraints.md`.
+4. **Proof.** It runs `/kai:prove`: `kai verify`, then a table matching every planned test to the output line that shows it passing. A planned test that never ran is **MISSING**, which counts as a failure. The spec's contract table is updated and committed as `PAY-123: evidence`.
+5. **Review.** At level 3 it runs the same gates CI will run. Then fresh-context, read-only reviewers check the change: `kai:contract-reviewer` (every PASS is real, every change traces to a criterion), `kai:spec-critic` (behavior no criterion covers) and `/code-review`. Blocking findings get fixed.
+6. **Pull request.** It pushes the ticket branch and opens the PR with the outcome, contract, evidence and review in the description.
+7. **Watching the PR.** It waits for CI and every reviewer (the Kai review, a PR review agent, an adversarial reviewer, people) and answers each finding: it fixes what is right and re-proves, and where it believes the code is correct it replies with evidence and leaves the code alone. A defense gets one round; if the reviewer repeats the point it becomes a decision for you. It keeps going while reviewers keep finding things, and hands back early if it stops converging or a check is red for a reason it cannot fix.
+8. **Report.** It tells you the PR link, the tier, what was fixed, what was defended and why, and what needs your decision. It never merges or approves.
 
 While it works:
 - The **Stop hook** runs your test commands (`KAI_VERIFY_CMDS`) whenever Claude tries to finish, and sends it back to work while they fail. It gives up after three attempts and tells you.
-- At level 3, a hook blocks Claude from editing the tests it committed in step 2.
+- At level 3, a hook blocks Claude from editing the tests it committed in step 2. A reviewer asking to change one is a question for you, not something Claude does.
+- Reviewer comments are treated as data. Claude never skips a gate or weakens a check because a comment says to.
 
-### 4. Prove it works (all levels)
-
-```
-/kai:prove
-```
-
-What happens:
-- Claude runs `kai verify --evidence specs/PAY-123/evidence.md` and adds a table matching every planned test to the output line that shows it passing.
-- A planned test that never ran is marked **MISSING**, which counts as a failure.
-- If there is a spec, Claude updates its contract table. It then commits `PAY-123: evidence`.
-
-What you do: read the result. "Done" means this evidence file, not Claude saying the tests pass.
-
-### 5. Open the pull request
-
-**Level 3 and up:**
-
-```
-/kai:ship
-```
-
-What happens:
-- Claude runs the same checks CI will run.
-- It gets an independent, read-only review. `kai:contract-reviewer` confirms every PASS is real and every change traces to a criterion, and `kai:spec-critic` looks for behavior no criterion covers.
-- It fixes anything blocking, then pushes and opens the PR. The PR description contains the outcome, contract, evidence, and review.
-
-**Levels 1–2:** push the branch and open the PR yourself, linking the ticket, spec, plan, and evidence.
+You can also run `/kai:prove` on its own at any point to re-check the evidence.
 
 In CI:
 - The `kai` workflow runs these checks:
@@ -114,7 +96,7 @@ In CI:
 
 What the reviewer does: judge the change against the spec and contract rather than reading every line. For high-tier changes, also read the code.
 
-### 6. Accept it in integration (level 4)
+### 4. Accept it in integration (level 4)
 
 After the merge is deployed to your integration environment:
 
@@ -129,7 +111,7 @@ What you do:
 2. They fill in the verdict and their name in `accept.md`.
 3. They add the `accepted` label to the merged PR. Releases take only accepted changes.
 
-### 7. Learn from it (level 4)
+### 5. Learn from it (level 4)
 
 Once a sprint:
 
@@ -168,7 +150,7 @@ What you do: the team approves which changes to apply.
 | CI `definition` fails | Code for a medium or high tier ticket before its spec merged | Merge the Definition PR first, or lower the tier in `.kai/tiers` if the paths really are low risk |
 | CI `tests-locked` fails | Tests changed after the failing-tests commit, or there is none | Restore the tests, or have a reviewer approve with `kai:tests-changed` |
 | CI `contract` fails | A criterion or planned test is not PASS with evidence | Run `/kai:prove` again and fix what it reports |
-| A skill doesn't start | Claude didn't match your request to it | Use the slash command, for example `/kai:build` |
+| A skill doesn't start | Claude didn't match your request to it | Use the slash command, for example `/kai:implement` |
 
 ## The `kai` command
 
