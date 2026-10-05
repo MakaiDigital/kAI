@@ -53,3 +53,15 @@ at() {
   run "$KAI" metrics --weeks 8 --base main
   [[ "$output" == *"39.0 ▲"* ]]
 }
+
+@test "tickets whose specs were deleted at acceptance still count, without counting as reworked" {
+  at PAY-1 spec.md $((NOW - 6 * DAY))
+  at PAY-1 plan.md $((NOW - 5 * DAY))
+  at PAY-1 evidence.md $((NOW - 4 * DAY))
+  git rm -rq specs/PAY-1
+  GIT_COMMITTER_DATE="@$((NOW - 1 * DAY))" GIT_AUTHOR_DATE="@$((NOW - 1 * DAY))" git commit -qm "PAY-1: cleanup"
+  run "$KAI" metrics --weeks 4 --base main
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"**1 tickets shipped**"* ]]
+  [[ "$output" == *"**0% reworked**"* ]]
+}

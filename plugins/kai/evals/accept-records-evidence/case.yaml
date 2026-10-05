@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: accept-records-evidence
-description: Accept runs the spec's end-to-end steps, records each command and output in accept.md, and leaves the verdict for a person.
+description: Accept runs the spec's end-to-end steps, tries to break the feature, records each command and output in accept.md, and records a Pass or Fail verdict.
 tags: [kai]
 context:
   scaffold_script: scaffold.sh
@@ -8,4 +8,4 @@ execution:
   max_turns: 40
   timeout_seconds: 600
   allowed_tools: [Read, Glob, Grep, Skill, TodoWrite, Bash, Write, Edit]
-  append_system_prompt: "No person is available to answer questions in this session. Where a skill asks you to check with the person, state the questions and the answers you are assuming, then continue. Never push to a remote or open pull requests."
+  append_system_prompt: "No person is available to answer questions in this session. Where a skill asks you to check with the person, state the questions and the answers you are assuming, then continue. Never push to a remote or open pull requests. Stop after verification and QA are recorded in accept.md: do not run the retro or the cleanup."

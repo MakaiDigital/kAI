@@ -1,6 +1,6 @@
 # Using Kai
 
-This guide walks a developer through one change, from ticket to release. Kai does the drafting, planning, testing, and checking; you decide what gets built and confirm it works.
+This guide walks a developer through one change, from ticket to done. Kai does the drafting, planning, testing, and checking; you decide what gets built and confirm it works.
 
 Kai is already set up in your repository if it has a `.kai/config`. If not, install the plugin (`claude plugin marketplace add MakaiDigital/kAI`, then `claude plugin install kai@makaidigital`) and run `/kai:setup`. To trial it first, see [pilot.md](pilot.md).
 
@@ -14,13 +14,23 @@ Kai is already set up in your repository if it has a `.kai/config`. If not, inst
 | 1 | Implement, prove, guardrail hooks |
 | 2 | Specs, risk tiers, the two-PR flow |
 | 3 | Locked tests, contract check, local gates and review, AI review in CI |
-| 4 | Acceptance in integration, retros, metrics |
+| 4 | Verify, QA and cleanup in integration (`/kai:accept`), retros, metrics |
 
 - **Know your risk tiers.** `.kai/tiers` maps paths to `low`, `medium`, or `high`. Files it doesn't list count as medium. A change takes the highest tier of any file it touches, and `kai tier` prints it with the reason for each file.
 
-You can type the commands below, or just describe what you want ("start PAY-123", "let's build it", "does it work?"). Claude picks the matching skill.
+You can type the commands below, or just describe what you want ("start PAY-123", "let's implement it", "does it work?"). Claude picks the matching skill.
 
 ## The workflow
+
+You ask Claude for four things, and each ends in a pull request you review:
+
+| Step | Command | You review |
+|---|---|---|
+| 1. Specify | `/kai:spec PAY-123` | The Definition PR: the spec's **Review here** list, and any ADR (or Claude's one-line reason for skipping) |
+| 2. Implement | `/kai:implement` | The plan, once, before any code; then the finished PR |
+| 3. Merge and deploy | (your process) | The PR, as a code owner |
+| 4. Accept | `/kai:accept PAY-123` | The cleanup PR; merging it ends the ticket |
+
 
 ### 1. Start from the ticket (all levels)
 
@@ -41,7 +51,7 @@ Claude works on a branch named after the ticket (`PAY-123-short-description`), c
 
 If the ticket needs a spec, Claude writes `specs/PAY-123/spec.md`:
 - A **Review here** list at the top: the assumptions, chosen numbers, added criteria, and security or data implications a person must judge. Each is marked `⚠ review` where it appears below.
-- A short **Context** (problem, outcome, success metric, constraints, out of scope) taken from the ticket, so CI reviewers and `/kai:accept` have the goal without ticket access.
+- A short **Context** (problem, outcome, success metric, constraints, out of scope) taken from the ticket, so CI reviewers and `/kai:accept` have the goal while the ticket is open without ticket access.
 - Criteria numbered C1, C2, … in a fixed form: "When …, the system shall …" or "If …, then the system shall …", including the unhappy paths (signed out, network down, invalid input).
 - An end-to-end check you could run by hand, and a contract table mapping each criterion to a test, every row starting as FAIL.
 - YAML frontmatter (key, ticket, tier, status, ADR) that agents and gates read.
@@ -98,33 +108,31 @@ What the reviewer does: judge the change against the spec and contract rather th
 
 ### 4. Accept it in integration (level 4)
 
-After the merge is deployed to your integration environment:
+After the merge is deployed to your integration environment, you run:
 
 ```
 /kai:accept PAY-123
 ```
 
-What happens: Claude runs the spec's end-to-end steps against integration and records every command and its output in `specs/PAY-123/accept.md`. It never marks the change accepted.
+Claude does not wait for deployments. It checks that integration is running the merged commit and stops if not.
 
-What you do:
-1. The product owner (or service owner, for APIs and infrastructure) tries the feature against the **ticket's outcome**.
-2. They fill in the verdict and their name in `accept.md`.
-3. They add the `accepted` label to the merged PR. Releases take only accepted changes.
+What happens:
+1. **Verify.** It runs the spec's end-to-end steps and every check each criterion needs, recording commands and output in `specs/PAY-123/accept.md`.
+2. **QA.** A fresh-context adversarial pass tries to break the feature: unhappy paths, boundaries, repeated and concurrent actions, other users' data, permissions. Synthetic data, integration only.
+3. **If something fails,** it reproduces it and fixes it through `/kai:implement` on a `PAY-123-fix-<n>` branch (you approve the plan as usual). After you merge and deploy the fix, run `/kai:accept` again. After 3 cycles, or when a failure needs a decision, it hands back to you.
+4. **If it passes,** it runs `/kai:retro PAY-123`, then opens one cleanup PR on `PAY-123-cleanup` that deletes `specs/PAY-123/` and the ticket's other working documents (only ADRs under `docs/adr/` stay) and applies the retro's lessons, each in its own commit. The PR description keeps the outcome, the verification and QA summary, and the lessons. It answers that PR's reviews like `/kai:implement` does.
+
+What you do: review the cleanup PR, and merge it when you are satisfied. That ends the ticket. Add the `accepted` label to the original PR if your releases use it. Claude never moves or comments on the ticket in Jira, Linear, or GitHub.
 
 ### 5. Learn from it (level 4)
 
-Once a sprint:
+`/kai:accept` runs the retro for each ticket. To look across a sprint instead:
 
 ```
-/kai:retro
+/kai:retro 2w
 ```
 
-What happens:
-- Claude reads the period's review findings, acceptance results, and `kai metrics`, plus any success metrics due for a check.
-- It proposes where each recurring lesson should live: a hook, a skill, an ADR, or `CLAUDE.md`. It also proposes instructions to delete.
-- It writes `docs/retros/<date>.md`.
-
-What you do: the team approves which changes to apply.
+Claude reads merged PRs and their reviews, `kai metrics`, and success metrics that are due, finds the lessons worth keeping, and applies them as separate commits (a hook, a skill, an ADR, a `CLAUDE.md` line, or a deletion of instructions nothing needed). The report goes in the PR description; no retro file is kept. Review the PR to approve the changes.
 
 ## Who decides what
 
@@ -136,7 +144,7 @@ What you do: the team approves which changes to apply.
 | The plan, before any code | The developer running Kai (tech lead for high tier) |
 | Changing a committed test | A reviewer, with the `kai:tests-changed` label |
 | Merging | A code owner approving the PR (two for high tier) |
-| Acceptance | Product owner or service owner (two people for high tier) |
+| Accepting the change (the cleanup PR) | Product owner or service owner (two people for high tier) |
 
 ## When something blocks you
 
