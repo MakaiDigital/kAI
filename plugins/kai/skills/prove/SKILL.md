@@ -34,7 +34,7 @@ After the final verify run, since each run rewrites the file, append this sectio
 - **MISSING** means the test is not in the output. It was never written, never ran, or was renamed without updating the plan. Treat it as a failure.
 - **Tests can't show some behaviors** named in the intent or spec, such as a UI flow or a real integration. Run the end-to-end procedure (or describe exactly what you checked) and record what you observed.
 
-If `specs/<KEY>/spec.md` exists, bring its Contract table in line. Set a row to PASS only when it has a quoted output line or recorded observation, and fill its Evidence column. Change only the Status and Evidence columns, and keep every criterion's row: dropping a row would quietly redefine the feature.
+If `specs/<KEY>/spec.md` exists, bring its Contract table in line. Set a row to PASS only when it has a quoted output line or recorded observation, and fill its Evidence column. Change only the Status and Evidence columns, and keep every criterion's row: dropping a row would quietly redefine the feature. Every quoted line must appear in the `evidence.md` committed with it, so redo this step after any later `kai verify` run: quotes from an earlier run are the stale evidence reviewers send back.
 
 ## 3. Report
 
