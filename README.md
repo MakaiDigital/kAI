@@ -19,18 +19,6 @@ ticket ──▶ /kai:spec ──▶ /kai:implement ──▶ merge + deploy ─
 
 The ticket is the intent; there is no separate intent document. `/kai:spec` reads it and either writes a spec (and an ADR when the change needs a decision) for a Definition PR, or says why the ticket is simple enough to skip it. `/kai:implement` asks for approval once, at the plan, then carries the work to a reviewed, green PR. After a person merges it and it is deployed, `/kai:accept` verifies it in integration, tries to break it, and finishes with a cleanup PR that removes the ticket's working documents. Only ADRs remain as documentation; the rest is read from the code.
 
-## Upgrading from 0.5
-
-| Before | Now |
-|---|---|
-| `/kai:intent`, `/kai:spec` | `/kai:spec <KEY or ticket URL>` |
-| `/kai:build`, `/kai:ship` | `/kai:implement` |
-| `/kai:accept` (a person judged the run) | `/kai:accept` (verifies, QA, fixes, then opens the cleanup PR) |
-| `docs/retros/<date>.md` | the retro report lives in the PR description |
-| `kai-product:intent` | `kai-product:spec` |
-
-Re-run `/kai:setup` to refresh the `CLAUDE.md` block (`kai init` writes `*.kai-new` next to a file that differs). Specs already merged with an `intent.md` keep working: the `definition` gate now needs only `spec.md`.
-
 ## Commands
 
 | Command | What it does | Output |
