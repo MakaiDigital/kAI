@@ -35,6 +35,8 @@ Good criteria:
 - **Put a number on quality words.** "Fast" or "reliable" means nothing until you say how fast or how reliable.
 - **Can be proved.** If no test, end-to-end step, or measurement could prove it, it is a wish. Rewrite it, or move it to the intent's open questions.
 - **Use synthetic data.** Never include real personal data, credentials, or production records.
+- **Rest on facts you have looked at.** When a criterion states something outside the repository's code (a live page or element, a third-party script or library, a quota, a model's output), probe it read-only (curl, a headless browser, the library's source) and quote the output in the spec. If you cannot probe it, make it an open question instead of asserting it. Show the arithmetic behind any number, and when a check could only ever come out one way, add a positive control that proves it can see the thing.
+- **Measure model behavior, don't specify its mechanism.** For something an AI model decides, write an evaluation set first: at least 20 questions, a held-out part of at least 10 written after any tuning, a baseline score, and a threshold in the criterion. Run each question 3 times and state the spread. One answer is never the target.
 
 Propose the criteria to the person, ask about whatever the intent leaves open (AskUserQuestion when available), and revise. An agent proposing and humans editing finds more gaps than either working alone.
 

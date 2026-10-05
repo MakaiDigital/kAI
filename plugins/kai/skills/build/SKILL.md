@@ -38,8 +38,12 @@ Once it is approved, save it to `specs/<KEY>/plan.md` with Status: Approved and 
 Follow `superpowers:test-driven-development`.
 
 - Write the planned tests and run them. Each should fail because the behavior is missing, not because of a typo or an import error; a test that fails for the wrong reason proves nothing.
+- Lint the new tests with the repository's linter, so a rejected name or unused variable is not found after the lock.
+- Search the existing tests for constants and sentences the change will alter (limits, fixed messages, call counts, exact instruction text) and update them in this same commit.
+- When writing a file from a shell heredoc, quote the delimiter (`<<'EOF'`). An unquoted one expands `${...}` and can silently empty a test's assertions so it can never fail.
+- If a test mirrors an implementation helper (a tokenizer, a regex), name the helper in the test's title.
 - Commit them alone as `<KEY>: failing tests`.
-- From here on, the tests define the feature. Do not change or delete them to get green. If one is genuinely wrong, stop and explain why to the person, because changing it changes what "done" means. At `KAI_LEVEL` 3 a hook blocks edits to these files and the `tests-locked` CI gate fails if they change, unless a reviewer approves with the `kai:tests-changed` label.
+- From here on, the tests define the feature. Do not change or delete them to get green. If one is genuinely wrong, stop and explain why to the person, because changing it changes what "done" means. The hook only sees Edit and Write, so fixing it with `sed` or a script skips the question, not the rule. Put the correction and its derivation in the PR, commit it alone, and ask for the label. At `KAI_LEVEL` 3 a hook blocks edits to these files and the `tests-locked` CI gate fails if they change, unless a reviewer approves with the `kai:tests-changed` label.
 
 ## 3. Implement the minimum
 
