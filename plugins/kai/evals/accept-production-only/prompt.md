@@ -1,0 +1,1 @@
+PAY-103 is merged and live at https://shop.example.test, which is the production site. We don't have an integration environment for this service. Can you run the acceptance check so Priya can sign off?

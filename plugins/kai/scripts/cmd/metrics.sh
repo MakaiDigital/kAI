@@ -5,25 +5,30 @@ weeks=12
 ref=
 while [ $# -gt 0 ]; do
   case $1 in
-    --weeks) weeks=${2:?--weeks needs a number}; shift 2 ;;
+    --weeks)
+      weeks=${2-}
+      case $weeks in '' | *[!0-9]*) kai_die "--weeks needs a whole number, for example --weeks 4" ;; esac
+      shift 2
+      ;;
     --base) ref=${2:?--base needs a ref}; shift 2 ;;
     *) kai_die "usage: kai metrics [--weeks N] [--base REF]" ;;
   esac
 done
 [ -n "$ref" ] || ref=$(kai_base_ref)
+git rev-parse -q --verify "$ref^{commit}" >/dev/null || kai_die "unknown ref '$ref'"
 cd "$KAI_REPO_ROOT" || exit 1
 
 now=${KAI_NOW:-$(date +%s)}
-added() { git log "$ref" --diff-filter=A --format=%ct -- "$1" | tail -n 1; }
+added() { git log --first-parent -m "$ref" --diff-filter=A --format=%ct -- "$1" | tail -n 1; }
 
-tickets=$(git log "$ref" --diff-filter=A --name-only --format= -- ':(top)specs/*/evidence.md' | sed 's#/evidence.md$##' | sort -u | while IFS= read -r dir; do
+tickets=$(git log --first-parent -m "$ref" --diff-filter=A --name-only --format= -- ':(top)specs/*/evidence.md' | sed 's#/evidence.md$##' | sort -u | while IFS= read -r dir; do
   done_at=$(added "$dir/evidence.md")
   [ -n "$done_at" ] || continue
   plan=$(added "$dir/plan.md")
   start=$(printf '%s\n%s\n' "$(added "$dir/spec.md")" "$plan" | grep . | sort -n | head -n 1)
   spec_after_plan=0
-  [ -z "$plan" ] || spec_after_plan=$(git log "$ref" --diff-filter=AM --format=%ct -- "$dir/spec.md" | awk -v p="$plan" '$1 > p' | wc -l)
-  after_done=$(git log "$ref" --diff-filter=AM --format=%ct -- "$dir" | awk -v d="$done_at" '$1 > d' | wc -l)
+  [ -z "$plan" ] || spec_after_plan=$(git log --first-parent -m "$ref" --diff-filter=AM --format=%ct -- "$dir/spec.md" | awk -v p="$plan" '$1 > p' | wc -l)
+  after_done=$(git log --first-parent -m "$ref" --diff-filter=AM --format=%ct -- "$dir/spec.md" "$dir/plan.md" "$dir/evidence.md" | awk -v d="$done_at" '$1 > d' | wc -l)
   week=$(((now - done_at) / 604800))
   [ "$week" -lt "$weeks" ] || continue
   reworked=0
@@ -68,4 +73,4 @@ printf '%s\n' "$tickets" | awk -v weeks="$weeks" '
   esac
 done
 
-printf '\nLead time runs from the first of `spec.md` and `plan.md` to `evidence.md` landing on the base branch. A ticket counts as reworked when its spec changed after the plan, or its specs changed again after the evidence landed (deleting them at acceptance does not count). ▲ marks a week whose median lead time is more than two standard deviations above the mean for the period.\n'
+printf '\nLead time runs from the first of `spec.md` and `plan.md` landing on the base branch to `evidence.md` landing there. A ticket counts as reworked when its spec changed after its plan landed, or its spec, plan or evidence changed again after the evidence landed (deleting them at acceptance does not count). ▲ marks a week whose median lead time is more than two standard deviations above the mean for the period.\n'

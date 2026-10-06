@@ -10,7 +10,7 @@ elif [ -n "$key" ]; then
 else
   case $KAI_TICKET_PROVIDER in
     github) example='a 42-short-description branch, or "#42" in the PR title' ;;
-    *) example="$(printf '%s' "${KAI_TICKET_PREFIXES:-PROJ}" | awk '{print $1}')-123 in the branch name or PR title" ;;
+    *) example="$(printf '%s' "${KAI_TICKET_PREFIXES:-PROJ}" | tr ',\n' '  ' | awk '{print $1}')-123 in the branch name or PR title" ;;
   esac
   printf 'ticket-ref: no %s ticket key in branch "%s" or title "%s".\nExpected: %s.\n' \
     "$KAI_TICKET_PROVIDER" "$branch" "$title" "$example" >&2

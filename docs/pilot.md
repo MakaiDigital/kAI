@@ -4,10 +4,10 @@ How to install Kai in a real repository to try it, measure it, and send back fee
 
 ## 1. Before you start
 
-- **Tools.** You need Claude Code, `git`, and `jq`, and read access to `MakaiDigital/kAI` on GitHub while it is private.
+- **Tools.** You need Claude Code, `git`, `jq`, an authenticated `gh` (`gh auth login`, then `gh auth setup-git` so the private marketplace clones without a prompt), and read access to `MakaiDigital/kAI` on GitHub while it is private.
 - **The pilot repository.** Pick one that has a working test command and a few upcoming tickets. Small to medium changes are ideal.
 - **Approval.** Kai builds on Superpowers, a community plugin, and its spec skill can read Jira or Linear through connectors. Check with your security team that both are approved before they touch company code.
-- **A pilot branch.** Work on a separate branch in the pilot repository, for example `kai-pilot`, so nothing Kai-specific reaches its main branch until you decide to keep it.
+- **No pilot branch.** Don't create one: setup commits on a `kai-setup` branch, which needs no ticket key, and its pull request is what keeps Kai off the main branch until you merge it.
 
 ## 2. Record a baseline
 
@@ -30,7 +30,6 @@ This also installs Superpowers and feature-dev, which Kai builds on. Check with 
 
 ```sh
 cd ~/path/to/pilot-repo
-git switch -c kai-pilot
 claude
 ```
 
@@ -40,24 +39,24 @@ Then, in Claude Code:
 /kai:setup 1
 ```
 
-Claude detects your ticket system, project prefixes, and test commands from the repository and asks you to confirm them. It previews the changes with `kai init --dry-run` and then writes them. It also proposes which paths in `.kai/tiers` are high risk (authentication, payments, migrations, public APIs), and commits everything on the pilot branch as `Set up Kai (level 1)`.
+Claude detects your ticket system, project prefixes, and test commands from the repository and asks you to confirm them. It previews the changes with `kai init --dry-run` and then writes them. It also proposes which paths in `.kai/tiers` are high risk (authentication, payments, migrations, public APIs), and commits everything on a `kai-setup` branch as `Set up Kai (level 1)`. Open a pull request from it.
 
-- **What it writes:** `.kai/config`, `.kai/tiers`, `.kai/constraints.md`, a block in `CLAUDE.md`, the marketplace and plugin entries in `.claude/settings.json`, and the CI workflow. Teammates who open the repository are prompted to install Kai.
+- **What it writes:** `.kai/config`, `.kai/tiers`, `.kai/constraints.md`, a block in `CLAUDE.md`, the marketplace and plugin entries and Kai's permission rules in `.claude/settings.json`, and the CI workflow. Teammates who open the repository are prompted to install Kai.
 - **CI while `MakaiDigital/kAI` is private:** the `kai` workflow uses its `kai-gates` action, which works because the repository allows access from the organization's repositories. The `kai review` workflow needs nothing from `kAI`: it runs the review agents setup copies into `.claude/agents/`.
 - **Checking it works:** ask Claude "what's the next Kai step?". At the start of every session Kai tells Claude which ticket the branch is for and what comes next, so a sensible answer shows the hooks are running.
 
 ## 5. Run real tickets, one level at a time
 
-Follow [using-kai.md](using-kai.md) for each ticket, and raise the level once the previous one feels routine.
+Follow [using-kai.md](using-kai.md) for each ticket, and raise the level once the previous one feels routine. Approve each plan with "Yes, and use auto mode", so Claude carries the ticket to a pull request without stopping to ask.
 
 | Week | Level | Try |
 |---|---|---|
 | 1 | 1 | `/kai:spec`, `/kai:implement` on two or three tickets |
 | 2 | 2 | `/kai:spec` for medium-risk tickets, the two-PR flow, tuning `.kai/tiers` |
-| 3 | 3 | Locked tests, the `contract` check, local review in `/kai:implement` (the CI review needs hosting, see below) |
+| 3 | 3 | Locked tests, the `contract` check, local gates in `/kai:implement` |
 | 4 | 4 | `/kai:accept` after a deploy (verify, QA, cleanup PR), `/kai:retro` for a sprint view, `kai metrics` |
 
-To change level, run `/kai:setup <level>` again, or edit `KAI_LEVEL` in `.kai/config`.
+To change level, run `/kai:setup <level>` again: it sets `KAI_LEVEL` in `.kai/config` and adds the files the level needs. CI judges each PR by the base branch's `.kai/config`, so the new level applies once that change is merged.
 
 ## 6. Capture feedback
 
@@ -89,17 +88,11 @@ The pasted transcript or file is what makes feedback actionable. "It planned bad
 
 - Open a Claude Code session in this repository and share the notes, by pasting them or pointing at the file. Each problem becomes a fix to a skill, hook, or check, plus an eval case in `plugins/kai/evals/` so it stays fixed.
 - After a few tickets have merged in the pilot, run `kai metrics` and `/kai:retro` there for the data-driven view, and share those too.
-- **Picking up fixes.** When a new version is released, run `claude plugin update kai@makaidigital` (or `/plugin`) and start a new session. Then run `/kai:setup` again to pick up changes to the repository files; anything that differs lands in `*.kai-new` for you to merge.
+- **Picking up fixes.** When a new version is released, run `claude plugin update kai@makaidigital` (or `/plugin`) and start a new session. Then run `/kai:setup` again to pick up changes to the repository files: a workflow that differs only in Kai's version is updated in place, and anything else that differs lands in `*.kai-new` for you to merge.
 
 ## Removing Kai
 
-Delete these from the pilot repository, or simply drop the pilot branch:
-- `.kai/`
-- the kai block in `CLAUDE.md`
-- the `makaidigital` and `kai@makaidigital` entries in `.claude/settings.json`
-- `.claude/agents/contract-reviewer.md` and `spec-critic.md`
-- `.github/workflows/kai*.yml`
-- `REVIEW.md`
+If the setup pull request was never merged, close it and delete the `kai-setup` branch. Otherwise, delete what setup added, using the uninstall list in the [README](../README.md#install-into-a-repository).
 
 ## Testing unreleased changes from a clone
 
@@ -110,9 +103,9 @@ claude plugin marketplace add ~/Development/Makai/kai
 claude plugin install kai@makaidigital
 ```
 
-Run `/kai:setup`, and ask it to use `--marketplace ~/Development/Makai/kai`. The resulting `.claude/settings.json` contains your local path, so keep that on the pilot branch only.
+Run `/kai:setup`, and ask it to use `--marketplace ~/Development/Makai/kai`. The resulting `.claude/settings.json` contains your local path, so don't merge it to the main branch.
 
 ## Moving past the pilot
 
-- Make the `kai-gates` action accessible to the organization's repositories, or make `MakaiDigital/kAI` public, so the CI checks run.
+- Move to a paid GitHub plan, and add a ruleset on the main branch that requires a pull request, an approval, and the `kai` check. Until then, only Kai's permission rules stand in the way of a push to the main branch.
 - For the level 3 AI review, add a Claude credential as a repository secret, pointed at an endpoint your security team has approved.

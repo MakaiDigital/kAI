@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: implement-stops-for-plan-approval
-description: Build presents a plan with named tests and stops for approval before touching code or tests.
+description: Implement presents a plan with named tests and stops for approval before touching code or tests.
 tags: [kai]
 context:
   scaffold_script: scaffold.sh

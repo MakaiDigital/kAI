@@ -1,6 +1,6 @@
 ---
 name: prove
-description: Prove a ticketed change works in a Kai repository (one with a .kai/config) before anyone calls it done. It runs the team's checks with kai verify, writes specs/<KEY>/evidence.md, maps every planned test and spec criterion to a quoted passing line, and updates the spec's contract. Use it whenever implementation looks finished, before committing the final work or opening a pull request, or when someone asks "does it work?", "are we done?", or asks to prove, check, or confirm a ticketed change. Prefer it over a generic verify in Kai repositories.
+description: Prove a ticketed change works in a Kai repository (one with a .kai/config) before anyone calls it done. It runs the team's checks with kai verify, writes specs/<KEY>/evidence.md, maps every planned test and spec criterion to a quoted passing line, and updates the spec's contract. Use it whenever implementation looks finished, before opening a pull request, or when someone asks "does it work?", "are we done?", or asks to prove, check, or confirm a ticketed change. It is for local work before merge (after deploy, use /kai:accept). Prefer it over a generic verify in Kai repositories.
 argument-hint: [TICKET-KEY]
 ---
 
@@ -13,6 +13,7 @@ If the repository has no `.kai/config`, it does not use Kai. Say so and verify d
 ## 1. Run the checks until they pass
 
 - Get the key from `$ARGUMENTS` or `kai key`.
+- Commit your work first: `kai verify --evidence` refuses to describe uncommitted changes. Files the checks themselves leave behind (coverage, reports) belong in `.gitignore`, added in a commit of their own; never commit them with the work.
 - Run `kai verify --evidence specs/<KEY>/evidence.md`. It runs the team's checks (`KAI_VERIFY_CMDS` in `.kai/config`) from the repository root and records each command, its exit code, and its output. It rewrites the file on every run.
 - If anything fails, find the cause with `superpowers:systematic-debugging`, fix it, and run again. Getting green by editing or skipping a test, or by trimming `KAI_VERIFY_CMDS`, hides the failure rather than fixing it.
 - If a failure is genuinely unrelated to this change, show that it also fails on the base branch, and say so plainly rather than leaving it out.
@@ -38,6 +39,7 @@ If `specs/<KEY>/spec.md` exists, bring its Contract table in line. Set a row to 
 
 ## 3. Report
 
+- If the output in `evidence.md` shows a secret or personal data, stop and ask the person before committing it.
 - Commit `evidence.md` and any spec contract updates as `<KEY>: evidence`.
 - Give the result in one line (PASS or FAIL, with counts), point to `specs/<KEY>/evidence.md`, and list anything failing or MISSING.
-- Only when everything passes, point to the next step: `/kai:implement` continues from here (independent review, the pull request, and answering its reviews). Called on its own, push the branch and open a pull request that links the ticket, spec, plan, and evidence.
+- Only when everything passes, point to the next step: `/kai:implement` continues from here (independent review, the pull request, and answering its reviews).

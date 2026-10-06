@@ -1,6 +1,6 @@
 # Review guidelines
 
-Read by the `contract-reviewer` agent locally (`/kai:implement`) and in CI. Owned by the tech lead; tune it when reviews get noisy or miss things.
+Read by the `contract-reviewer` agent locally (`/kai:implement`) and in CI. In CI the review reads this file, `CLAUDE.md` and the review agents from the base branch, so a PR's changes to them apply from the next PR. Owned by the tech lead; tune it when reviews get noisy or miss things.
 
 ## What to review
 

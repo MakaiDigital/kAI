@@ -12,9 +12,9 @@ adr: <docs/adr/NNNN-title.md, or none>
 
 ## Review here
 
-What a person must judge before approving. Everything else follows from the ticket. Each item names its criterion and carries a `⚠ review` marker where it appears below.
+<!-- What a person must judge before approving: assumptions, chosen numbers, added criteria, security or data implications, open questions, and ADR decisions. Everything else follows from the ticket. Each item names its criterion (or its section, when no criterion covers it) and who decides, and carries a `⚠ review` marker where it appears below. Before the Definition PR merges, the reviewers resolve each item (keep or change it, and note who decided) and remove its marker. -->
 
-- ⚠ <An assumption the ticket did not confirm, a number chosen without a source, a criterion added for an unhappy path, a security or data implication, or a decision recorded in an ADR.>
+- ⚠ <item> (C<n> or the section; decides: <who>)
 
 ## Context
 
@@ -23,11 +23,10 @@ What a person must judge before approving. Everything else follows from the tick
 - **Success metric:** <Target, how it is measured, and when it is evaluated. Or "none stated in the ticket".>
 - **Constraints:** <Deadlines, compliance, performance, compatibility.>
 - **Out of scope:** <What this change will not do.>
-- **Open questions:** <Each with an owner, or "None".>
 
 ## Criteria
 
-One sentence, one behavior, one observable result each. Every criterion must be provable by a test, the end-to-end check, or a measurement.
+One sentence, one behavior, one observable result each. Every criterion must be provable before merge, by a test, a local end-to-end run, or CI output.
 
 - **C1** When <trigger>, the system shall <observable response>.
 - **C2** If <unwanted condition>, then the system shall <observable response>.
@@ -38,7 +37,7 @@ One sentence, one behavior, one observable result each. Every criterion must be 
 
 ## End-to-end verification
 
-<A runnable procedure a person can follow to watch the feature work: a curl sequence, a UI walkthrough, a contract test.>
+<A runnable procedure a person can follow to watch the feature work: a curl sequence, a UI walkthrough, a contract test. Checks only the deployed system can show go here too, as steps for `/kai:accept`.>
 
 ## Security
 

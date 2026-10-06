@@ -45,7 +45,7 @@ definition() { "$KAI" gate definition --base main "$@"; }
   git add -A && git commit -qm "spec and code together"
   run definition
   [ "$status" -eq 1 ]
-  [[ "$output" == *"PAY-1 is a medium-tier change"* ]]
+  [[ "$output" == *"PAY-1 is a medium-tier change"* ]] || false
   [[ "$output" == *"its spec is not approved yet"* ]]
 }
 
@@ -76,22 +76,26 @@ definition() { "$KAI" gate definition --base main "$@"; }
   [[ "$output" == *"exempt"* ]]
 }
 
-@test "a cleanup branch that deletes the ticket's spec is exempt" {
+@test "a cleanup branch that deletes the spec and adds only Markdown passes as low tier" {
   write_definition
   echo e >specs/PAY-1/evidence.md
   git add -A && git commit -qm "PAY-1: done"
+  git switch -qc PAY-1-cleanup
+  git rm -rq specs/PAY-1 && git commit -qm "PAY-1: cleanup"
+  echo "- A lesson." >>README.md && git commit -qam "PAY-1: retro"
+  run definition
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"low tier"* ]]
+}
+
+@test "a cleanup-named branch is not exempt" {
+  write_definition
+  git add -A && git commit -qm "PAY-1: definition"
   git switch -qc PAY-1-cleanup
   git rm -rq specs/PAY-1
   echo x >app.js
   git add -A && git commit -qm "PAY-1: cleanup"
   run definition
   [ "$status" -eq 0 ]
-  [[ "$output" == *"exempt"* ]]
-}
-
-@test "a cleanup-named branch that deletes nothing is not exempt" {
-  git switch -qc PAY-1-cleanup
-  echo x >app.js
-  run definition
-  [ "$status" -eq 1 ]
+  [[ "$output" == *"PAY-1 (medium tier) has an approved spec"* ]]
 }

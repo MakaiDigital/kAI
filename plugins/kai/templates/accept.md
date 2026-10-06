@@ -1,5 +1,7 @@
 # Acceptance: {{KEY}} <title>
 
+<!-- A working file: never commit it. Its summary goes in the cleanup PR's description. -->
+
 - **Environment:** <integration environment and the commit it runs>
 - **Run:** <date>, cycle <n>
 - **Verdict:** Pending <!-- Pass | Fail -->

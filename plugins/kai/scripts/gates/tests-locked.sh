@@ -20,16 +20,22 @@ if [ "$tier" = low ]; then
 fi
 [ -n "$key" ] || kai_die "tests-locked: no ticket key in branch or title (see the ticket-ref gate)"
 
-locked=$(kai_locked_commit "$key")
-if [ -z "$locked" ]; then
-  printf 'tests-locked: %s is a %s-tier change without a "%s: failing tests" commit.\nCommit the planned tests on their own, before the implementation (/kai:implement does this).\n' "$key" "$tier" "$key" >&2
+if [ -z "$(for c in $(kai_lock_commits "$key" "$base..HEAD"); do kai_lock_files "$c"; done)" ]; then
+  printf 'tests-locked: %s is a %s-tier change without a "%s: failing tests" commit in this PR.\nCommit the planned tests on their own, before the implementation (/kai:implement does this).\n' "$key" "$tier" "$key" >&2
   exit 1
 fi
-changed=$(kai_locked_files "$locked" | while IFS= read -r f; do
-  git diff --quiet "$locked" HEAD -- "$f" 2>/dev/null || printf '  %s\n' "$f"
+git log -1 --remerge-diff --format= >/dev/null 2>&1 ||
+  kai_die "tests-locked: needs git 2.36 or newer to see what a merge commit changed"
+changed=$(for c in $(kai_lock_commits "$key"); do
+  kai_lock_files "$c" | sed "s/^/$c /"
+done | awk '!seen[substr($0, index($0, " ") + 1)]++' | while IFS= read -r line; do
+  c=${line%% *} f=${line#* }
+  [ -z "$(git log -n1 --no-merges --full-history --format=%H "$c..HEAD" --not "$base" -- ":(literal)$f")" ] &&
+    [ -z "$(git log --merges --full-history --remerge-diff --format= "$c..HEAD" --not "$base" -- ":(literal)$f")" ] ||
+    printf '  %s\n' "$f"
 done)
 if [ -z "$changed" ]; then
-  printf 'tests-locked: tests from %s unchanged since %s\n' "$key" "$(git rev-parse --short "$locked")"
+  printf 'tests-locked: tests locked for %s are unchanged\n' "$key"
   exit 0
 fi
 case " $labels " in

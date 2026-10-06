@@ -3,7 +3,7 @@
 kai_require_config
 report=/dev/null
 case ${1-} in
-  --evidence) report=${2:?--evidence needs a file}; mkdir -p "$(dirname -- "$report")" ;;
+  --evidence) report=${2:?--evidence needs a file} ;;
   '') ;;
   *) kai_die "usage: kai verify [--evidence FILE]" ;;
 esac
@@ -16,9 +16,15 @@ fi
 state=$(kai_state_dir)
 fingerprint=${KAI_FINGERPRINT:-$(kai_fingerprint)}
 cd "$KAI_REPO_ROOT" || exit 1
+if [ "$report" != /dev/null ]; then
+  [ -z "$(git status --porcelain -- ':(top)' ':(exclude,top)specs')" ] ||
+    kai_die "commit your changes first: evidence must describe a commit, and these files differ from it:
+$(git status --short -- ':(top)' ':(exclude,top)specs')"
+  mkdir -p "$(dirname -- "$report")"
+fi
 
 printf '# Evidence\n\nkai verify on commit %s at %s.\n' \
-  "$(git rev-parse --short HEAD 2>/dev/null || echo none)" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >"$report"
+  "$(git rev-parse HEAD 2>/dev/null || echo none)" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >"$report"
 failed=0
 while IFS= read -r c; do
   [ -n "$c" ] || continue
@@ -30,7 +36,7 @@ while IFS= read -r c; do
     printf 'FAIL  %s (exit %s)\n' "$c" "$rc"
     printf '%s\n' "$out" | tail -n 40 | sed 's/^/      /'
   fi
-  printf '\n## %s: %s (exit %s)\n\n~~~text\n%s\n~~~\n' "$result" "$c" "$rc" "$(printf '%s\n' "$out" | tail -n 200)" >>"$report"
+  printf '\n## %s: %s (exit %s)\n\n~~~text\n%s\n~~~\n' "$result" "$c" "$rc" "$out" >>"$report"
 done <<EOF
 $KAI_VERIFY_CMDS
 EOF

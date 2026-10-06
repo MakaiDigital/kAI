@@ -4,6 +4,7 @@ TEMPLATE="$KAI_ROOT/template"
 VERSION=$(jq -r .version "$KAI_ROOT/.claude-plugin/plugin.json")
 BEGIN_MARK='<!-- kai:begin (managed by the kai installer; edit outside this block) -->'
 END_MARK='<!-- kai:end -->'
+UNPIN='s/kai-gates@[^[:space:]]*/kai-gates@/'
 
 init_usage() {
   cat <<'EOF'
@@ -11,7 +12,7 @@ usage: kai init [options]
 
   --target DIR          repository to install into (default: current directory)
   --level N             1 (implement, prove), 2 (adds specs and tiers), 3 (adds locked
-                        tests, contract gate, local review, and CI review), or 4 (adds
+                        tests, contract gate, local gates, and CI review), or 4 (adds
                         /kai:accept, /kai:retro, and weekly metrics); default 1
   --provider NAME       jira | linear | github (default: jira)
   --prefixes "A B"      Jira/Linear project keys allowed in branch names
@@ -27,6 +28,7 @@ EOF
 
 die() { printf 'kai init: %s\n' "$*" >&2; exit 1; }
 say() { printf '%s\n' "$*"; }
+quote() { printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"; }
 
 target=.
 level=1
@@ -59,12 +61,18 @@ done
 command -v jq >/dev/null || die "jq is required"
 case $provider in jira | linear | github) ;; *) die "--provider must be jira, linear or github" ;; esac
 case $level in 1 | 2 | 3 | 4) ;; *) die "--level must be 1, 2, 3 or 4" ;; esac
-target=$(CDPATH='' cd -- "$target" && pwd) || die "no such directory: $target"
-git -C "$target" rev-parse --git-dir >/dev/null 2>&1 || die "$target is not a git repository"
+top=$(git -C "$target" rev-parse --show-toplevel 2>/dev/null) || die "$target is not a git repository"
+target=$top
+base=$(git -C "$target" symbolic-ref --quiet refs/remotes/origin/HEAD 2>/dev/null) || base=main
+base=${base#refs/remotes/origin/}
+if [ -f "$target/.kai/config" ]; then
+  configured=$(unset KAI_BASE_BRANCH; . "$target/.kai/config" >/dev/null 2>&1 && printf '%s' "${KAI_BASE_BRANCH-}") || configured=
+  [ -z "$configured" ] || base=$configured
+fi
 
 if [ -d "$marketplace" ]; then
   source_json=$(jq -cn --arg p "$(CDPATH='' cd -- "$marketplace" && pwd)" '{source: "directory", path: $p}')
-  action_repo=OWNER/REPO
+  action_repo=MakaiDigital/kAI
 else
   source_json=$(jq -cn --arg r "$marketplace" --arg ref "$ref" '{source: "github", repo: $r, ref: $ref}')
   action_repo=$marketplace
@@ -72,6 +80,21 @@ fi
 
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
+
+settings="$target/.claude/settings.json"
+current='{}'
+[ ! -f "$settings" ] || current=$(cat "$settings")
+printf '%s' "$current" | jq -e 'type == "object"' >/dev/null 2>&1 || die ".claude/settings.json is not a JSON object"
+printf '%s' "$current" | jq --argjson src "$source_json" --arg base "$base" '
+  ["Bash(gh pr merge *)", "Bash(gh api *pulls/*/merge*)", "Bash(gh pr edit *kai:tests-changed*)", "Bash(gh issue edit *kai:tests-changed*)"] as $deny
+  | ["Bash(git push * \($base))", "Bash(git push * \($base) *)", "Bash(git push *:\($base))", "Bash(git push *:refs/heads/\($base))"] as $ask
+  | .extraKnownMarketplaces.makaidigital = {source: $src}
+  | .enabledPlugins["kai@makaidigital"] = true
+  | .permissions.defaultMode //= "plan"
+  | .permissions.deny = ((.permissions.deny // []) as $d | $d + ($deny - $d))
+  | .permissions.ask = ((.permissions.ask // []) as $a | $a + ($ask - $a))
+  | .env.SUPERPOWERS_DISABLE_TELEMETRY //= "1"' >"$work/settings.json" ||
+  die "cannot add Kai's settings to .claude/settings.json"
 
 write() {
   if [ "$dry" -eq 1 ]; then
@@ -89,9 +112,10 @@ create() {
 }
 
 place() {
-  if [ ! -e "$target/$1" ]; then
-    write "$1" "$2"
-  elif ! cmp -s "$2" "$target/$1" && ! cmp -s "$2" "$target/$1.kai-new" 2>/dev/null; then
+  sed "$UNPIN" "$2" >"$work/unpinned"
+  if [ ! -e "$target/$1" ] || sed "$UNPIN" "$target/$1" | cmp -s - "$work/unpinned"; then
+    cmp -s "$2" "$target/$1" 2>/dev/null || write "$1" "$2"
+  elif ! cmp -s "$2" "$target/$1.kai-new" 2>/dev/null; then
     write "$1.kai-new" "$2"
     say "  $1 differs from this version; review $1.kai-new and merge by hand"
   fi
@@ -99,7 +123,7 @@ place() {
 
 if [ -n "$verify" ]; then
   :
-elif [ -f "$target/package.json" ] && jq -e '.scripts.test' "$target/package.json" >/dev/null 2>&1; then
+elif [ -f "$target/package.json" ] && jq -e '.scripts.test | type == "string" and (contains("no test specified") | not)' "$target/package.json" >/dev/null 2>&1; then
   verify="npm test"
 elif [ -f "$target/Makefile" ] && grep -q '^test:' "$target/Makefile"; then
   verify="make test"
@@ -112,6 +136,8 @@ elif [ -f "$target/pyproject.toml" ]; then
 fi
 [ -f "$target/.kai/config" ] || [ -n "$verify" ] || say "  no test command detected; set KAI_VERIFY_CMDS in .kai/config"
 
+base_line='# KAI_BASE_BRANCH=main'
+[ "$base" = main ] || base_line="KAI_BASE_BRANCH=$(quote "$base")"
 cat >"$work/config" <<EOF
 # Kai configuration, sourced by POSIX sh. Quote values that contain spaces.
 
@@ -123,12 +149,12 @@ KAI_TICKET_PROVIDER=$provider
 # Jira/Linear project keys allowed in branch names and PR titles, space-separated (empty = any KEY-123)
 KAI_TICKET_PREFIXES="$prefixes"
 
-# Commands that must pass before work is done, one per line, run from the repository root
-KAI_VERIFY_CMDS='$(printf '%s' "$verify" | sed "s/'/'\\\\''/g")'
+# Commands that must pass before work is done, one per line, run from the repository root with /bin/sh
+KAI_VERIFY_CMDS=$(quote "$verify")
 
 # Optional, shown with their defaults:
-# KAI_BASE_BRANCH=main
-# KAI_TICKET_EXEMPT="dependabot/* renovate/* kai-setup*"   # branches that need no ticket key
+$base_line
+# KAI_TICKET_EXEMPT="dependabot/* renovate/* kai-setup* kai-retro*"   # branches that need no ticket key; they skip every gate
 # KAI_PROD_DEPLOY_PATTERN=""                    # regex for production deploys; they then need KAI_RELEASE_APPROVAL
 EOF
 create .kai/config "$work/config"
@@ -139,6 +165,7 @@ if [ "$ci" -eq 1 ]; then
   sed -e "s#__ACTION_REPO__#$action_repo#g" -e "s#__ACTION_REF__#$ref#g" \
     "$TEMPLATE/.github/workflows/kai.yml" >"$work/kai.yml"
   place .github/workflows/kai.yml "$work/kai.yml"
+  [ ! -d "$marketplace" ] || say "  CI uses MakaiDigital/kAI's kai-gates action; change it if you host Kai elsewhere."
   if [ "$level" -ge 3 ]; then
     place .github/workflows/kai-review.yml "$TEMPLATE/.github/workflows/kai-review.yml"
   fi
@@ -155,28 +182,24 @@ if [ "$level" -ge 3 ]; then
 fi
 
 { printf '%s\n' "$BEGIN_MARK"; cat "$TEMPLATE/claude-block.md"; printf '%s\n' "$END_MARK"; } >"$work/block"
+claude=CLAUDE.md
 if [ ! -f "$target/CLAUDE.md" ]; then
   { printf '# %s\n\n## Commands\n\n## Conventions\n\n## Architecture\n\n## Things Claude gets wrong\n\n' "$(basename -- "$target")"
     cat "$work/block"; } >"$work/CLAUDE.md"
-elif grep -qF "$BEGIN_MARK" "$target/CLAUDE.md"; then
-  awk -v b="$BEGIN_MARK" -v e="$END_MARK" -v f="$work/block" '
-    $0 == b { while ((getline l < f) > 0) print l; skip = 1; next }
-    $0 == e { skip = 0; next }
-    !skip' "$target/CLAUDE.md" >"$work/CLAUDE.md"
 else
-  { cat "$target/CLAUDE.md"; printf '\n'; cat "$work/block"; } >"$work/CLAUDE.md"
+  awk -v b="$BEGIN_MARK" -v e="$END_MARK" -v f="$work/block" '
+    { l = $0; sub(/\r$/, "", l) }
+    l == b { if (!seen) while ((getline x < f) > 0) print x; seen = skip = 1; next }
+    skip && l == e { skip = 0; next }
+    !skip
+    END { if (!seen) { print ""; while ((getline x < f) > 0) print x } exit skip }' "$target/CLAUDE.md" >"$work/CLAUDE.md" ||
+    claude=CLAUDE.md.kai-new
 fi
-cmp -s "$work/CLAUDE.md" "$target/CLAUDE.md" 2>/dev/null || write CLAUDE.md "$work/CLAUDE.md"
+if ! cmp -s "$work/CLAUDE.md" "$target/$claude" 2>/dev/null; then
+  write "$claude" "$work/CLAUDE.md"
+  [ "$claude" = CLAUDE.md ] || say "  CLAUDE.md has a kai block without its end marker; review CLAUDE.md.kai-new and merge by hand"
+fi
 
-settings="$target/.claude/settings.json"
-current='{}'
-[ ! -f "$settings" ] || current=$(cat "$settings")
-printf '%s' "$current" | jq -e 'type == "object"' >/dev/null 2>&1 || die ".claude/settings.json is not a JSON object"
-printf '%s' "$current" | jq --argjson src "$source_json" '
-  .extraKnownMarketplaces.makaidigital = {source: $src}
-  | .enabledPlugins["kai@makaidigital"] = true
-  | .permissions.defaultMode //= "plan"
-  | .env.SUPERPOWERS_DISABLE_TELEMETRY //= "1"' >"$work/settings.json"
 [ "$(printf '%s' "$current" | jq -S .)" = "$(jq -S . "$work/settings.json")" ] ||
   write .claude/settings.json "$work/settings.json"
 

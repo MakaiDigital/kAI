@@ -12,22 +12,32 @@ runs:
       env:
         KAI_GATES: ${{ inputs.gates }}
         KAI_BIN: ${{ github.action_path }}/../../plugins/kai/bin/kai
-        EVENT_ACTION: ${{ github.event.action }}
         HEAD_REF: ${{ github.head_ref }}
         BASE_REF: ${{ github.base_ref }}
         PR_TITLE: ${{ github.event.pull_request.title }}
         PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
       run: |
         status=0
+        if [ -n "$BASE_REF" ]; then
+          git rev-parse -q --verify "origin/$BASE_REF^{commit}" >/dev/null ||
+            { echo "::error::origin/$BASE_REF not found; check out with fetch-depth: 0"; exit 1; }
+          if git cat-file -e "origin/$BASE_REF:.kai/config" 2>/dev/null; then
+            for f in .kai/config .kai/tiers; do
+              git checkout -q "origin/$BASE_REF" -- "$f" 2>/dev/null || rm -f "$f"
+            done
+          fi
+        fi
         for gate in $KAI_GATES; do
           echo "::group::$gate"
           case $gate in
-            metrics) "$KAI_BIN" metrics | tee -a "$GITHUB_STEP_SUMMARY" || status=1 ;;
-            verify)
-              case $EVENT_ACTION in
-                edited | labeled | unlabeled) echo "skipped: only the PR title, body, or labels changed" ;;
-                *) "$KAI_BIN" verify || status=1 ;;
-              esac ;;
+            metrics)
+              if out=$("$KAI_BIN" metrics); then
+                printf '%s\n' "$out" | tee -a "$GITHUB_STEP_SUMMARY" || status=1
+              else
+                printf '%s\n' "$out"
+                status=1
+              fi ;;
+            verify) "$KAI_BIN" verify || status=1 ;;
             *) "$KAI_BIN" gate "$gate" --base "origin/$BASE_REF" --branch "$HEAD_REF" --title "$PR_TITLE" --labels "$PR_LABELS" || status=1 ;;
           esac
           echo "::endgroup::"
