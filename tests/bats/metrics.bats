@@ -17,6 +17,11 @@ at() {
   GIT_COMMITTER_DATE="@$3" GIT_AUTHOR_DATE="@$3" git commit -qm "$1 $2"
 }
 
+merge() {
+  git switch -q main
+  GIT_COMMITTER_DATE="@$2" GIT_AUTHOR_DATE="@$2" git merge -q --no-ff -m "Merge $1" "$1"
+}
+
 @test "reports shipped tickets, lead time, and rework side by side" {
   at PAY-1 spec.md $((NOW - 20 * DAY))
   at PAY-1 plan.md $((NOW - 19 * DAY))
@@ -64,4 +69,27 @@ at() {
   [ "$status" -eq 0 ]
   [[ "$output" == *"**1 tickets shipped**"* ]]
   [[ "$output" == *"**0% reworked**"* ]]
+}
+
+@test "times are when files land on the base branch, so merged PRs whose evidence commit updates the spec are not rework" {
+  git switch -qc PAY-1-definition
+  at PAY-1 spec.md $((NOW - 12 * DAY))
+  merge PAY-1-definition $((NOW - 11 * DAY))
+  git switch -qc PAY-1-favorites
+  at PAY-1 plan.md $((NOW - 9 * DAY))
+  echo contract >>specs/PAY-1/spec.md
+  at PAY-1 evidence.md $((NOW - 7 * DAY))
+  merge PAY-1-favorites $((NOW - 4 * DAY))
+  run "$KAI" metrics --weeks 4 --base main
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"**1 tickets shipped**, median lead time **7.0 days**, **0% reworked**"* ]]
+}
+
+@test "rejects a --weeks that is not a whole number, and an unknown ref" {
+  run "$KAI" metrics --weeks abc
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"--weeks needs a whole number, for example --weeks 4"* ]]
+  run "$KAI" metrics --base nope
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"unknown ref 'nope'"* ]]
 }

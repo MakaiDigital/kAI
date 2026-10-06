@@ -5,8 +5,11 @@ specs/* low
 docs/* low
 *.md low
 
-# Examples of high-risk surfaces; adjust to this repository.
+# Examples of riskier surfaces; adjust to this repository.
 # src/auth/* high
 # src/payments/* high
 # migrations/* high
 # .github/workflows/* high
+# .claude/* high
+# CLAUDE.md medium
+# Ranking .claude/ or CLAUDE.md above low moves retro changes to them out of the cleanup PR, into a kai-retro-<date> PR.

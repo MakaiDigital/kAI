@@ -11,6 +11,6 @@ The minimal-code standard. It applies to every change, whoever or whatever write
 - Reuse what the codebase already has (HTTP client, logger, test helpers) instead of adding a second one.
 - Do not refactor outside the task. Note it for a separate ticket instead.
 - No comments that restate the code, no docstrings on trivial functions, no logging nobody asked for.
-- If a simpler approach than the plan's exists, propose it before implementing.
+- If you see a simpler approach than the plan's, propose it in the plan, or, when it appears later, update the plan and say so.
 - Before finishing, trace every added file, function, and dependency to the plan. Remove anything that does not trace.
 - **Exception for security-sensitive code** (authentication, authorization, payments, secrets, trust boundaries): fail closed and validate all inputs, even where the ticket is silent.

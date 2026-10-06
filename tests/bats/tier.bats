@@ -37,7 +37,7 @@ T
   git add -A && git commit -qm work
   run --separate-stderr "$KAI" tier --base main
   [ "$output" = high ]
-  [[ "$stderr" == *"high   src/auth/providers/jwt.js"* ]]
+  [[ "$stderr" == *"high   src/auth/providers/jwt.js"* ]] || false
   [[ "$stderr" == *"low    NOTES.md"* ]]
 }
 
@@ -52,4 +52,42 @@ T
   echo x >README.md
   run --separate-stderr "$KAI" tier --base PAY-1-work~1
   [ "$output" = medium ]
+}
+
+@test "a rename out of src/auth/ stays high" {
+  mkdir -p src/auth && echo x >src/auth/session.js
+  git add -A && git commit -qm "add session"
+  git mv src/auth/session.js src/session.js
+  run --separate-stderr "$KAI" tier --base PAY-1-work
+  [ "$output" = high ]
+  git commit -qm "move session"
+  run --separate-stderr "$KAI" tier --base PAY-1-work~1
+  [ "$output" = high ]
+}
+
+@test "a non-ASCII path under src/auth/ is high" {
+  mkdir -p src/auth && echo x >"src/auth/sesión.js"
+  run --separate-stderr "$KAI" tier --base main
+  [ "$output" = high ]
+  git add -A && git commit -qm "add session"
+  run --separate-stderr "$KAI" tier --base main
+  [ "$output" = high ]
+}
+
+@test "a path that git would quote under src/auth/ is high" {
+  mkdir -p src/auth && echo x >'src/auth/a"b.js'
+  run --separate-stderr "$KAI" tier --base main
+  [ "$output" = high ]
+  git add -A && git commit -qm "add a quoted name"
+  run --separate-stderr "$KAI" tier --base main
+  [ "$output" = high ]
+}
+
+@test "a base with no common history dies with the fetch-depth message" {
+  git switch -q --orphan unrelated
+  echo y >y.txt && git add y.txt && git commit -qm unrelated
+  git switch -q PAY-1-work
+  run "$KAI" tier --base unrelated
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"cannot diff against unrelated; in CI, check out with fetch-depth: 0"* ]]
 }

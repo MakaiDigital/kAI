@@ -45,6 +45,14 @@ COUNTING_VERIFY='echo run >>"$(git rev-parse --absolute-git-dir)/runs"'
   [ -z "$output" ]
 }
 
+@test "a resumed or compacted session still checks the edits made before it" {
+  start_session "exit 1"
+  echo change >>README.md
+  run_hook session-start >/dev/null
+  run run_hook stop
+  [ "$status" -eq 2 ]
+}
+
 @test "lets Claude finish when verification passes, and caches the result" {
   start_session "$COUNTING_VERIFY"
   echo change >>README.md
@@ -52,6 +60,19 @@ COUNTING_VERIFY='echo run >>"$(git rev-parse --absolute-git-dir)/runs"'
   [ "$status" -eq 0 ]
   run run_hook stop
   [ "$(runs)" -eq 1 ]
+}
+
+@test "without jq, each session starts from its own baseline" {
+  write_config jira PAY "exit 1"
+  commit_config
+  bin="$BATS_TEST_TMPDIR/bin"
+  mkdir -p "$bin"
+  for c in cat cp date dirname find git grep head mkdir mktemp rm sed sh tail tr; do ln -s "$(command -v "$c")" "$bin/$c"; done
+  env PATH="$bin" "$KAI" hook session-start </dev/null >/dev/null
+  echo change >>README.md
+  env PATH="$bin" "$KAI" hook session-start </dev/null >/dev/null
+  run env PATH="$bin" "$KAI" hook stop </dev/null
+  [ "$status" -eq 0 ]
 }
 
 @test "committing only spec artifacts does not trigger another run" {

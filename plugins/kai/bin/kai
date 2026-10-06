@@ -36,9 +36,10 @@ if [ "$cmd" = hook ]; then
     IFS= read -r hook_file || :
     hook_command=$(cat)
   } <<EOF
-$(jq -r '(.cwd // ""), (.session_id // "default"), (.tool_input.file_path // ""), (.tool_input.command // "")')
+$(jq -r '(.cwd // ""), (.session_id // "default"), (.tool_input.file_path // .tool_input.notebook_path // ""), (.tool_input.command // "")')
 EOF
   [ -z "$hook_cwd" ] || cd "$hook_cwd" 2>/dev/null || true
+  [ "$script" != hooks/guard-bash ] || kai_die_status=2
   kai_load_config || exit 0
 fi
 . "$KAI_ROOT/scripts/$script.sh"

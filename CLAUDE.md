@@ -6,6 +6,7 @@ The repository for Kai's Claude Code plugins (`plugins/kai`, `plugins/kai-produc
 
 ```sh
 shellcheck plugins/kai/bin/kai plugins/kai/scripts/*/*.sh
+shellcheck -s bash plugins/kai/evals/*/scaffold.sh plugins/kai/evals/_fixture/make_repo.sh
 bats tests/bats
 claude plugin validate . && claude plugin validate plugins/kai && claude plugin validate plugins/kai-product
 ```
@@ -18,9 +19,11 @@ claude plugin validate . && claude plugin validate plugins/kai && claude plugin 
 - In `bin/kai`, the hook preamble reads fields from a heredoc that drops trailing empty lines. Every `read` there needs `|| :`, or hooks die under `set -e` when a field is empty.
 - Plugin `dependencies` belong on the marketplace entry, never in `plugin.json`. Declared in the manifest, they stop the plugin loading anywhere they aren't installed, including `claude plugin eval` runs.
 - Superpowers is listed through a `git-subdir` source pointing at its `skills/` folder, with the chosen skills named on the entry. That is how we load a subset without its hooks; `strict: false` cannot do it.
-- `plugins/kai-product/templates/*` must stay byte-identical to `plugins/kai/templates/*` (a test checks). `kai-product` must have no `bin/`, hooks, or shell commands, or claude.ai and Cowork will not install it.
-- Bump `version` in a plugin's `plugin.json` whenever you change it. Installed users only receive a new version.
+- `plugins/kai-product/templates/*` must stay byte-identical to `plugins/kai/templates/*` (a test checks). A top-level `bin/` stops claude.ai and Cowork from installing `kai-product`, chat ignores hooks, and its skills can't run `kai`.
+- Bump `version` in a plugin's `plugin.json` whenever you change it (CI checks). Installed users only receive a new version. Merging to main tags `v<version>` (CI), and `kai init` pins repositories to that tag, so a version with no tag breaks every new install.
 - Skill evals (`claude plugin eval plugins/kai --scaffold --allow-tools Bash Write Edit --trust-plugin`) cost real model calls. On macOS the eval sandbox breaks Apple's git wrapper, so the cases that commit only pass on Linux.
 - `kai init` copies `plugins/kai/agents/*.md` into repositories (level 3) so the CI review needs no plugin install. Keep those agents self-contained: no `kai` commands or plugin paths.
-- `/kai:accept` deletes a ticket's `specs/<KEY>/`, so anything that reads specs from the base branch (`kai metrics`, gates, retros) must also work from git history or tolerate their absence. The gates exempt a `<KEY>-cleanup*` branch only when it deletes that ticket's `spec.md` or `evidence.md`.
-- Everything else that ends up in a user's repository lives in `plugins/kai/template/`. `kai init` never overwrites a file; it writes `*.kai-new` next to one that differs. Keep its `CLAUDE.md` block markers unchanged, or existing repositories get a second block.
+- Skills, templates and scripts share literal strings: the `<KEY>: failing tests` subject, `Result: **PASS**`, the `kai verify on commit <sha>` line, the plan's `## Tests` table, the `## Planned tests` and `## Contract` tables, the `<!-- kai-review -->` marker and the `Reviewed commit` line. Change both sides together.
+- CI judges a PR by the base branch's `.kai/config` and `.kai/tiers` (the action restores them), and the CI review reads `REVIEW.md`, `CLAUDE.md` and its agents from the base branch. Workflow files still run as the PR has them, so a PR can change its own checks until CODEOWNERS or a ruleset covers `.github/workflows/`.
+- `/kai:accept` deletes a ticket's `specs/<KEY>/`, so anything that reads specs from the base branch (`kai metrics`, gates, retros) must also work from git history or tolerate their absence. The cleanup PR passes the gates only because it changes nothing but Markdown; there is no exemption for it.
+- Everything else that ends up in a user's repository lives in `plugins/kai/template/`. `kai init` writes `*.kai-new` next to a file that differs, except a workflow that differs only in its `kai-gates@<ref>`, which it updates in place. Keep its `CLAUDE.md` block markers unchanged, or existing repositories get a second block.
