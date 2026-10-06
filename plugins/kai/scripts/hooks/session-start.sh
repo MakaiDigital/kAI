@@ -3,7 +3,9 @@
 command -v jq >/dev/null || printf '%s\n' "kai: jq is not installed, so Kai's Bash and Edit guards are off. Ask the person to install jq."
 state=$(kai_state_dir)
 find "$state" -name 'session-*' -mtime +7 -exec rm -f {} + 2>/dev/null || true
-[ -n "$session" ] && [ -f "$state/session-$session.start" ] || kai_fingerprint >"$state/session-$session.start"
+if [ -z "$session" ] || [ ! -f "$state/session-$session.start" ]; then
+  kai_fingerprint >"$state/session-$session.start"
+fi
 
 branch=$(kai_branch)
 if ! key=$(kai_key_from "$branch"); then
