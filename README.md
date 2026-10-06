@@ -108,45 +108,6 @@ kai gate tests-locked       CI gate (level 3): tests from the ticket's failing-t
 kai gate contract           CI gate (level 3): every criterion and planned test is PASS with evidence
 ```
 
-## Repository layout
-
-```
-.claude-plugin/marketplace.json   the makaidigital marketplace: kai plus pinned upstream plugins
-plugins/kai/                      the plugin: skills, hooks, templates, bin/kai, scripts
-plugins/kai-product/              Kai for Product: spec skill for claude.ai and Cowork
-actions/kai-gates/                composite GitHub Action used by the installed workflow
-plugins/kai/template/             files kai init writes into a repository
-tests/bats/                       tests for the CLI, hooks, gates, and kai init
-```
-
-## Development
-
-```sh
-brew install shellcheck bats-core    # or apt-get install shellcheck bats
-shellcheck plugins/kai/bin/kai plugins/kai/scripts/*/*.sh
-shellcheck -s bash plugins/kai/evals/*/scaffold.sh plugins/kai/evals/_fixture/make_repo.sh
-bats tests/bats
-claude plugin validate . && claude plugin validate plugins/kai && claude plugin validate plugins/kai-product
-```
-
-Bump a plugin's `version` in any pull request that changes it outside its `evals/`; CI checks, and counts `actions/kai-gates/` as part of `kai`. Merging to main tags `kai`'s `v<version>`, which `kai init` pins repositories to.
-
-Upstream plugins are pinned by commit in `.claude-plugin/marketplace.json`. Bump a pin in its own pull request so the change is reviewed on its own.
-
-### Skill evals
-
-`plugins/kai/evals/` holds one case per skill behavior, run by `claude plugin eval`. Each case builds a small fixture repository (`_fixture/make_repo.sh`), sends a realistic prompt, and grades the resulting files and git commands. Run them whenever a skill, template, or hook changes:
-
-```sh
-claude plugin eval plugins/kai --scaffold --allow-tools Bash Write Edit --trust-plugin
-```
-
-This makes real model calls with your credentials (by default 3 runs per case, plus the same again without the plugin for comparison). Add `--runs 1 --ablation none` for a quick check.
-
-Run the suite on Linux (a CI runner, WSL, or a container). On macOS the eval sandbox blocks Apple's `/usr/bin/git` wrapper, so every case that commits fails there.
-
-The plugin's dependencies (Superpowers, feature-dev) are declared on its marketplace entry rather than in `plugin.json`. Installing `kai@makaidigital` still pulls them in, but loading the plugin directly, as evals and `--plugin-dir` do, doesn't require them. Keep it that way, or the plugin won't load in evals.
-
 ## Levels
 
 Set `KAI_LEVEL` in `.kai/config` (or `--level` when installing). CI judges each PR by the base branch's `.kai/config` and `.kai/tiers`, so a change to either takes effect once it is merged.
@@ -176,6 +137,10 @@ gh pr list --state merged --base main --limit 500 \
 ```
 
 Measure a baseline before turning on levels 3 and 4, and keep reading speed and quality together: `kai metrics` shows lead time next to rework on purpose.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the repository layout, the checks, skill evals, and how to send a pull request.
 
 ## License
 
