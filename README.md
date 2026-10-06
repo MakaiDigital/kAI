@@ -37,7 +37,7 @@ The skills also trigger from plain requests such as "start PAY-123" or "let's im
 Guardrail hooks run in every session:
 
 - **Stop** runs `kai verify` and keeps Claude working until the configured checks pass (it gives up with a warning after a few attempts).
-- **PreToolUse (Bash)** blocks skipping git hooks (`--no-verify`, `git commit -n`, `core.hooksPath`, and the `HUSKY=0`, `LEFTHOOK=0` and pre-commit `SKIP=` switches, also inside `sh -c`, `eval` or a git alias) and production deploys without a named release approval.
+- **PreToolUse (Bash)** blocks skipping git hooks (`--no-verify`, `git commit -n`, `core.hooksPath`, the `HUSKY=0` and `LEFTHOOK=0` switches, and pre-commit's `SKIP=` on a git command, also inside `sh -c`, `eval` or a git alias) and production deploys without a named release approval.
 - **PreToolUse (Edit, Write, NotebookEdit)** at level 3 blocks edits to tests locked by the ticket's `<KEY>: failing tests` commits.
 - **SessionStart** tells Claude which ticket the branch is for and what the next step is.
 

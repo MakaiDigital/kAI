@@ -4,7 +4,7 @@ How to install Kai in a real repository to try it, measure it, and send back fee
 
 ## 1. Before you start
 
-- **Tools.** You need Claude Code, `git`, `jq`, an authenticated `gh` (`gh auth login`, then `gh auth setup-git` so the private marketplace clones without a prompt), and read access to `MakaiDigital/kAI` on GitHub while it is private.
+- **Tools.** You need Claude Code, `git` 2.36 or newer, `jq`, an authenticated `gh` (`gh auth login`, then `gh auth setup-git` so the private marketplace clones without a prompt), and read access to `MakaiDigital/kAI` on GitHub while it is private.
 - **The pilot repository.** Pick one that has a working test command and a few upcoming tickets. Small to medium changes are ideal.
 - **Approval.** Kai builds on Superpowers, a community plugin, and its spec skill can read Jira or Linear through connectors. Check with your security team that both are approved before they touch company code.
 - **No pilot branch.** Don't create one: setup commits on a `kai-setup` branch, which needs no ticket key, and its pull request is what keeps Kai off the main branch until you merge it.

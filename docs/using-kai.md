@@ -153,11 +153,15 @@ Claude works on a `kai-retro-<date>` branch, which needs no ticket key. It reads
 | You see | What it means | What to do |
 |---|---|---|
 | `kai: verification failed (attempt 1 of 3)` | The Stop hook ran your tests and they fail | Let Claude fix them. If a failure is unrelated to your change, Claude should say so with evidence |
-| `kai: blocked: … skip the repository's git hooks` | Claude tried `--no-verify`, `git commit -n`, or a switch such as `HUSKY=0`, `LEFTHOOK=0` or `SKIP=`, or changed `core.hooksPath` | Fix what the git hook reports instead |
+| `kai: blocked: … skip the repository's git hooks` | Claude tried `--no-verify`, `git commit -n`, a switch such as `HUSKY=0` or `LEFTHOOK=0`, pre-commit's `SKIP=` on a git command, or changed `core.hooksPath` | Fix what the git hook reports instead |
 | `kai: blocked: … was locked by the "PAY-123: failing tests" commit` | Claude tried to edit a locked test | If the test really is wrong, you make the change or tell Claude to, commit it alone as `PAY-123: correct <test name>`, and have a reviewer add `kai:tests-changed` |
 | `kai: blocked: production deploys need a named release manager` | A command matched `KAI_PROD_DEPLOY_PATTERN` | Get release approval, then restart the session with `KAI_RELEASE_APPROVAL=<name>` |
+| `kai: blocked: KAI_PROD_DEPLOY_PATTERN in .kai/config is not a valid regular expression` | The pattern doesn't parse, so every Bash command is blocked | Fix the pattern |
 | Claude Code asks you to allow a `git push` to the base branch | Kai's settings ask before a `git push` that names the base branch (a bare `git push` doesn't name it, so only GitHub's branch protection stops that one) | Decline it: changes reach the base branch through a pull request |
-| `kai: .kai/config is not valid sh` | `.kai/config` has a shell syntax error; the message above it names the line | Fix the line, then retry |
+| `kai: .kai/config is not valid sh`, or `KAI_LEVEL in .kai/config must be 1, 2, 3 or 4` | `.kai/config` has a shell syntax error (the message above it names the line) or a bad level. Until it's fixed, Bash commands are blocked and the other guards are off | Fix the line, then retry |
+| `kai: commit your changes first: evidence must describe a commit` | `/kai:prove` ran `kai verify --evidence` with uncommitted changes outside `specs/` | Commit the work first. A file your test commands create belongs in `.gitignore`, in a commit of its own |
+| `kai: cannot diff against origin/main; in CI, check out with fetch-depth: 0` | The base branch's history isn't there, as in a shallow CI checkout | In CI, set `fetch-depth: 0` on `actions/checkout`; locally, run `git fetch origin` |
+| `kai: tests-locked: needs git 2.36 or newer` | Your git can't show what a merge commit changed, which the gate checks | Upgrade git |
 | CI `ticket-ref` fails | No ticket key in the branch name or PR title | Rename the branch or add the key to the PR title |
 | CI `definition` fails | Code for a medium or high tier ticket before its spec merged | Merge the Definition PR first. If the paths really are low risk, change `.kai/tiers` in its own PR first, from a `kai-setup` branch as `/kai:setup` does: CI judges a PR by the base branch's `.kai/config` and `.kai/tiers` |
 | CI `tests-locked` fails | A test locked for the ticket changed, also in a merge commit, or this PR has no failing-tests commit of its own that commits tests | Restore the tests, or have a reviewer approve with `kai:tests-changed`. A follow-up or fix PR commits its own failing tests |
