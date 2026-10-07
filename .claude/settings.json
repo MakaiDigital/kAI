@@ -28,6 +28,7 @@
     "feature-dev@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true
+    "claude-md-management@claude-plugins-official": true,
+    "aikido@claude-plugins-official": true
   }
 }

@@ -15,6 +15,11 @@ snapshot() {
 
 kai_version() { jq -r .version "$REPO_ROOT/plugins/kai/.claude-plugin/plugin.json"; }
 
+publish_tag() {
+  git init -q --bare "$BATS_TEST_TMPDIR/github/acme/kai"
+  git push -q "$BATS_TEST_TMPDIR/github/acme/kai" "$1:refs/tags/v$(kai_version)"
+}
+
 @test "installs into a fresh repository" {
   run install_kai --provider linear --prefixes "ENG" --verify "make check" --level 2
   [ "$status" -eq 0 ]
@@ -201,12 +206,42 @@ npm test" ]
 @test "updates a Kai workflow in place when only its kai-gates ref differs" {
   install_kai --marketplace acme/kai --level 4 --ref v0.0.1
   grep -q 'kai-gates@v0.0.1' .github/workflows/kai.yml
+  publish_tag HEAD
   run install_kai --marketplace acme/kai --level 4
   [ "$status" -eq 0 ]
-  grep -q "uses: acme/kai/actions/kai-gates@v$(kai_version)" .github/workflows/kai.yml
-  grep -q "uses: acme/kai/actions/kai-gates@v$(kai_version)" .github/workflows/kai-metrics.yml
+  grep -qxF "      - uses: acme/kai/actions/kai-gates@$(git rev-parse HEAD) # v$(kai_version)" .github/workflows/kai.yml
+  grep -qxF "      - uses: acme/kai/actions/kai-gates@$(git rev-parse HEAD) # v$(kai_version)" .github/workflows/kai-metrics.yml
   [ ! -e .github/workflows/kai.yml.kai-new ]
   [ ! -e .github/workflows/kai-metrics.yml.kai-new ]
+}
+
+@test "pins kai-gates to the commit an annotated version tag points at" {
+  git -c tag.gpgsign=false tag -a -m release annotated
+  publish_tag annotated
+  run install_kai --marketplace acme/kai
+  [ "$status" -eq 0 ]
+  grep -qxF "      - uses: acme/kai/actions/kai-gates@$(git rev-parse HEAD) # v$(kai_version)" .github/workflows/kai.yml
+}
+
+@test "keeps the ref and says so when it is not a tag of the action repository" {
+  run install_kai --marketplace acme/kai --ref main
+  [ "$status" -eq 0 ]
+  grep -qxF '      - uses: acme/kai/actions/kai-gates@main' .github/workflows/kai.yml
+  [[ "$output" == *"could not find tag main in acme/kai, so CI uses kai-gates@main"* ]]
+}
+
+@test "the review workflow pins claude-code-action to a commit" {
+  install_kai --marketplace acme/kai --level 3
+  grep -qE '^        uses: anthropics/claude-code-action@[0-9a-f]{40} # v[0-9.]+$' .github/workflows/kai-review.yml
+}
+
+@test "updates the review workflow in place when only its claude-code-action ref differs" {
+  install_kai --marketplace acme/kai --level 3
+  sed -i.bak 's/claude-code-action@.*/claude-code-action@v1.0.0/' .github/workflows/kai-review.yml
+  run install_kai --marketplace acme/kai --level 3
+  [ "$status" -eq 0 ]
+  cmp -s .github/workflows/kai-review.yml "$REPO_ROOT/plugins/kai/template/.github/workflows/kai-review.yml"
+  [ ! -e .github/workflows/kai-review.yml.kai-new ]
 }
 
 @test "dry run writes nothing" {

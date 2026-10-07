@@ -88,7 +88,7 @@ The pasted transcript or file is what makes feedback actionable. "It planned bad
 
 - Open a Claude Code session in this repository and share the notes, by pasting them or pointing at the file. Each problem becomes a fix to a skill, hook, or check, plus an eval case in `plugins/kai/evals/` so it stays fixed.
 - After a few tickets have merged in the pilot, run `kai metrics` and `/kai:retro` there for the data-driven view, and share those too.
-- **Picking up fixes.** When a new version is released, run `claude plugin update kai@makaidigital` (or `/plugin`) and start a new session. Then run `/kai:setup` again to pick up changes to the repository files: a workflow that differs only in Kai's version is updated in place, and anything else that differs lands in `*.kai-new` for you to merge.
+- **Picking up fixes.** When a new version is released, run `claude plugin update kai@makaidigital` (or `/plugin`) and start a new session. Then run `/kai:setup` again to pick up changes to the repository files: a workflow that differs only in the action versions Kai pins is updated in place, and anything else that differs lands in `*.kai-new` for you to merge.
 
 ## Removing Kai
 

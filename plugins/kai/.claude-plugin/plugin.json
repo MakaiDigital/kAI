@@ -1,7 +1,7 @@
 {
   "name": "kai",
   "displayName": "Kai",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Makai's AI-native SDLC for Claude Code: spec, implement (plan, failing tests, code, proof, review, pull request), and accept, with guardrail hooks",
   "author": {
     "name": "Makai Engineering"

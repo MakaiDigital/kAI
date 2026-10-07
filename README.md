@@ -76,13 +76,13 @@ Setup adds:
 | `.kai/constraints.md` | The minimal-code standard | Kai's; if yours differs, the new version lands in `*.kai-new` |
 | `CLAUDE.md` | A short kai block between markers | Only the block is managed |
 | `.claude/settings.json` | Registers the `makaidigital` marketplace, enables `kai`, defaults to plan mode, and adds permission rules (deny `gh pr merge` and adding `kai:tests-changed`; ask before a push to the base branch) | Merged; your keys and rules are kept |
-| `.github/workflows/kai.yml` | Runs the gates on pull requests as the `kai` check | Kai's; updated in place when only Kai's version differs, otherwise the same `*.kai-new` rule |
+| `.github/workflows/kai.yml` | Runs the gates on pull requests as the `kai` check | Kai's; updated in place when only the action versions Kai pins differ, otherwise the same `*.kai-new` rule |
 | `REVIEW.md` (level 3) | What the reviewer checks and how it rates findings; owned by the tech lead | Yours; never overwritten |
 | `.claude/agents/contract-reviewer.md`, `spec-critic.md` (level 3) | The read-only review agents the CI review runs | Kai's; same `*.kai-new` rule |
-| `.github/workflows/kai-review.yml` (level 3) | AI review comment on trusted PRs through `claude-code-action` | Kai's; same `*.kai-new` rule |
+| `.github/workflows/kai-review.yml` (level 3) | AI review comment on trusted PRs through `claude-code-action` | Kai's; same rule as `kai.yml` |
 | `.github/workflows/kai-metrics.yml` (level 4) | Weekly `kai metrics` report in the job summary | Kai's; same rule as `kai.yml` |
 
-Run `/kai:setup` again to upgrade; `kai init --dry-run` shows what would change. It never overwrites your changes: when one of Kai's files differs from the new version, it writes `<file>.kai-new` next to it for you to merge (a workflow that differs only in Kai's version is updated in place).
+Run `/kai:setup` again to upgrade; `kai init --dry-run` shows what would change. It never overwrites your changes: when one of Kai's files differs from the new version, it writes `<file>.kai-new` next to it for you to merge (a workflow that differs only in the action versions Kai pins is updated in place).
 
 To uninstall, delete:
 
