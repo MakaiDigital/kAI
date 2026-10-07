@@ -4,7 +4,7 @@ TEMPLATE="$KAI_ROOT/template"
 VERSION=$(jq -r .version "$KAI_ROOT/.claude-plugin/plugin.json")
 BEGIN_MARK='<!-- kai:begin (managed by the kai installer; edit outside this block) -->'
 END_MARK='<!-- kai:end -->'
-UNPIN='s/kai-gates@[^[:space:]]*/kai-gates@/'
+UNPIN='s/kai-gates@.*/kai-gates@/;s/claude-code-action@.*/claude-code-action@/'
 
 init_usage() {
   cat <<'EOF'
@@ -162,7 +162,15 @@ create .kai/tiers "$TEMPLATE/.kai/tiers"
 place .kai/constraints.md "$TEMPLATE/.kai/constraints.md"
 
 if [ "$ci" -eq 1 ]; then
-  sed -e "s#__ACTION_REPO__#$action_repo#g" -e "s#__ACTION_REF__#$ref#g" \
+  pin=$(GIT_TERMINAL_PROMPT=0 git ls-remote "https://github.com/$action_repo" "refs/tags/$ref" "refs/tags/$ref^{}" 2>/dev/null |
+    awk '{ sha = $1 } END { print sha }')
+  if [ -n "$pin" ]; then
+    pin="$pin # $ref"
+  else
+    pin=$ref
+    say "  could not find tag $ref in $action_repo, so CI uses kai-gates@$ref rather than a commit"
+  fi
+  sed -e "s|__ACTION_REPO__|$action_repo|g" -e "s|__ACTION_REF__|$pin|g" \
     "$TEMPLATE/.github/workflows/kai.yml" >"$work/kai.yml"
   place .github/workflows/kai.yml "$work/kai.yml"
   [ ! -d "$marketplace" ] || say "  CI uses MakaiDigital/kAI's kai-gates action; change it if you host Kai elsewhere."
@@ -170,7 +178,7 @@ if [ "$ci" -eq 1 ]; then
     place .github/workflows/kai-review.yml "$TEMPLATE/.github/workflows/kai-review.yml"
   fi
   if [ "$level" -ge 4 ]; then
-    sed -e "s#__ACTION_REPO__#$action_repo#g" -e "s#__ACTION_REF__#$ref#g" \
+    sed -e "s|__ACTION_REPO__|$action_repo|g" -e "s|__ACTION_REF__|$pin|g" \
       "$TEMPLATE/.github/workflows/kai-metrics.yml" >"$work/kai-metrics.yml"
     place .github/workflows/kai-metrics.yml "$work/kai-metrics.yml"
   fi

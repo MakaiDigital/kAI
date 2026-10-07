@@ -1,5 +1,6 @@
 REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
 KAI="$REPO_ROOT/plugins/kai/bin/kai"
+export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.$BATS_TEST_TMPDIR/github/.insteadOf" GIT_CONFIG_VALUE_0=https://github.com/
 
 make_repo() {
   TEST_REPO="$BATS_TEST_TMPDIR/repo"

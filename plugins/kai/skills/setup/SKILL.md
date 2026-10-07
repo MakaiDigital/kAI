@@ -6,7 +6,7 @@ argument-hint: [level 1-4]
 
 # Set up Kai
 
-Get this repository ready for Kai in a few minutes, without anyone having to know the options. `kai init` does the writing and never overwrites your changes: when one of Kai's files differs from the new version, it writes `<file>.kai-new` beside it for you to merge (a workflow that differs only in Kai's version is updated in place).
+Get this repository ready for Kai in a few minutes, without anyone having to know the options. `kai init` does the writing and never overwrites your changes: when one of Kai's files differs from the new version, it writes `<file>.kai-new` beside it for you to merge (a workflow that differs only in the action versions Kai pins is updated in place).
 
 ## 1. Look before asking
 
