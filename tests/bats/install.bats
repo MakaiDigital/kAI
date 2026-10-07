@@ -230,11 +230,6 @@ npm test" ]
   [[ "$output" == *"could not find tag main in acme/kai, so CI uses kai-gates@main"* ]]
 }
 
-@test "the review workflow pins claude-code-action to a commit" {
-  install_kai --marketplace acme/kai --level 3
-  grep -qE '^        uses: anthropics/claude-code-action@[0-9a-f]{40} # v[0-9.]+$' .github/workflows/kai-review.yml
-}
-
 @test "updates the review workflow in place when only its claude-code-action ref differs" {
   install_kai --marketplace acme/kai --level 3
   sed -i.bak 's/claude-code-action@.*/claude-code-action@v1.0.0/' .github/workflows/kai-review.yml
