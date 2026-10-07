@@ -15,6 +15,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: __ACTION_REPO__/actions/kai-gates@__ACTION_REF__
         with:
           gates: metrics
