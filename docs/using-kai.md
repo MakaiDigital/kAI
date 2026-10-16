@@ -50,7 +50,7 @@ Claude works on a branch named after the ticket (`PAY-123-short-description`), c
 ### 2. Review the spec (level 2, medium and high tier)
 
 If the ticket needs a spec, Claude writes `docs/specs/PAY-123/spec.md`:
-- A **Review here** list at the top: the assumptions, chosen numbers, added criteria, security or data implications, open questions, and ADR decisions a person must judge, each with who decides. Each is marked `⚠ review` where it appears below.
+- A **Review here** list at the top: the assumptions, chosen numbers, added criteria, security or data implications, answers to open questions, and ADR choices the spec rests on. Claude asks you about each one before it opens any PR. You can answer for someone else, such as the product owner, and the spec records who decided and for whom.
 - A short **Context** (problem, outcome, success metric, constraints, out of scope) taken from the ticket, so CI reviewers and `/kai:accept` have the goal while the ticket is open without ticket access.
 - An **Overview** diagram of the behavior, with criterion IDs on the steps they govern, when there is a flow to draw. It is Mermaid, which GitHub draws in the PR, and it shows only what the criteria say.
 - Criteria numbered C1, C2, … in a fixed form: "When …, the system shall …" or "If …, then the system shall …", including the unhappy paths (signed out, network down, invalid input). Each can be proved before merge, by a test, a local end-to-end run, or CI output.
@@ -58,10 +58,10 @@ If the ticket needs a spec, Claude writes `docs/specs/PAY-123/spec.md`:
 - A contract table mapping each criterion to a test, every row starting as FAIL.
 - YAML frontmatter (key, ticket, tier, status, ADR) that reviewers read.
 
-If the change needs a new service, dependency, data store, external integration, or trust boundary, Claude also drafts `docs/adr/NNNN-title.md` with two or three options for the tech lead to decide. You do not run `/kai:adr` for this. Whoever decides sets it to Accepted and fills in its Decision before the Definition PR merges.
+If the change needs a new service, dependency, data store, external integration, or trust boundary, Claude also drafts `docs/adr/NNNN-title.md` with two or three options for the tech lead to decide. You do not run `/kai:adr` for this. Claude asks you to choose an option before it opens the Definition PR (you can choose for the tech lead), then sets it to Accepted and fills in its Decision.
 
 What you do:
-1. Read the **Review here** list first, then check the criteria with product. Each must be testable, and together they must cover the ticket. Before merging, resolve each item (keep or change it, and note who decided) and remove its `⚠ review` marker.
+1. Read the **Review here** decisions first, then check the criteria with product. Each must be testable, and together they must cover the ticket. No question is left open: the `definition` check fails a spec that still holds a `⚠` marker.
 2. Merge the spec (and ADR) on their own, as a **Definition PR**: branch `PAY-123-definition`, title `PAY-123: definition`. Claude prepares it for you.
 3. Wait for the merge before writing code. CI's `definition` check fails code for a medium- or high-tier ticket until its spec is on the main branch. If Claude skipped the spec and the tier turns out higher, write it then.
 

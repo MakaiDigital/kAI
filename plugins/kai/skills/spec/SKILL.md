@@ -33,7 +33,7 @@ Say the decision to the person in one line with its reason, so they can overrule
 
 - Read the ADRs in `docs/adr/` and any existing specs that touch the same surfaces, so new criteria do not contradict earlier decisions.
 - Apply any policy or standards skills you have (security, API, UX, compliance). Meeting a policy while writing the spec is far cheaper than discovering a conflict in review.
-- Ask the person about what the ticket leaves open, in a single batch of at most five questions (AskUserQuestion when available). What you can reasonably assume, assume, and list under **Review here** instead of asking.
+- Ask the person about what the ticket leaves open, in a single batch of at most five questions (AskUserQuestion when available). What you can reasonably assume, assume for now and list under **Review here** as an open item; the person confirms it before any PR opens.
 
 ## 4. Write the criteria
 
@@ -69,19 +69,26 @@ Good criteria:
 
 ### Review here
 
-Fill the top section last, and keep it short enough to read in a minute. List only what a person has to judge: assumptions the ticket did not confirm, numbers you chose, criteria you added that the ticket never mentioned, security or data implications, open questions, and any ADR. Write each as `⚠ <item> (C<n> or the section; decides: <who>)`, naming the criterion it concerns (or its section, such as Context for a missing success metric) and who decides, and mark the same spot in the body with `⚠ review` so a reviewer can find it. If nothing needs judgment, write "Nothing beyond the ticket."
+Fill the top section last, and keep it short enough to read in a minute. List only what a person has to judge: assumptions the ticket did not confirm, numbers you chose, criteria you added that the ticket never mentioned, security or data implications, open questions, and any ADR. While you draft, write each as `⚠ <item> (C<n> or the section; decides: <who>)`, naming the criterion it concerns (or its section, such as Context for a missing success metric) and who decides, and mark the same spot in the body with `⚠ review`. If nothing needs judgment, write "Nothing beyond the ticket."
 
-Before the Definition PR merges, the reviewers resolve each item (keep or change it, and note who decided) and remove its marker.
+Then resolve every item with the person. No PR opens while one is open.
+
+- Ask in batches (AskUserQuestion when available, at most four questions to a call), with your assumption as the first answer.
+- The person may answer for whoever decides. Accept that, and record it.
+- Apply each answer to the spec, and remove both `⚠` markers.
+- Rewrite the item as `<item>: <decision> (C<n> or the section; decided by <name>)`. Add `, for <role>` when they answered for someone else. Use their name, or `the person in session <date>` when you don't know it.
 
 ## 6. Draft an ADR when one is needed
 
-If the change needs a new service, dependency, data store, external integration, public interface, or trust boundary, or the criteria would contradict an existing ADR, create the Definition branch first (step 7.1) and follow `${CLAUDE_PLUGIN_ROOT}/references/adr.md` on it now, without waiting to be asked. Leave its status Proposed in the draft, since a person must choose among the options; whoever decides sets it to Accepted and fills in the Decision before the Definition PR merges. Add it to the **Review here** list, and put its path in the frontmatter. Otherwise write `adr: none`.
+If the change needs a new service, dependency, data store, external integration, public interface, or trust boundary, or the criteria would contradict an existing ADR, create the Definition branch first (step 7.1) and follow `${CLAUDE_PLUGIN_ROOT}/references/adr.md` on it now, without waiting to be asked. It stays Proposed until the person chooses among the options, before the Definition PR opens; they may choose for the tech lead or service owner. Never choose for them. Then set it to Accepted, fill in the Decision, and name the deciders, noting who answered for whom. Record the choice under **Review here**, and put the ADR's path in the frontmatter. Otherwise write `adr: none`.
 
 ## 7. Open the Definition PR
 
 The spec is approved by merging it on its own, before any code. That merge is the sign-off the `definition` CI gate looks for.
 
+Open it only when nothing is open: no `⚠` left in the spec, and every ADR Accepted. The `definition` gate fails a spec that still holds `⚠`. If the person stops before deciding, create the branch and commit the draft (steps 1 and 2 below), push nothing, and list what is still open.
+
 1. Create the branch from the up-to-date base, unless you are already on it: `git fetch origin && git switch --no-track -c <KEY>-definition origin/<KAI_BASE_BRANCH>`. The `ticket-ref` gate recognizes the key in its name.
 2. Commit `docs/specs/<KEY>/spec.md` with the message `<KEY>: spec`. Any ADR is already committed, as `<KEY>: ADR NNNN`.
-3. Push with `git push -u origin <KEY>-definition`, and open a pull request with only those files, titled `<KEY>: definition`, whose description starts with the **Review here** list. Product confirms the criteria capture the ticket. Engineering confirms they are complete and testable.
+3. Push with `git push -u origin <KEY>-definition`, and open a pull request with only those files, titled `<KEY>: definition`, whose description starts with the **Review here** decisions, so reviewers check them first. Product confirms the criteria capture the ticket. Engineering confirms they are complete and testable.
 4. After it merges, build on a fresh branch with `/kai:implement`.
