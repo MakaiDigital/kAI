@@ -1,7 +1,8 @@
 ---
 name: spec
-description: Start a ticketed change in a Kai repository (one with a .kai/config) from its Jira, Linear, or GitHub ticket. It decides whether the change needs a spec at all, and if so writes numbered, testable acceptance criteria (EARS form) plus a contract mapping each criterion to a test as specs/<KEY>/spec.md, drafting an ADR when the change needs one, for approval through a Definition PR before any code. Use it whenever someone starts work on a ticket key like PAY-123 or a GitHub issue number like 42, describes a feature or problem to solve, or asks to spec out a ticket, write acceptance criteria or requirements, or define "done", even if they jump straight to "let's build X".
+description: Write the spec for a ticket, with numbered EARS acceptance criteria, a contract mapping each to a test, and an ADR when the change needs a decision, delivered as a Definition PR. It first decides whether the change needs a spec at all.
 argument-hint: <TICKET-KEY or URL>
+disable-model-invocation: true
 ---
 
 # Spec
@@ -19,12 +20,12 @@ If the repository has no `.kai/config`, it does not use Kai. Say so and help dir
 
 ## 2. Decide whether a spec is needed
 
-Say the decision in one line with its reason, so the person can overrule it: `Skipping the spec: <reason>. Going to /kai:implement.` or `Writing a spec: <reason>.`
+Say the decision to the person in one line with its reason, so they can overrule it: `Skipping the spec: <reason>. Run /kai:implement next.` or `Writing a spec: <reason>.`
 
 - **Skip** only when every file the change will touch is low tier in `.kai/tiers` (by default specs, docs, and Markdown), such as a typo or a docs fix. The ticket is then the intent; `/kai:implement` reads it directly.
 - **Write a spec** for everything else. A bug in code is medium tier by default, so from `KAI_LEVEL` 2 it needs a spec too; for a bug with a clear reproduction, one or two criteria taken from the reproduction are enough.
 - When unsure, write one. A skipped spec on a change that turns out medium or high tier fails the `definition` CI gate (at `KAI_LEVEL` 2 or higher); if that happens, stop and write the spec then.
-- Below `KAI_LEVEL` 2 there are no Definition PRs. Skip unless the person asks, and go to `/kai:implement`.
+- Below `KAI_LEVEL` 2 there are no Definition PRs. Skip unless the person asks, and tell the person to run `/kai:implement`.
 
 ## 3. Gather context
 
@@ -71,7 +72,7 @@ Before the Definition PR merges, the reviewers resolve each item (keep or change
 
 ## 6. Draft an ADR when one is needed
 
-If the change needs a new service, dependency, data store, external integration, public interface, or trust boundary, or the criteria would contradict an existing ADR, create the Definition branch first (step 7.1) and follow `/kai:adr` on it now, without waiting to be asked. Leave its status Proposed in the draft, since a person must choose among the options; whoever decides sets it to Accepted and fills in the Decision before the Definition PR merges. Add it to the **Review here** list, and put its path in the frontmatter. Otherwise write `adr: none`.
+If the change needs a new service, dependency, data store, external integration, public interface, or trust boundary, or the criteria would contradict an existing ADR, create the Definition branch first (step 7.1) and follow `${CLAUDE_PLUGIN_ROOT}/references/adr.md` on it now, without waiting to be asked. Leave its status Proposed in the draft, since a person must choose among the options; whoever decides sets it to Accepted and fills in the Decision before the Definition PR merges. Add it to the **Review here** list, and put its path in the frontmatter. Otherwise write `adr: none`.
 
 ## 7. Open the Definition PR
 

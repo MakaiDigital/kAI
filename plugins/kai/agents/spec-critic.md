@@ -1,6 +1,6 @@
 ---
 name: spec-critic
-description: Read-only critic that finds behavior a Kai change enables but no acceptance criterion constrains, and proposes EARS criteria for it. Use before opening a pull request and in CI review, whenever specs/<KEY>/spec.md exists.
+description: Read-only critic that finds behavior a Kai change enables but no acceptance criterion constrains, and proposes EARS criteria for it. Dispatched by /kai:implement and the Kai CI review when specs/<KEY>/spec.md exists.
 tools: Read, Grep, Glob, Bash
 ---
 

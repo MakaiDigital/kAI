@@ -1,7 +1,8 @@
 ---
 name: accept
-description: Accept a merged Kai change in the integration environment. It verifies the deployed change against the spec and ticket, tries to break it with adversarial QA, and if something fails opens a fix PR through the /kai:implement flow and verifies again. When verification and QA pass it runs the retro for the ticket, then opens one cleanup PR that deletes the ticket's working documents in specs/<KEY>/ and applies the retro's instruction changes, and answers that PR's reviews. Use it in a Kai repository (one with a .kai/config) once a change is merged and deployed to integration, when someone says accept, verify, QA, or close out a ticket, or asks whether the running feature works. It is for after merge and deploy; local work before merge uses /kai:prove.
+description: Accept a merged change in the integration environment. Verifies it against the spec, tries to break it, and when it passes runs the retro and opens the cleanup PR that removes the ticket's working documents.
 argument-hint: <TICKET-KEY>
+disable-model-invocation: true
 ---
 
 # Accept
@@ -35,14 +36,14 @@ At the end, set **Verdict** in `accept.md` to Pass when every criterion held and
 A failure is a criterion that does not hold or a break that matters. For each:
 
 1. Reproduce it and record the exact steps and output in `accept.md`.
-2. Fix it through `/kai:implement` on a new branch `<KEY>-fix-<n>` from the up-to-date base (`git fetch origin && git switch --no-track -c <KEY>-fix-<n> origin/<KAI_BASE_BRANCH>`), with the reproduction as the ticket text. The failing test is the reproduction as an automated test; put it in a new test file when the original test file is locked. Leave `accept.md` uncommitted. The person approves the plan, as always.
-3. After the fix PR is merged and the engineer says it is deployed, start again from step 1 and re-run everything that failed plus the full verification.
+2. Create the fix branch from the up-to-date base (`git fetch origin && git switch --no-track -c <KEY>-fix-<n> origin/<KAI_BASE_BRANCH>`) and leave `accept.md` uncommitted. Then stop and ask the person to run `/kai:implement <KEY>` on that branch, and give them the reproduction to use as the ticket text: its failing test is the reproduction as an automated test, in a new test file when the original test file is locked. They approve its plan, as always.
+3. After the fix PR is merged and deployed, the person runs `/kai:accept <KEY>` again: start from step 1, and re-run everything that failed plus the full verification.
 
 After 3 fix cycles, or if a failure needs a decision rather than a fix (the spec is wrong, or the behavior is disputed), stop and hand back to the person with `accept.md` and what you tried. A criterion that was wrong goes back to `/kai:spec`.
 
 ## 5. When it passes: retro
 
-First create the cleanup branch from the up-to-date base: `git fetch origin && git switch --no-track -c <KEY>-cleanup origin/<KAI_BASE_BRANCH>`. Then run `/kai:retro <KEY>` there, before deleting anything, because it reads the ticket's spec, plan, evidence, reviews, and `accept.md`. It commits its instruction changes on this branch and lists the lessons that need a ticket.
+First create the cleanup branch from the up-to-date base: `git fetch origin && git switch --no-track -c <KEY>-cleanup origin/<KAI_BASE_BRANCH>`. Then follow `${CLAUDE_PLUGIN_ROOT}/references/retro.md` for `<KEY>` there, before deleting anything, because it reads the ticket's spec, plan, evidence, reviews, and `accept.md`. It commits its instruction changes on this branch and lists the lessons that need a ticket.
 
 ## 6. Open the cleanup PR
 
@@ -54,7 +55,7 @@ On `<KEY>-cleanup`:
 
 ## 7. Answer the cleanup PR's reviews
 
-Follow step 7 of `/kai:implement`: wait for CI and the automated reviewers, fix what is right, defend with evidence what is not, stop on stalemates and non-convergence, and never merge or approve.
+Follow `${CLAUDE_PLUGIN_ROOT}/references/answer-reviews.md`: wait for CI and the automated reviewers, fix what is right, defend with evidence what is not, stop on stalemates and non-convergence, and never merge or approve.
 
 ## 8. Tell the person
 

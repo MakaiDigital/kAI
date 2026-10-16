@@ -15,14 +15,15 @@ usage: kai <command> [args]
   tier [--base REF]       risk tier of the change (low, medium, high) from .kai/tiers
   metrics [--weeks N]     weekly speed and quality report from the specs/ history
   gate <name> [args]      CI gate: ticket-ref, definition, tests-locked or contract
-  hook <name>             Claude Code hook: session-start, guard-bash, protect-tests or stop
+  report --dir D [opts]   Markdown report of the gate results in D, for the PR comment
+  hook <name>             Claude Code hook: session-start, prompt-expansion, guard-bash, protect-tests or stop
 EOF
 }
 
 cmd=${1:-help}
 [ $# -gt 0 ] && shift
 case $cmd in
-  init | key | verify | tier | metrics) script="cmd/$cmd" ;;
+  init | key | verify | tier | metrics | report) script="cmd/$cmd" ;;
   gate | hook) script="${cmd}s/${1:-}"; [ $# -gt 0 ] && shift ;;
   help | -h | --help) usage; exit 0 ;;
   *) usage >&2; exit 64 ;;
@@ -34,9 +35,10 @@ if [ "$cmd" = hook ]; then
     IFS= read -r hook_cwd || :
     IFS= read -r session || :
     IFS= read -r hook_file || :
+    IFS= read -r hook_command_name || :
     hook_command=$(cat)
   } <<EOF
-$(jq -r '(.cwd // ""), (.session_id // "default"), (.tool_input.file_path // .tool_input.notebook_path // ""), (.tool_input.command // "")')
+$(jq -r '(.cwd // ""), (.session_id // "default"), (.tool_input.file_path // .tool_input.notebook_path // ""), (.command_name // ""), (.tool_input.command // .prompt // "")')
 EOF
   [ -z "$hook_cwd" ] || cd "$hook_cwd" 2>/dev/null || true
   [ "$script" != hooks/guard-bash ] || kai_die_status=2

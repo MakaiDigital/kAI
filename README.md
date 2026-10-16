@@ -27,19 +27,20 @@ The ticket is the intent; there is no separate intent document. `/kai:spec` read
 | `/kai:adr` | Records an architecture decision with options and trade-offs. `/kai:spec` runs it when needed; call it directly for a decision outside a spec (level 2) | `docs/adr/NNNN-*.md` |
 | `/kai:implement` | Plans (stops for approval), commits failing tests, implements the minimum, proves it, gets an independent review and fixes it, opens the PR, then answers its trusted reviewers (fixing what is right, defending with evidence what is not) until reviews are satisfied and checks are green, for up to five rounds | `plan.md`, tests, code, `evidence.md`, pull request |
 | `/kai:prove` | Runs the team's checks and maps each planned test (and spec criterion) to its result. `/kai:implement` calls it; run it alone to re-check | `evidence.md` |
-| `/kai:accept <KEY>` | After the change is deployed to integration, verifies it, tries to break it, fixes failures through `/kai:implement`, then runs the retro and opens a cleanup PR that deletes the ticket's specs (keeping ADRs) and applies the retro's instruction changes (level 4) | cleanup pull request |
+| `/kai:accept <KEY>` | After the change is deployed to integration, verifies it, tries to break it, and for each failure creates a `<KEY>-fix-<n>` branch with the reproduction and asks you to run `/kai:implement` there; once it passes, runs the retro and opens a cleanup PR that deletes the ticket's specs (keeping ADRs) and applies the retro's instruction changes (level 4) | cleanup pull request |
 | `/kai:retro` | Finds the lessons worth keeping in a ticket or a period and applies the instruction changes as separate commits; a lesson that needs a hook or script becomes a ticket. `/kai:accept` runs it; run it alone for a sprint view (level 4) | skill, ADR, or CLAUDE.md changes |
 
 Two read-only review agents back `/kai:implement` and the CI review: `kai:contract-reviewer` (every PASS has evidence, every change traces to a criterion) and `kai:spec-critic` (behavior no criterion covers, proposed as EARS criteria).
 
-The skills also trigger from plain requests such as "start PAY-123" or "let's implement this".
+The workflow runs only from these commands. A plain request, such as "add a removeFavorite function", is handled directly, without specs or plans. Superpowers' skills are the exception: they are model-invoked, so its test-driven development, debugging, verification, and code-review skills can still start on their own when you ask for a feature or a fix.
 
 Guardrail hooks run in every session:
 
-- **Stop** runs `kai verify` and keeps Claude working until the configured checks pass (it gives up with a warning after a few attempts).
+- **UserPromptExpansion** marks the session when you type a `/kai:` command, which turns on the Stop hook's checks for that session.
+- **Stop**, in a session marked that way, runs `kai verify` and keeps Claude working until the configured checks pass (it gives up with a warning after a few attempts).
 - **PreToolUse (Bash)** blocks skipping git hooks (`--no-verify`, `git commit -n`, `core.hooksPath`, the `HUSKY=0` and `LEFTHOOK=0` switches, and pre-commit's `SKIP=` on a git command, also inside `sh -c`, `eval` or a git alias) and production deploys without a named release approval.
 - **PreToolUse (Edit, Write, NotebookEdit)** at level 3 blocks edits to tests locked by the ticket's `<KEY>: failing tests` commits.
-- **SessionStart** tells Claude which ticket the branch is for and what the next step is.
+- **SessionStart** tells you which ticket the branch is for and what the next step is.
 
 The settings `kai init` writes also deny `gh pr merge` and adding the `kai:tests-changed` label with `gh pr edit` or `gh issue edit`, and ask before a `git push` that names the base branch. These rules match command shapes, so other forms slip past them; what stops the push is GitHub branch protection, which needs a paid plan for private repositories.
 
@@ -75,7 +76,7 @@ Setup adds:
 | `.kai/tiers` | Path patterns that make a change low, medium, or high risk | Yours; never overwritten |
 | `.kai/constraints.md` | The minimal-code standard | Kai's; if yours differs, the new version lands in `*.kai-new` |
 | `CLAUDE.md` | A short kai block between markers | Only the block is managed |
-| `.claude/settings.json` | Registers the `makaidigital` marketplace, enables `kai`, defaults to plan mode, and adds permission rules (deny `gh pr merge` and adding `kai:tests-changed`; ask before a push to the base branch) | Merged; your keys and rules are kept |
+| `.claude/settings.json` | Registers the `makaidigital` marketplace, enables `kai`, and adds permission rules (deny `gh pr merge` and adding `kai:tests-changed`; ask before a push to the base branch) | Merged; your keys and rules are kept |
 | `.github/workflows/kai.yml` | Runs the gates on pull requests as the `kai` check | Kai's; updated in place when only the action versions Kai pins differ, otherwise the same `*.kai-new` rule |
 | `REVIEW.md` (level 3) | What the reviewer checks and how it rates findings; owned by the tech lead | Yours; never overwritten |
 | `.claude/agents/contract-reviewer.md`, `spec-critic.md` (level 3) | The read-only review agents the CI review runs | Kai's; same `*.kai-new` rule |
@@ -88,7 +89,7 @@ To uninstall, delete:
 
 - `.kai/`, `REVIEW.md`, `.github/workflows/kai*.yml`, `.claude/agents/contract-reviewer.md`, and `.claude/agents/spec-critic.md`
 - the kai block in `CLAUDE.md`
-- in `.claude/settings.json`: the `makaidigital` and `kai@makaidigital` entries, the rules Kai added to `permissions.deny` and `permissions.ask` (merging, `kai:tests-changed`, and pushes to the base branch), `env.SUPERPOWERS_DISABLE_TELEMETRY`, and `permissions.defaultMode` if Kai set it
+- in `.claude/settings.json`: the `makaidigital` and `kai@makaidigital` entries, the rules Kai added to `permissions.deny` and `permissions.ask` (merging, `kai:tests-changed`, and pushes to the base branch), `env.SUPERPOWERS_DISABLE_TELEMETRY`, and `permissions.defaultMode` if it is `plan`, which versions before 0.10.0 set
 - any `*.kai-new` files
 
 Teammates who open the repository in Claude Code are prompted to install `kai` from the `makaidigital` marketplace, which also installs the pinned dependencies.

@@ -1,6 +1,6 @@
 ---
 name: contract-reviewer
-description: Read-only reviewer for a Kai change. Checks that every PASS in the contract has reproducible evidence, every changed file, function, and dependency traces to a criterion or planned task, and the change follows the ADRs and conventions it relies on. Use before opening a pull request and in CI review.
+description: Read-only reviewer for a Kai change. Checks that every PASS in the contract has reproducible evidence, every changed file, function, and dependency traces to a criterion or planned task, and the change follows the ADRs and conventions it relies on. Dispatched by /kai:implement and the Kai CI review, not for general code review.
 tools: Read, Grep, Glob, Bash
 ---
 

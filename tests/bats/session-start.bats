@@ -10,18 +10,21 @@ artifacts() {
 
 ticket() { printf 'kai: ticket PAY-9. Artifacts are in specs/PAY-9/. Next: %s' "$1"; }
 
+message() { jq -r .systemMessage <<<"$output"; }
+
 @test "suggests building when the ticket has no artifacts at level 1" {
   git switch -qc PAY-9-thing
   run run_hook session-start
   [ "$status" -eq 0 ]
-  [ "$output" = "$(ticket "/kai:implement (plan first, then tests, code, review, and the PR).")" ]
+  [ "$(message)" = "$(ticket "/kai:implement (plan first, then tests, code, review, and the PR).")" ]
+  jq -e 'keys == ["systemMessage"]' <<<"$output"
 }
 
 @test "suggests a spec first at level 2" {
   echo KAI_LEVEL=2 >>.kai/config
   git switch -qc PAY-9-thing
   run run_hook session-start
-  [ "$output" = "$(ticket "/kai:spec PAY-9 (a change that touches only low-tier files can skip it; medium and high tier changes need a merged spec before code).")" ]
+  [ "$(message)" = "$(ticket "/kai:spec PAY-9 (a change that touches only low-tier files can skip it; medium and high tier changes need a merged spec before code).")" ]
 }
 
 @test "suggests building once the spec exists at level 2" {
@@ -29,49 +32,49 @@ ticket() { printf 'kai: ticket PAY-9. Artifacts are in specs/PAY-9/. Next: %s' "
   git switch -qc PAY-9-thing
   artifacts spec
   run run_hook session-start
-  [ "$output" = "$(ticket "/kai:implement (plan first, then tests, code, review, and the PR).")" ]
+  [ "$(message)" = "$(ticket "/kai:implement (plan first, then tests, code, review, and the PR).")" ]
 }
 
 @test "continues with the tests and the proof once the plan exists" {
   git switch -qc PAY-9-thing
   artifacts plan
   run run_hook session-start
-  [ "$output" = "$(ticket "/kai:implement continues with the failing tests, the code, and /kai:prove.")" ]
+  [ "$(message)" = "$(ticket "/kai:implement continues with the failing tests, the code, and /kai:prove.")" ]
 }
 
 @test "suggests reviewing and opening the PR once evidence exists, at any level" {
   git switch -qc PAY-9-thing
   artifacts plan evidence
   run run_hook session-start
-  [ "$output" = "$(ticket "/kai:implement to review the change, open the PR, and answer its reviews.")" ]
+  [ "$(message)" = "$(ticket "/kai:implement to review the change, open the PR, and answer its reviews.")" ]
 }
 
 @test "a definition branch finishes the spec, whatever the case of its name" {
   echo KAI_LEVEL=2 >>.kai/config
   git switch -qc pay-9-definition
   run run_hook session-start
-  [ "$output" = "$(ticket "finish specs/PAY-9/spec.md and open the Definition PR (/kai:spec PAY-9).")" ]
+  [ "$(message)" = "$(ticket "finish specs/PAY-9/spec.md and open the Definition PR (/kai:spec PAY-9).")" ]
 }
 
 @test "a cleanup branch finishes the cleanup PR" {
   git switch -qc PAY-9-cleanup
   artifacts spec plan evidence
   run run_hook session-start
-  [ "$output" = "$(ticket "finish the cleanup PR (/kai:accept PAY-9).")" ]
+  [ "$(message)" = "$(ticket "finish the cleanup PR (/kai:accept PAY-9).")" ]
 }
 
 @test "a fix branch plans the fix, although the ticket's artifacts exist" {
   git switch -qc PAY-9-fix-1
   artifacts spec plan evidence
   run run_hook session-start
-  [ "$output" = "$(ticket "/kai:implement the fix, starting with its plan.")" ]
+  [ "$(message)" = "$(ticket "/kai:implement the fix, starting with its plan.")" ]
 }
 
 @test "any branch that contains <KEY>-fix- is a fix branch" {
   echo KAI_LEVEL=2 >>.kai/config
   git switch -qc PAY-9-fix-login
   run run_hook session-start
-  [ "$output" = "$(ticket "/kai:implement the fix, starting with its plan.")" ]
+  [ "$(message)" = "$(ticket "/kai:implement the fix, starting with its plan.")" ]
 }
 
 @test "a plan and evidence inherited from the base branch belong to the earlier change" {
@@ -79,18 +82,19 @@ ticket() { printf 'kai: ticket PAY-9. Artifacts are in specs/PAY-9/. Next: %s' "
   git add specs && git commit -qm "PAY-9: merged earlier"
   git switch -qc PAY-9-offline
   run run_hook session-start
-  [ "$output" = "$(ticket "/kai:implement (plan first, then tests, code, review, and the PR).")" ]
+  [ "$(message)" = "$(ticket "/kai:implement (plan first, then tests, code, review, and the PR).")" ]
   echo y >specs/PAY-9/plan.md && git commit -qam "PAY-9: plan"
   run run_hook session-start
-  [ "$output" = "$(ticket "/kai:implement continues with the failing tests, the code, and /kai:prove.")" ]
+  [ "$(message)" = "$(ticket "/kai:implement continues with the failing tests, the code, and /kai:prove.")" ]
 }
 
-@test "prompts for a ticket on a branch without one" {
+@test "stays silent on a branch without a ticket key" {
   run run_hook session-start
-  [ "$output" = "kai: no ticket key on branch main; start a ticket with /kai:spec <KEY>, or accept a deployed one with /kai:accept <KEY>." ]
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
   git switch -q --detach
   run run_hook session-start
-  [ "$output" = "kai: no ticket key on branch <detached>; start a ticket with /kai:spec <KEY>, or accept a deployed one with /kai:accept <KEY>." ]
+  [ -z "$output" ]
 }
 
 @test "says first that the guards are off when jq is missing" {
@@ -100,8 +104,18 @@ ticket() { printf 'kai: ticket PAY-9. Artifacts are in specs/PAY-9/. Next: %s' "
   for c in cat cp dirname find git grep head mkdir mktemp rm sed sh tr; do ln -s "$(command -v "$c")" "$bin/$c"; done
   run --separate-stderr env PATH="$bin" "$KAI" hook session-start </dev/null
   [ "$status" -eq 0 ]
-  [ "${lines[0]}" = "kai: jq is not installed, so Kai's Bash and Edit guards are off. Ask the person to install jq." ]
-  [ "${lines[1]}" = "$(ticket "/kai:implement (plan first, then tests, code, review, and the PR).")" ]
+  [ "${#lines[@]}" -eq 1 ]
+  [ "$(message)" = "kai: jq is not installed, so Kai's Bash and Edit guards are off. Install jq to turn them on.
+$(ticket "/kai:implement (plan first, then tests, code, review, and the PR).")" ]
+}
+
+@test "without jq, a branch without a ticket still gets the jq warning" {
+  bin="$BATS_TEST_TMPDIR/bin"
+  mkdir -p "$bin"
+  for c in cat cp dirname find git grep head mkdir mktemp rm sed sh tr; do ln -s "$(command -v "$c")" "$bin/$c"; done
+  run --separate-stderr env PATH="$bin" "$KAI" hook session-start </dev/null
+  [ "$status" -eq 0 ]
+  [ "$(message)" = "kai: jq is not installed, so Kai's Bash and Edit guards are off. Install jq to turn them on." ]
 }
 
 @test "a later SessionStart in the same session (resume, compact) keeps the baseline" {

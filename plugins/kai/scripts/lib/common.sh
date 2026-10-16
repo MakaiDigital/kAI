@@ -5,6 +5,17 @@ kai_die() {
   exit "${kai_die_status:-1}"
 }
 
+kai_system_message() {
+  _m=
+  _nl='\n'
+  for _l in "$@"; do
+    [ -n "$_l" ] || continue
+    _l=$(printf '%s' "$_l" | sed 's/\\/\\\\/g; s/"/\\"/g')
+    _m="${_m:+$_m$_nl}$_l"
+  done
+  [ -z "$_m" ] || printf '{"systemMessage":"%s"}\n' "$_m"
+}
+
 kai_load_config() {
   KAI_REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || return 1
   [ -f "$KAI_REPO_ROOT/.kai/config" ] || return 1
@@ -17,9 +28,14 @@ kai_load_config() {
   : "${KAI_VERIFY_CMDS:=}"
   : "${KAI_BASE_BRANCH:=main}"
   : "${KAI_PROD_DEPLOY_PATTERN:=}"
+  : "${KAI_ENFORCE:=block}"
   case $KAI_LEVEL in
     1 | 2 | 3 | 4) ;;
     *) kai_die "KAI_LEVEL in .kai/config must be 1, 2, 3 or 4, not '$KAI_LEVEL'" ;;
+  esac
+  case $KAI_ENFORCE in
+    report | block) ;;
+    *) kai_die "KAI_ENFORCE in .kai/config must be report or block, not '$KAI_ENFORCE'" ;;
   esac
 }
 

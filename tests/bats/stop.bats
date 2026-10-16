@@ -9,10 +9,30 @@ start_session() {
   write_config jira PAY "$1"
   commit_config
   run_hook session-start >/dev/null
+  mark_workflow
 }
 
 runs() { wc -l <"$(git rev-parse --absolute-git-dir)/runs" | tr -d ' '; }
 COUNTING_VERIFY='echo run >>"$(git rev-parse --absolute-git-dir)/runs"'
+
+@test "does nothing in a session that never ran a kai command" {
+  write_config jira PAY "$COUNTING_VERIFY"
+  commit_config
+  run_hook session-start >/dev/null
+  echo change >>README.md
+  run run_hook stop
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+  [ ! -e "$(git rev-parse --absolute-git-dir)/runs" ]
+}
+
+@test "a workflow command in another session does not turn the checks on here" {
+  start_session "exit 1"
+  echo change >>README.md
+  run run_hook stop "" s2
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
 
 @test "nothing changed since the session started: no verify" {
   start_session "exit 1"
@@ -23,6 +43,7 @@ COUNTING_VERIFY='echo run >>"$(git rev-parse --absolute-git-dir)/runs"'
 
 @test "a session that started before kai records a baseline and lets Claude stop" {
   write_config jira PAY "exit 1"
+  mark_workflow
   run run_hook stop
   [ "$status" -eq 0 ]
   [ -f "$(git rev-parse --absolute-git-dir)/kai/session-s1.start" ]
@@ -71,6 +92,7 @@ COUNTING_VERIFY='echo run >>"$(git rev-parse --absolute-git-dir)/runs"'
   env PATH="$bin" "$KAI" hook session-start </dev/null >/dev/null
   echo change >>README.md
   env PATH="$bin" "$KAI" hook session-start </dev/null >/dev/null
+  mkdir -p "$(git rev-parse --absolute-git-dir)/kai" && : >"$(git rev-parse --absolute-git-dir)/kai/session-.workflow"
   run env PATH="$bin" "$KAI" hook stop </dev/null
   [ "$status" -eq 0 ]
 }

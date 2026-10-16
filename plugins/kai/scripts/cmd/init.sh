@@ -90,7 +90,6 @@ printf '%s' "$current" | jq --argjson src "$source_json" --arg base "$base" '
   | ["Bash(git push * \($base))", "Bash(git push * \($base) *)", "Bash(git push *:\($base))", "Bash(git push *:refs/heads/\($base))"] as $ask
   | .extraKnownMarketplaces.makaidigital = {source: $src}
   | .enabledPlugins["kai@makaidigital"] = true
-  | .permissions.defaultMode //= "plan"
   | .permissions.deny = ((.permissions.deny // []) as $d | $d + ($deny - $d))
   | .permissions.ask = ((.permissions.ask // []) as $a | $a + ($ask - $a))
   | .env.SUPERPOWERS_DISABLE_TELEMETRY //= "1"' >"$work/settings.json" ||
@@ -155,6 +154,7 @@ KAI_VERIFY_CMDS=$(quote "$verify")
 # Optional, shown with their defaults:
 $base_line
 # KAI_TICKET_EXEMPT="dependabot/* renovate/* kai-setup* kai-retro*"   # branches that need no ticket key; they skip every gate
+# KAI_ENFORCE=block                             # block = a failing gate fails the PR check; report = the gates comment on the PR and the check stays green
 # KAI_PROD_DEPLOY_PATTERN=""                    # regex for production deploys; they then need KAI_RELEASE_APPROVAL
 EOF
 create .kai/config "$work/config"

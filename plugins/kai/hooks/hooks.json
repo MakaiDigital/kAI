@@ -1,5 +1,5 @@
 {
-  "description": "Kai guardrails: block unsafe git and deploy commands, protect locked tests, and keep Claude working until kai verify passes",
+  "description": "Kai guardrails: block unsafe git and deploy commands, protect locked tests, and, in sessions that run a /kai: command, keep Claude working until kai verify passes",
   "hooks": {
     "SessionStart": [
       {
@@ -8,6 +8,17 @@
           {
             "type": "command",
             "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/kai\" hook session-start",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptExpansion": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/kai\" hook prompt-expansion",
             "timeout": 10
           }
         ]

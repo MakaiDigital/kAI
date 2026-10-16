@@ -36,7 +36,7 @@ publish_tag() {
   grep -q '^## Things Claude gets wrong' CLAUDE.md
   [ "$(jq -r '.enabledPlugins["kai@makaidigital"]' .claude/settings.json)" = true ]
   [ "$(jq -r '.extraKnownMarketplaces.makaidigital.source.source' .claude/settings.json)" = directory ]
-  [ "$(jq -r '.permissions.defaultMode' .claude/settings.json)" = plan ]
+  [ "$(jq -r '.permissions.defaultMode' .claude/settings.json)" = null ]
 }
 
 @test "the config's comments show the real defaults" {
@@ -164,6 +164,19 @@ npm test" ]
   grep -q '## How we deliver (Kai)' CLAUDE.md
   run ! grep -q 'Old heading' CLAUDE.md
   [ "$(grep -c 'kai:begin' CLAUDE.md)" -eq 1 ]
+}
+
+@test "the CLAUDE.md block keeps the workflow to its commands" {
+  install_kai
+  grep -q 'runs only when someone types one of its commands' CLAUDE.md
+  run ! grep -q 'constraints.md' CLAUDE.md
+}
+
+@test "an upgrade keeps a plan mode the repository already has" {
+  mkdir -p .claude
+  echo '{"permissions":{"defaultMode":"plan"}}' >.claude/settings.json
+  install_kai
+  [ "$(jq -r '.permissions.defaultMode' .claude/settings.json)" = plan ]
 }
 
 @test "replaces the block in a CRLF CLAUDE.md, keeping its other lines" {

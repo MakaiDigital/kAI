@@ -1,0 +1,39 @@
+# Prove
+
+"Done" means evidence, not assertion. "All tests pass" is a claim; the command output that shows each planned test passing is evidence. Follow `superpowers:verification-before-completion` throughout.
+
+If the repository has no `.kai/config`, it does not use Kai. Say so and verify directly.
+
+## 1. Run the checks until they pass
+
+- Get the key from the command's arguments, or from `kai key`.
+- Commit your work first: `kai verify --evidence` refuses to describe uncommitted changes. Files the checks themselves leave behind (coverage, reports) belong in `.gitignore`, added in a commit of their own; never commit them with the work.
+- Run `kai verify --evidence specs/<KEY>/evidence.md`. It runs the team's checks (`KAI_VERIFY_CMDS` in `.kai/config`) from the repository root and records each command, its exit code, and its output. It rewrites the file on every run.
+- If anything fails, find the cause with `superpowers:systematic-debugging`, fix it, and run again. Getting green by editing or skipping a test, or by trimming `KAI_VERIFY_CMDS`, hides the failure rather than fixing it.
+- If a failure is genuinely unrelated to this change, show that it also fails on the base branch, and say so plainly rather than leaving it out.
+
+## 2. Map the results to the plan
+
+After the final verify run, since each run rewrites the file, append this section to `evidence.md` with one row for each test in the plan's Tests table:
+
+```markdown
+## Planned tests
+
+| Criterion | Test | Result | Output line |
+|---|---|---|---|
+| C1 | `rejects_expired_token` | PASS | `✓ rejects_expired_token (4 ms)` |
+| C2 | `saves_favorite_on_tap` | MISSING | not found in output |
+```
+
+- **PASS** needs the quoted output line that shows the test passing. The quote is what makes it checkable by someone else.
+- **MISSING** means the test is not in the output. It was never written, never ran, or was renamed without updating the plan. Treat it as a failure.
+- **Tests can't show some behaviors** named in the ticket or spec, such as a UI flow or a real integration. Run the end-to-end procedure (or describe exactly what you checked) and record what you observed.
+
+If `specs/<KEY>/spec.md` exists, bring its Contract table in line. Set a row to PASS only when it has a quoted output line or recorded observation, and fill its Evidence column. Change only the Status and Evidence columns, and keep every criterion's row: dropping a row would quietly redefine the feature. Every quoted line must appear in the `evidence.md` committed with it, so redo this step after any later `kai verify` run: quotes from an earlier run are the stale evidence reviewers send back.
+
+## 3. Report
+
+- If the output in `evidence.md` shows a secret or personal data, stop and ask the person before committing it.
+- Commit `evidence.md` and any spec contract updates as `<KEY>: evidence`.
+- Give the result in one line (PASS or FAIL, with counts), point to `specs/<KEY>/evidence.md`, and list anything failing or MISSING.
+- Only when everything passes, point to the next step: `/kai:implement` continues from here (independent review, the pull request, and answering its reviews).
