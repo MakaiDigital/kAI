@@ -9,13 +9,7 @@ Kai is deliberately thin. It supplies the workflow, templates, and guardrails, a
 
 ## The flow
 
-```
-ticket ──▶ /kai:spec ──▶ /kai:implement ──▶ merge + deploy ──▶ /kai:accept ──▶ done
-          (spec + ADR,    (plan ▸ tests ▸     (a person        (verify ▸ QA ▸
-           or skipped      code ▸ prove ▸      approves)        fix loop ▸ retro ▸
-           for low-tier    review ▸ PR ▸                        cleanup PR)
-           changes)        answer reviews)
-```
+![How Kai works: /kai:spec writes the spec and any ADR for a Definition PR; /kai:implement plans, waits for your approval, commits failing tests, writes the minimum code, proves it, reviews it, and answers the change PR reviewers until a person merges it; /kai:accept verifies the deployed change, tries to break it, runs the retro, and opens a cleanup PR, or sends a fix branch back through /kai:implement](docs/kai-flow.svg)
 
 The ticket is the intent; there is no separate intent document. `/kai:spec` reads it and either writes a spec (and an ADR when the change needs a decision) for a Definition PR, or, when the change touches only low-tier files, says why it can skip one. `/kai:implement` asks for approval once, at the plan (approve it with "Yes, and use auto mode"), then carries the work to a reviewed, green PR. After a person merges it and it is deployed, `/kai:accept` verifies it in integration, tries to break it, and finishes with a cleanup PR that removes the ticket's working documents. At level 4, only ADRs remain as documentation; the rest is read from the code.
 
