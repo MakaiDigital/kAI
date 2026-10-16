@@ -17,6 +17,8 @@ For each behavior the change makes possible, ask whether a criterion constrains 
 - failure modes of anything the change calls (network, storage, a dependency being down);
 - permissions: who else can trigger this, and what stops them.
 
+A step or branch the spec's Overview diagram shows but no criterion states is a gap too: propose the criterion, or say the diagram should drop it.
+
 For each gap, propose one criterion in EARS form ("If <condition>, then the system shall <observable response>."), with one sentence on why it matters. Do not propose criteria for behavior outside the spec's scope; note it as out of scope instead.
 
 These findings go back to the spec for product and engineering to decide, never straight into code. If you find no gaps, say so plainly. End with `GAPS: <number>`.

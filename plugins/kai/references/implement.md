@@ -25,6 +25,7 @@ Read and explore, but do not edit files until the person approves the plan. A wr
   - **Tests** named by behavior (`rejects_expired_token`), each mapped to a spec criterion, or to a ticket outcome when there is no spec. Every criterion or outcome needs a test, and every test needs a criterion or outcome. Start from the spec's Contract rows.
   - **Risks**, and how to roll back.
   - **Existing decisions** (ADRs, conventions) the plan relies on.
+  - The **Summary** diagram of what changes, drawn last from Files touched and Tasks, by the template's rules.
 - The bar: someone who never saw this conversation could implement from the plan alone.
 - Present the plan (with ExitPlanMode in plan mode) and wait for approval. A plan without named tests is not ready to present.
 

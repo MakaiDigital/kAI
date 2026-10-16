@@ -24,6 +24,16 @@ adr: <docs/adr/NNNN-title.md, or none>
 - **Constraints:** <Deadlines, compliance, performance, compatibility.>
 - **Out of scope:** <What this change will not do.>
 
+## Overview
+
+<!-- The shape of the behavior for a reviewer reading the PR: what triggers what, and what the user or caller sees, with each criterion's ID on the step it governs. The text is the source of truth: draw this once the criteria are final, from them, the Context and Interfaces touched, show nothing they don't say, and redraw it whenever they change. A Mermaid `flowchart`, `sequenceDiagram` or `stateDiagram-v2` of about a dozen nodes at most, flowchart nodes written as `id["Label"]`, every other label in plain words, and no styling, links or HTML, so GitHub renders it. With nothing worth drawing, such as a one-line fix, write "No diagram: <reason>." instead. -->
+
+```mermaid
+flowchart LR
+  trigger["Trigger"] -->|C1| response["Observable response"]
+  trigger -->|C2| handled["Unwanted condition handled"]
+```
+
 ## Criteria
 
 One sentence, one behavior, one observable result each. Every criterion must be provable before merge, by a test, a local end-to-end run, or CI output.

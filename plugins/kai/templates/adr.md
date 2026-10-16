@@ -15,6 +15,8 @@
 
 ## Options considered
 
+<!-- When the options differ in shape (a new service against extending one, a queue against a direct call), add a Mermaid `flowchart` per option above the table, showing only the parts that differ and nothing its column doesn't say. Skip it when they differ only in a library or a setting. -->
+
 | | Option A: <name> | Option B: <name> | Option C: extend what we have |
 |---|---|---|---|
 | Complexity | | | |

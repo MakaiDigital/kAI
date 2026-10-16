@@ -44,6 +44,7 @@ Present the criteria in plain language, mark the ones that need engineering's ju
 - **Frontmatter and Context**: the key, ticket link, provisional tier, status `draft`, and `adr: none`, then the problem, outcome, success metric, constraints, and out of scope, from the ticket. Say "none stated in the ticket" rather than inventing a metric, and list it under **Review here**.
 - **Review here**: fill this top section last. List only what a person must judge: assumptions the ticket did not confirm, numbers chosen without a source, criteria you added, security or data implications, and open questions, each with its criterion and who decides. Mark each in the body with `⚠ review`.
 - **Out of scope**: say it explicitly, or the gap gets filled with guesses.
+- **Overview**: a simple diagram of the flow, drawn once the criteria are settled, showing only what they say. The template has the rules.
 - **Interfaces touched**: the screens, APIs, data, or outside systems involved, in plain words. No file names.
 - **End-to-end verification**: the steps someone would follow to watch it work, including the checks only the live system can show. This becomes the acceptance check in the integration environment after merge.
 - **Tier**: your estimate of the risk (low, medium, or high; anything touching sign-in, payments, personal data, or public APIs is high). Engineering confirms it.

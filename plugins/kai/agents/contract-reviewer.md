@@ -10,7 +10,7 @@ Find the ticket key in the branch name or pull request title (a Jira or Linear k
 
 Work out which kind of PR it is:
 
-- **Definition PR** (only `docs/specs/<KEY>/spec.md` and ADRs): there is no code or evidence yet. Check that the criteria are testable and contradict no ADR.
+- **Definition PR** (only `docs/specs/<KEY>/spec.md` and ADRs): there is no code or evidence yet. Check that the criteria are testable and contradict no ADR, and that the spec's Overview diagram shows only what the criteria say.
 - **Change PR**: check everything below.
 - **Fix PR** (`<KEY>-fix-<n>`): a Change PR for a failure that acceptance found.
 - **Cleanup PR** (`<KEY>-cleanup`): it deletes `docs/specs/<KEY>/` and applies the retro's instruction changes. Do not flag the deleted files or the missing plan. Check that it changes only Markdown and that no instruction change weakens a safety rule. A retro PR (`kai-retro-<date>`) is a cleanup PR with no ticket and no specs to delete.
@@ -23,8 +23,9 @@ For a Change PR, check, in this order:
 1. **Evidence is real.** Every row marked PASS in the spec's contract and the evidence's planned-tests table must quote a passing line in `evidence.md`, and the evidence must belong to this change (it names the tests the plan lists and was committed with or after the code). Where you can run the project's checks, re-run the commands in `KAI_VERIFY_CMDS` (`.kai/config`) and compare. In CI, where the toolchain may not be installed, do not try to install it; judge the evidence file instead. A PASS the evidence does not support is a finding.
 2. **Nothing is unmapped.** Every changed file, new function, and new dependency traces to a criterion (spec) or a task (plan). Anything that does not is scope creep. Name it.
 3. **Nothing is missing.** Every criterion has at least one test, and every planned test exists. A criterion whose text differs from the base branch's `spec.md` is a blocking finding unless the PR description names the change for the approver.
-4. **Decisions are followed.** The plan's "existing decisions" and any ADRs it names are respected, and existing helpers are reused instead of duplicated (a second HTTP client or a copied utility is a finding).
-5. **Correctness, security, and performance.** Use the checks in `REVIEW.md` when it lists them. Otherwise look for logic errors, unhandled error paths the criteria name, and races; injection, broken authorization, secrets in code, server-side request forgery, and path traversal; and N+1 or unbounded queries and resource leaks.
+4. **Diagrams are true.** Every node and arrow in the spec's Overview and the plan's Summary diagram matches its text (criteria, interfaces, Files touched, tasks) and what the code does. A diagram that shows anything else is blocking: approvers trust the picture.
+5. **Decisions are followed.** The plan's "existing decisions" and any ADRs it names are respected, and existing helpers are reused instead of duplicated (a second HTTP client or a copied utility is a finding).
+6. **Correctness, security, and performance.** Use the checks in `REVIEW.md` when it lists them. Otherwise look for logic errors, unhandled error paths the criteria name, and races; injection, broken authorization, secrets in code, server-side request forgery, and path traversal; and N+1 or unbounded queries and resource leaks.
 
 Report only correctness, scope, evidence, and decision findings. Formatting, naming, and style are out of scope unless `REVIEW.md` says otherwise. Use the severities in `REVIEW.md` if present, otherwise **blocking** (the contract is not actually met, or the change is wrong) and **note**.
 

@@ -17,7 +17,7 @@ The ticket is the intent; there is no separate intent document. `/kai:spec` read
 
 | Command | What it does | Output |
 |---|---|---|
-| `/kai:spec <KEY>` | Reads the ticket, decides whether it needs a spec (only a change that touches nothing but low-tier files skips it), then writes numbered EARS criteria, a contract mapping each to a test, and a short "Review here" list of what a person must judge. Drafts an ADR when the change needs one (level 2) | `docs/specs/<KEY>/spec.md`, `docs/adr/NNNN-*.md` |
+| `/kai:spec <KEY>` | Reads the ticket, decides whether it needs a spec (only a change that touches nothing but low-tier files skips it), then writes numbered EARS criteria, a diagram of the behavior, a contract mapping each to a test, and a short "Review here" list of what a person must judge. Drafts an ADR when the change needs one (level 2) | `docs/specs/<KEY>/spec.md`, `docs/adr/NNNN-*.md` |
 | `/kai:adr` | Records an architecture decision with options and trade-offs. `/kai:spec` runs it when needed; call it directly for a decision outside a spec (level 2) | `docs/adr/NNNN-*.md` |
 | `/kai:implement` | Plans (stops for approval), commits failing tests, implements the minimum, proves it, gets an independent review and fixes it, opens the PR, then answers its trusted reviewers (fixing what is right, defending with evidence what is not) until reviews are satisfied and checks are green, for up to five rounds | `plan.md`, tests, code, `evidence.md`, pull request |
 | `/kai:prove` | Runs the team's checks and maps each planned test (and spec criterion) to its result. `/kai:implement` calls it; run it alone to re-check | `evidence.md` |

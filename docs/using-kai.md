@@ -52,6 +52,7 @@ Claude works on a branch named after the ticket (`PAY-123-short-description`), c
 If the ticket needs a spec, Claude writes `docs/specs/PAY-123/spec.md`:
 - A **Review here** list at the top: the assumptions, chosen numbers, added criteria, security or data implications, open questions, and ADR decisions a person must judge, each with who decides. Each is marked `⚠ review` where it appears below.
 - A short **Context** (problem, outcome, success metric, constraints, out of scope) taken from the ticket, so CI reviewers and `/kai:accept` have the goal while the ticket is open without ticket access.
+- An **Overview** diagram of the behavior, with criterion IDs on the steps they govern, when there is a flow to draw. It is Mermaid, which GitHub draws in the PR, and it shows only what the criteria say.
 - Criteria numbered C1, C2, … in a fixed form: "When …, the system shall …" or "If …, then the system shall …", including the unhappy paths (signed out, network down, invalid input). Each can be proved before merge, by a test, a local end-to-end run, or CI output.
 - An end-to-end check you could run by hand, which `/kai:accept` runs after merge. Checks only the deployed system can show, such as real traffic, go here rather than in a criterion.
 - A contract table mapping each criterion to a test, every row starting as FAIL.
@@ -73,7 +74,7 @@ Claude starts the code on a fresh branch from the up-to-date base branch, or pic
 ```
 
 Claude takes the ticket to a reviewed, green pull request. You are asked once, at the plan:
-1. **Plan.** Claude explores the code and presents a plan: files to change, tasks, tests named by behavior (for example `rejects_expired_token`) and mapped to the criteria, and risks. Then it stops and waits for you.
+1. **Plan.** Claude explores the code and presents a plan: a diagram of what changes, files to change, tasks, tests named by behavior (for example `rejects_expired_token`) and mapped to the criteria, and risks. Then it stops and waits for you.
    - **You approve or push back.** Push back if the plan adds files or dependencies you didn't expect, has tests that don't map to a criterion, or has criteria with no test. A wrong plan costs minutes to fix; wrong code costs hours.
    - **Approve with "Yes, and use auto mode",** so Claude commits, pushes the ticket branch, and opens the PR without asking. Kai's settings still ask before a push to the base branch and deny merging.
 

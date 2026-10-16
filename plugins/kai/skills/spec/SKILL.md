@@ -59,6 +59,7 @@ Good criteria:
 
 - **Frontmatter**: the key, the ticket link, the provisional tier (from the interfaces and `.kai/tiers`; `kai tier` computes it once code exists), status `draft`, and the ADR path or `none`. Reviewers read this block, so keep its keys.
 - **Context**: the problem, outcome, success metric, constraints, and out of scope, taken from the ticket. Without a measurable success metric, say "none stated in the ticket" and list it under **Review here** as an open question for the product owner; do not invent one. Keep it short: the spec has to carry the goal because CI reviewers cannot read the ticket.
+- **Overview**: the diagram of the behavior, drawn once the criteria are final and by the template's rules. A wrong diagram misleads a reviewer more than a missing one, so leave out anything the text does not say.
 - **Interfaces touched**: surfaces such as endpoints, screens, tables, flags, and external systems, not file paths.
 - **End-to-end verification**: a procedure someone can actually run to watch the feature work. It becomes the acceptance check later.
 - **Security**: required for high tier.
