@@ -1,6 +1,6 @@
 ---
 name: accept
-description: Accept a merged change in the integration environment. Verifies it against the spec, tries to break it, and when it passes runs the retro and opens the cleanup PR that removes the ticket's working documents.
+description: Accept a merged change in the integration environment. Verifies it against the spec, tries to break it, fixes what fails in a fix PR, and when it passes runs the retro and opens the cleanup PR that removes the ticket's working documents.
 argument-hint: <TICKET-KEY>
 disable-model-invocation: true
 ---
@@ -36,8 +36,8 @@ At the end, set **Verdict** in `accept.md` to Pass when every criterion held and
 A failure is a criterion that does not hold or a break that matters. For each:
 
 1. Reproduce it and record the exact steps and output in `accept.md`.
-2. Create the fix branch from the up-to-date base (`git fetch origin && git switch --no-track -c <KEY>-fix-<n> origin/<KAI_BASE_BRANCH>`) and leave `accept.md` uncommitted. Then stop and ask the person to run `/kai:implement <KEY>` on that branch, and give them the reproduction to use as the ticket text: its failing test is the reproduction as an automated test, in a new test file when the original test file is locked. They approve its plan, as always.
-3. After the fix PR is merged and deployed, the person runs `/kai:accept <KEY>` again: start from step 1, and re-run everything that failed plus the full verification.
+2. Create the fix branch from the up-to-date base (`git fetch origin && git switch --no-track -c <KEY>-fix-<n> origin/<KAI_BASE_BRANCH>`) and leave `accept.md` uncommitted. Fix it there yourself: follow `${CLAUDE_PLUGIN_ROOT}/references/implement.md` for `<KEY>` with the reproduction as the ticket text, through its step 7, so the fix PR ends reviewed and green. Its failing test is the reproduction as an automated test, in a new test file when the original test file is locked. The person approves the fix's plan, as always.
+3. Tell the person the fix PR is ready for them to merge. Once it is merged and they say it is deployed, start again from step 1 and re-run everything that failed plus the full verification. If the session ends first, the person runs `/kai:accept <KEY>` again.
 
 After 3 fix cycles, or if a failure needs a decision rather than a fix (the spec is wrong, or the behavior is disputed), stop and hand back to the person with `accept.md` and what you tried. A criterion that was wrong goes back to `/kai:spec`.
 
@@ -59,4 +59,4 @@ Follow `${CLAUDE_PLUGIN_ROOT}/references/answer-reviews.md`: wait for CI and the
 
 ## 8. Tell the person
 
-Report: the PR link, what verification and QA covered and found, the fix PRs it took, the lessons applied and those listed for a ticket, and anything needing their decision. The `accepted` label on the change PR is the person's sign-off; leave it to them. Once the cleanup PR is merged by a person, the ticket is done from the implementation standpoint. Do not move or comment on the ticket in the tracker.
+Report: the PR link, what verification and QA covered and found, the fix PRs it took, the lessons applied and those listed for a ticket, and anything needing their decision. Merging the cleanup PR is the person's sign-off: once they merge it, the ticket is accepted and done from the implementation standpoint. Do not move or comment on the ticket in the tracker.
