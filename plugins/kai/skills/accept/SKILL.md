@@ -13,6 +13,8 @@ The engineer runs this once the deployment to integration is complete. Do not wa
 
 If the repository has no `.kai/config`, it does not use Kai. Say so and help directly. Below `KAI_LEVEL` 4, acceptance isn't part of the repository's flow: run it only if the person asks.
 
+Write everything a person reviews by `${CLAUDE_PLUGIN_ROOT}/references/writing.md`.
+
 ## 1. Prepare
 
 - The key comes from `$ARGUMENTS`. Acceptance happens after merge, so the branch usually no longer carries it; ask if it is missing. Work from the base branch, up to date.

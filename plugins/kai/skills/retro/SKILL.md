@@ -5,4 +5,4 @@ argument-hint: [TICKET-KEY | since, e.g. 2w or a date]
 disable-model-invocation: true
 ---
 
-Follow `${CLAUDE_PLUGIN_ROOT}/references/retro.md`. Arguments: $ARGUMENTS
+Follow `${CLAUDE_PLUGIN_ROOT}/references/retro.md`, and write for people by `${CLAUDE_PLUGIN_ROOT}/references/writing.md`. Arguments: $ARGUMENTS

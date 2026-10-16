@@ -21,4 +21,6 @@ A step or branch the spec's Overview diagram shows but no criterion states is a 
 
 For each gap, propose one criterion in EARS form ("If <condition>, then the system shall <observable response>."), with one sentence on why it matters. Do not propose criteria for behavior outside the spec's scope; note it as out of scope instead.
 
+Write your report in ASD-STE100 (Simplified Technical English) to the degree that `KAI_WRITING_STE` in `.kai/config` sets: 0 to 100, 100 when unset, 0 means off. At 100, follow the full standard, including its dictionary of approved words. At 80, put the gap first, write one idea in each sentence of at most 25 words, use the active voice, use one term for one thing, and use plain words. Leave code, paths, quoted output, and the EARS criteria you propose as they are.
+
 These findings go back to the spec for product and engineering to decide, never straight into code. If you find no gaps, say so plainly. End with `GAPS: <number>`.

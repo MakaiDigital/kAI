@@ -9,6 +9,8 @@ disable-model-invocation: true
 
 Get this repository ready for Kai in a few minutes, without anyone having to know the options. `kai init` does the writing and never overwrites your changes: when one of Kai's files differs from the new version, it writes `<file>.kai-new` beside it for you to merge (a workflow that differs only in the action versions Kai pins is updated in place).
 
+Write everything a person reviews by `${CLAUDE_PLUGIN_ROOT}/references/writing.md`.
+
 ## 1. Look before asking
 
 - The working directory must be a git repository. If `.kai/config` already exists, this is an **upgrade**: read the current `KAI_LEVEL` and settings from it, and skip to step 3 with `--dry-run` so the person sees what would change. `kai init` never touches their `.kai/config` or `.kai/tiers`, so if the person asks for a different level than the current `KAI_LEVEL`, set it in `.kai/config` yourself and pass the same `--level`.

@@ -28,6 +28,7 @@ publish_tag() {
   grep -q '^KAI_TICKET_PREFIXES="ENG"$' .kai/config
   grep -q "^KAI_VERIFY_CMDS='make check'$" .kai/config
   grep -q '^# KAI_BASE_BRANCH=main$' .kai/config
+  grep -q '^# KAI_WRITING_STE=100 ' .kai/config
   grep -q '^docs/\* low$' .kai/tiers
   [ -f .kai/constraints.md ]
   grep -q 'uses: MakaiDigital/kAI/actions/kai-gates@v' .github/workflows/kai.yml

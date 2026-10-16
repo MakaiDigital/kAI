@@ -11,6 +11,8 @@ The ticket is the intent. Read it, decide how much specification it needs, and w
 
 If the repository has no `.kai/config`, it does not use Kai. Say so and help directly.
 
+Write everything a person reviews by `${CLAUDE_PLUGIN_ROOT}/references/writing.md`.
+
 ## 1. Read the ticket
 
 - The key comes from `$ARGUMENTS` (a key, or a ticket URL), or from `kai key`, which reads the current branch. If neither gives one, ask for it: every change is keyed to a ticket so the work stays traceable.

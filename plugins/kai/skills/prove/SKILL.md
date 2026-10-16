@@ -5,4 +5,4 @@ argument-hint: [TICKET-KEY]
 disable-model-invocation: true
 ---
 
-Follow `${CLAUDE_PLUGIN_ROOT}/references/prove.md`. Arguments: $ARGUMENTS
+Follow `${CLAUDE_PLUGIN_ROOT}/references/prove.md`, and write for people by `${CLAUDE_PLUGIN_ROOT}/references/writing.md`. Arguments: $ARGUMENTS

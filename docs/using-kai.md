@@ -200,6 +200,7 @@ kai metrics              weekly shipped count, lead time, and rework
 | `KAI_TICKET_EXEMPT` | Optional; branches that need no key and skip every gate: `dependabot/*`, `renovate/*`, `kai-setup*`, and `kai-retro*` by default |
 | `KAI_ENFORCE` | Optional; `block` by default. `block` fails the PR check when a gate fails. `report` keeps the check green and leaves the verdict to the PR comment |
 | `KAI_PROD_DEPLOY_PATTERN` | Optional; a regex for production deploy commands |
+| `KAI_WRITING_STE` | Optional; `100` by default. How close the specs, plans, ADRs, evidence, PR descriptions, and review findings Kai writes get to ASD-STE100, the Simplified Technical English of aerospace manuals: short sentences, active voice, one term for one thing. `0` turns the rules off; `100` applies the full standard |
 
 - `.kai/tiers` sets the risk tiers.
 - `.kai/constraints.md` is the minimal-code standard Claude follows.

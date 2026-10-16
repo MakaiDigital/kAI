@@ -6,6 +6,7 @@ PRODUCT="$REPO_ROOT/plugins/kai-product"
   for t in "$PRODUCT"/templates/*; do
     cmp "$t" "$REPO_ROOT/plugins/kai/templates/${t##*/}"
   done
+  cmp "$PRODUCT/references/writing.md" "$REPO_ROOT/plugins/kai/references/writing.md"
 }
 
 @test "kai-product installs in claude.ai and Cowork: no bin/, hooks, or local commands" {
