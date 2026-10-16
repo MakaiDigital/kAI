@@ -7,7 +7,7 @@ setup() {
   commit_config
   git switch -qc PAY-1-work
   echo impl >app.js && git add app.js && git commit -qm "PAY-1: implement"
-  mkdir -p specs/PAY-1
+  mkdir -p docs/specs/PAY-1
 }
 
 CRITERIA='- **C1** When a shopper taps, the system shall save.
@@ -15,11 +15,11 @@ CRITERIA='- **C1** When a shopper taps, the system shall save.
 
 evidence() {
   printf '# Evidence\n\nkai verify on commit %s at 2026-10-05T00:00:00Z.\n\n%s\n\n## Planned tests\n\n| Criterion | Test | Result | Output line |\n|---|---|---|---|\n%s\n' \
-    "$(git rev-parse HEAD)" "${2:-Result: **PASS**}" "$1" >specs/PAY-1/evidence.md
+    "$(git rev-parse HEAD)" "${2:-Result: **PASS**}" "$1" >docs/specs/PAY-1/evidence.md
 }
 
 spec() {
-  printf '# Spec\n\n## Criteria\n\n%s\n\n## Contract\n\n| Criterion | Test | Status | Evidence |\n|---|---|---|---|\n%s\n' "${2:-$CRITERIA}" "$1" >specs/PAY-1/spec.md
+  printf '# Spec\n\n## Criteria\n\n%s\n\n## Contract\n\n| Criterion | Test | Status | Evidence |\n|---|---|---|---|\n%s\n' "${2:-$CRITERIA}" "$1" >docs/specs/PAY-1/spec.md
 }
 
 gate() { "$KAI" gate contract --base main "$@"; }
@@ -62,11 +62,11 @@ Result: **PASS**'
 }
 
 @test "a test the plan lists but the evidence leaves out fails" {
-  printf '# Plan\n\n## Tests\n\n| Criterion | Test | File |\n|---|---|---|\n| C1 | `saves` | `test/a.test.js` |\n| C2 | `refuses` | `test/a.test.js` |\n\n## Risks\n\n| a | b |\n' >specs/PAY-1/plan.md
+  printf '# Plan\n\n## Tests\n\n| Criterion | Test | File |\n|---|---|---|\n| C1 | `saves` | `test/a.test.js` |\n| C2 | `refuses` | `test/a.test.js` |\n\n## Risks\n\n| a | b |\n' >docs/specs/PAY-1/plan.md
   evidence '| C1 | `saves` | PASS | `✔ saves` |'
   run gate
   [ "$status" -eq 1 ]
-  [[ "$output" == *"missing from specs/PAY-1/evidence.md:"*"refuses"* ]] || false
+  [[ "$output" == *"missing from docs/specs/PAY-1/evidence.md:"*"refuses"* ]] || false
   evidence '| C1 | `saves` | PASS | `✔ saves` |
 | C2 | `refuses` | PASS | `✔ refuses` |'
   run gate
@@ -74,7 +74,7 @@ Result: **PASS**'
 }
 
 @test "the plan's tests match whatever its table header says, with or without backticks" {
-  printf '# Plan\n\n## Tests\n\n| Ticket outcome | Test name | File |\n|---|---|---|\n| saves | `saves` | `test/a.test.js` |\n' >specs/PAY-1/plan.md
+  printf '# Plan\n\n## Tests\n\n| Ticket outcome | Test name | File |\n|---|---|---|\n| saves | `saves` | `test/a.test.js` |\n' >docs/specs/PAY-1/plan.md
   evidence '| Outcome: saves | saves | PASS | `✔ saves` |'
   run gate
   [ "$status" -eq 0 ]
@@ -82,11 +82,11 @@ Result: **PASS**'
 
 @test "evidence that names a commit already on the base branch fails" {
   evidence '| C1 | `saves` | PASS | `✔ saves` |'
-  git add specs && git commit -qm "PAY-1: evidence"
+  git add docs/specs && git commit -qm "PAY-1: evidence"
   git switch -q main && git merge -q --no-ff --no-edit PAY-1-work
   git switch -qc PAY-1-follow-up
   echo more >>app.js && git commit -qam "PAY-1: follow-up"
-  sed -i.bak 's/^\(kai verify on commit .*\) at /\1 at  /' specs/PAY-1/evidence.md && rm specs/PAY-1/evidence.md.bak
+  sed -i.bak 's/^\(kai verify on commit .*\) at /\1 at  /' docs/specs/PAY-1/evidence.md && rm docs/specs/PAY-1/evidence.md.bak
   run gate
   [ "$status" -eq 1 ]
   [[ "$output" == *"evidence.md was not updated on this branch"* ]]
@@ -106,7 +106,7 @@ Result: **PASS**'
 }
 
 @test "fails without a planned tests table" {
-  printf '# Evidence\n\nResult: **PASS**\n' >specs/PAY-1/evidence.md
+  printf '# Evidence\n\nResult: **PASS**\n' >docs/specs/PAY-1/evidence.md
   run gate
   [ "$status" -eq 1 ]
   [[ "$output" == *"has no planned tests table"* ]]
@@ -115,7 +115,7 @@ Result: **PASS**'
 @test "fails when the evidence is the base branch's" {
   git switch -q main
   evidence '| C1 | `saves` | PASS | `✔ saves` |'
-  git add specs && git commit -qm "PAY-1: evidence"
+  git add docs/specs && git commit -qm "PAY-1: evidence"
   git switch -q PAY-1-work && git merge -q --no-edit main
   run gate
   [ "$status" -eq 1 ]
@@ -130,8 +130,8 @@ Result: **PASS**'
 }
 
 @test "passes with the evidence kai verify writes on this branch" {
-  "$KAI" verify --evidence specs/PAY-1/evidence.md
-  printf '\n## Planned tests\n\n| Criterion | Test | Result | Output line |\n|---|---|---|---|\n| C1 | `saves` | PASS | `✔ saves` |\n' >>specs/PAY-1/evidence.md
+  "$KAI" verify --evidence docs/specs/PAY-1/evidence.md
+  printf '\n## Planned tests\n\n| Criterion | Test | Result | Output line |\n|---|---|---|---|\n| C1 | `saves` | PASS | `✔ saves` |\n' >>docs/specs/PAY-1/evidence.md
   run gate
   [ "$status" -eq 0 ]
 }
@@ -157,14 +157,14 @@ Result: **PASS**'
   git switch -q main
   spec '| C1 | `saves` | PASS | evidence.md |
 | C2 | `refuses` | PASS | evidence.md |'
-  git add specs && git commit -qm "PAY-1: definition"
+  git add docs/specs && git commit -qm "PAY-1: definition"
   git switch -q PAY-1-work && git merge -q --no-edit main
   evidence '| C1 | `saves` | PASS | `✔ saves` |'
   spec '| C1 | `saves` | PASS | evidence.md |' '- **C1** When a shopper taps, the system shall save.'
   run gate
   [ "$status" -eq 1 ]
   [[ "$output" == *"C2 has no contract row"* ]] || false
-  rm specs/PAY-1/spec.md
+  rm docs/specs/PAY-1/spec.md
   run gate
   [ "$status" -eq 1 ]
   [[ "$output" == *"C1 has no contract row"* ]]
@@ -173,7 +173,7 @@ Result: **PASS**'
 @test "a criterion added on the branch needs a contract row too" {
   git switch -q main
   spec '| C1 | `saves` | PASS | evidence.md |' '- **C1** When a shopper taps, the system shall save.'
-  git add specs && git commit -qm "PAY-1: definition"
+  git add docs/specs && git commit -qm "PAY-1: definition"
   git switch -q PAY-1-work && git merge -q --no-edit main
   evidence '| C1 | `saves` | PASS | `✔ saves` |'
   spec '| C1 | `saves` | PASS | evidence.md |'

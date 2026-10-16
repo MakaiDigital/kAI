@@ -80,11 +80,11 @@ merge_to_main() { git switch -q main && git merge -q --no-ff --no-edit PAY-1-wor
   [[ "$output" == *"test/a.test.js"* ]]
 }
 
-@test "files under specs/ in a lock commit are not locked" {
-  mkdir -p specs/PAY-1 && echo plan >specs/PAY-1/plan.md
+@test "files under docs/specs/ in a lock commit are not locked" {
+  mkdir -p docs/specs/PAY-1 && echo plan >docs/specs/PAY-1/plan.md
   echo 'test("b")' >test/b.test.js
   git add -A && git commit -qm "PAY-1: failing tests"
-  echo 'plan, revised' >specs/PAY-1/plan.md && git commit -qam "PAY-1: plan"
+  echo 'plan, revised' >docs/specs/PAY-1/plan.md && git commit -qam "PAY-1: plan"
   run gate
   [ "$status" -eq 0 ]
 }

@@ -67,11 +67,11 @@ EOF
       git switch -qc PAY-102-remove-favorite
       ;;
     prove | accept)
-      mkdir -p specs/PAY-103
+      mkdir -p docs/specs/PAY-103
       spec='none (ticket PAY-103)' c1='Outcome: shopper can remove' c2='Outcome: removal is safe' c3='Constraint: signed out'
       if [ "$level" -ge 2 ] || [ "$variant" = accept ]; then
         spec='[spec.md](spec.md)' c1=C1 c2=C2 c3=C3
-        cat >specs/PAY-103/spec.md <<'EOF'
+        cat >docs/specs/PAY-103/spec.md <<'EOF'
 ---
 key: PAY-103
 ticket: PAY-103
@@ -125,7 +125,7 @@ EOF
         git add -A && git commit -qm "PAY-103: spec"
       fi
       git switch -qc PAY-103-remove-favorite
-      cat >specs/PAY-103/plan.md <<EOF
+      cat >docs/specs/PAY-103/plan.md <<EOF
 # Plan: PAY-103 Remove a product from favorites
 
 - **Spec:** $spec
@@ -203,8 +203,8 @@ function listFavorites/; s/{ addFavorite, listFavorites, reset }/{ addFavorite, 
       rm src/favorites.js.bak
       git add -A && git commit -qm "PAY-103: implement removeFavorite"
       if [ "$variant" = accept ]; then
-        printf '# Evidence\n\nkai verify on commit %s at %s.\n' "$(git rev-parse HEAD)" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >specs/PAY-103/evidence.md
-        cat >>specs/PAY-103/evidence.md <<'EOF'
+        printf '# Evidence\n\nkai verify on commit %s at %s.\n' "$(git rev-parse HEAD)" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >docs/specs/PAY-103/evidence.md
+        cat >>docs/specs/PAY-103/evidence.md <<'EOF'
 
 ## PASS: node --test (exit 0)
 
@@ -234,9 +234,9 @@ Result: **PASS**
 | C2 | `remove_is_noop_when_not_favorited` | PASS | `✔ remove_is_noop_when_not_favorited (0.0875ms)` |
 | C3 | `rejects_remove_when_signed_out` | PASS | `✔ rejects_remove_when_signed_out (0.084917ms)` |
 EOF
-        sed -i.bak '/^| C[0-9] |/d' specs/PAY-103/spec.md
-        rm specs/PAY-103/spec.md.bak
-        cat >>specs/PAY-103/spec.md <<'EOF'
+        sed -i.bak '/^| C[0-9] |/d' docs/specs/PAY-103/spec.md
+        rm docs/specs/PAY-103/spec.md.bak
+        cat >>docs/specs/PAY-103/spec.md <<'EOF'
 | C1 | `removes_favorite_for_signed_in_user` | PASS | `✔ removes_favorite_for_signed_in_user (0.143541ms)` |
 | C2 | `remove_is_noop_when_not_favorited` | PASS | `✔ remove_is_noop_when_not_favorited (0.0875ms)` |
 | C3 | `rejects_remove_when_signed_out` | PASS | `✔ rejects_remove_when_signed_out (0.084917ms)` |

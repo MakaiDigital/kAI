@@ -4,9 +4,9 @@ setup() {
   make_repo
   write_config
   echo KAI_LEVEL=3 >>.kai/config
-  printf 'specs/* low\n*.md low\n' >.kai/tiers
-  mkdir -p specs/PAY-1
-  printf '# Spec\n\n## Criteria\n\n- **C1** When a shopper taps, the system shall save.\n\n## Contract\n\n| Criterion | Test | Status | Evidence |\n|---|---|---|---|\n| C1 | `saves` | | |\n' >specs/PAY-1/spec.md
+  printf 'docs/* low\n*.md low\n' >.kai/tiers
+  mkdir -p docs/specs/PAY-1
+  printf '# Spec\n\n## Criteria\n\n- **C1** When a shopper taps, the system shall save.\n\n## Contract\n\n| Criterion | Test | Status | Evidence |\n|---|---|---|---|\n| C1 | `saves` | | |\n' >docs/specs/PAY-1/spec.md
   git add -A && git commit -qm "PAY-1: definition"
   ORIGIN="$BATS_TEST_TMPDIR/origin.git"
   git init -q --bare -b main "$ORIGIN"
@@ -41,12 +41,12 @@ report_step() {
 
 change_pr() {
   git switch -qc PAY-1-work
-  echo plan >specs/PAY-1/plan.md && git add -A && git commit -qm "PAY-1: plan"
+  echo plan >docs/specs/PAY-1/plan.md && git add -A && git commit -qm "PAY-1: plan"
   mkdir -p test && echo 'test("saves")' >test/save.test.js && git add -A && git commit -qm "PAY-1: failing tests"
   echo impl >app.js && git add -A && git commit -qm "PAY-1: implement"
   printf '# Evidence\n\nkai verify on commit %s at 2026-10-05T00:00:00Z.\n\nResult: **PASS**\n\n## Planned tests\n\n| Criterion | Test | Result | Output line |\n|---|---|---|---|\n| C1 | `saves` | PASS | `✔ saves` |\n' \
-    "$(git rev-parse HEAD)" >specs/PAY-1/evidence.md
-  sed -i.bak 's/^| C1 | `saves` | | |$/| C1 | `saves` | PASS | evidence.md |/' specs/PAY-1/spec.md && rm specs/PAY-1/spec.md.bak
+    "$(git rev-parse HEAD)" >docs/specs/PAY-1/evidence.md
+  sed -i.bak 's/^| C1 | `saves` | | |$/| C1 | `saves` | PASS | evidence.md |/' docs/specs/PAY-1/spec.md && rm docs/specs/PAY-1/spec.md.bak
   git add -A && git commit -qm "PAY-1: evidence"
   git push -q origin PAY-1-work
 }

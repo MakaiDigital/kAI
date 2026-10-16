@@ -28,7 +28,7 @@ publish_tag() {
   grep -q '^KAI_TICKET_PREFIXES="ENG"$' .kai/config
   grep -q "^KAI_VERIFY_CMDS='make check'$" .kai/config
   grep -q '^# KAI_BASE_BRANCH=main$' .kai/config
-  grep -q '^specs/\* low$' .kai/tiers
+  grep -q '^docs/\* low$' .kai/tiers
   [ -f .kai/constraints.md ]
   grep -q 'uses: MakaiDigital/kAI/actions/kai-gates@v' .github/workflows/kai.yml
   [[ "$output" == *"CI uses MakaiDigital/kAI's kai-gates action; change it if you host Kai elsewhere."* ]]

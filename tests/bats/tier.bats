@@ -6,7 +6,6 @@ setup() {
   write_config
   cat >.kai/tiers <<'T'
 # comment
-specs/* low
 docs/* low
 *.md low
 src/auth/* high
@@ -21,7 +20,7 @@ T
 }
 
 @test "docs and specs only is low" {
-  mkdir -p docs specs/PAY-1 && echo d >docs/a.txt && echo s >specs/PAY-1/spec.md
+  mkdir -p docs/specs/PAY-1 && echo d >docs/a.txt && echo s >docs/specs/PAY-1/spec.md
   run --separate-stderr "$KAI" tier --base main
   [ "$output" = low ]
 }

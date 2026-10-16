@@ -6,7 +6,7 @@ If the repository has no `.kai/config`, it does not use Kai. Say so and help dir
 
 ## 1. Gather the period's signal
 
-The argument is either a ticket key (the retro of one finished ticket, which `/kai:accept` runs before its specs are deleted) or a period (default: the last two weeks). For a ticket, read `specs/<KEY>/`: its spec, plan, evidence, and the working `accept.md`. For a period, read the merged PR descriptions, which hold each ticket's outcome, contract, and verification summary, since specs are deleted when a ticket is accepted.
+The argument is either a ticket key (the retro of one finished ticket, which `/kai:accept` runs before its specs are deleted) or a period (default: the last two weeks). For a ticket, read `docs/specs/<KEY>/`: its spec, plan, evidence, and the working `accept.md`. For a period, read the merged PR descriptions, which hold each ticket's outcome, contract, and verification summary, since specs are deleted when a ticket is accepted.
 
 - `kai metrics` for speed next to quality. Look at weeks marked ▲ and at the reworked share.
 - Success metrics whose evaluation date falls in the period (in a spec's Context, or in a merged PR's description): did the metric reach its target? Check with the source named in the metric, or ask the product owner. A feature that shipped cleanly but missed its target is a lesson about the spec, not the code.

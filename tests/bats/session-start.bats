@@ -4,11 +4,11 @@ load helpers
 setup() { make_repo; write_config; }
 
 artifacts() {
-  mkdir -p specs/PAY-9
-  for f in "$@"; do echo x >"specs/PAY-9/$f.md"; done
+  mkdir -p docs/specs/PAY-9
+  for f in "$@"; do echo x >"docs/specs/PAY-9/$f.md"; done
 }
 
-ticket() { printf 'kai: ticket PAY-9. Artifacts are in specs/PAY-9/. Next: %s' "$1"; }
+ticket() { printf 'kai: ticket PAY-9. Artifacts are in docs/specs/PAY-9/. Next: %s' "$1"; }
 
 message() { jq -r .systemMessage <<<"$output"; }
 
@@ -53,7 +53,7 @@ message() { jq -r .systemMessage <<<"$output"; }
   echo KAI_LEVEL=2 >>.kai/config
   git switch -qc pay-9-definition
   run run_hook session-start
-  [ "$(message)" = "$(ticket "finish specs/PAY-9/spec.md and open the Definition PR (/kai:spec PAY-9).")" ]
+  [ "$(message)" = "$(ticket "finish docs/specs/PAY-9/spec.md and open the Definition PR (/kai:spec PAY-9).")" ]
 }
 
 @test "a cleanup branch finishes the cleanup PR" {
@@ -79,11 +79,11 @@ message() { jq -r .systemMessage <<<"$output"; }
 
 @test "a plan and evidence inherited from the base branch belong to the earlier change" {
   artifacts spec plan evidence
-  git add specs && git commit -qm "PAY-9: merged earlier"
+  git add docs/specs && git commit -qm "PAY-9: merged earlier"
   git switch -qc PAY-9-offline
   run run_hook session-start
   [ "$(message)" = "$(ticket "/kai:implement (plan first, then tests, code, review, and the PR).")" ]
-  echo y >specs/PAY-9/plan.md && git commit -qam "PAY-9: plan"
+  echo y >docs/specs/PAY-9/plan.md && git commit -qam "PAY-9: plan"
   run run_hook session-start
   [ "$(message)" = "$(ticket "/kai:implement continues with the failing tests, the code, and /kai:prove.")" ]
 }

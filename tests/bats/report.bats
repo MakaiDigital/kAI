@@ -34,12 +34,12 @@ record() {
 @test "a failing gate gives VERDICT: FAIL and its full output" {
   record ticket-ref 0 "ticket-ref: PAY-1"
   record contract 1 "contract: PAY-1 is not proven:
-  specs/PAY-1/evidence.md is missing (run /kai:prove)"
+  docs/specs/PAY-1/evidence.md is missing (run /kai:prove)"
   run "$KAI" report --dir "$DIR" --sha abc123 --run-url u
   [[ "$output" == *"VERDICT: FAIL"* ]]
   [[ "$output" == *"| contract | ❌ fail | contract: PAY-1 is not proven: |"* ]]
   [[ "$output" == *"### contract"* ]]
-  [[ "$output" == *"specs/PAY-1/evidence.md is missing (run /kai:prove)"* ]]
+  [[ "$output" == *"docs/specs/PAY-1/evidence.md is missing (run /kai:prove)"* ]]
 }
 
 @test "passing gates do not get a section of their own" {

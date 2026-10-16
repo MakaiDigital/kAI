@@ -9,7 +9,7 @@ The connector must be able to create branches and commits. claude.ai's built-in 
 1. Ask which repository if you do not know it.
 2. Show the person the pull request you are about to open (title, files, and body) and wait for their go-ahead. Opening it notifies reviewers, so it is their call.
 3. Create a branch from the default branch named after the ticket, such as `PAY-123-definition`, or `42-definition` for GitHub issue 42. The key must be in the name: engineering's checks look for it.
-4. Add the spec as `specs/<KEY>/spec.md` and commit it with the message `<KEY>: spec`.
+4. Add the spec as `docs/specs/<KEY>/spec.md` and commit it with the message `<KEY>: spec`.
 5. Open the pull request titled `<KEY>: definition`, with this body:
 
 ```markdown
@@ -28,9 +28,9 @@ The connector must be able to create branches and commits. claude.ai's built-in 
 
 ## Without one
 
-Give the person the finished file to download, named exactly `specs/<KEY>/spec.md`, and a short message they can send to their engineering lead:
+Give the person the finished file to download, named exactly `docs/specs/<KEY>/spec.md`, and a short message they can send to their engineering lead:
 
-> Here is the spec for <KEY>. Please open a Definition PR with it under `specs/<KEY>/` (branch `<KEY>-definition`, title "<KEY>: definition") so product and engineering can review the criteria before build starts.
+> Here is the spec for <KEY>. Please open a Definition PR with it under `docs/specs/<KEY>/` (branch `<KEY>-definition`, title "<KEY>: definition") so product and engineering can review the criteria before build starts.
 
 ## Either way
 

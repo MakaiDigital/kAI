@@ -20,7 +20,7 @@ if [ "$tier" = low ]; then
 fi
 [ -n "$key" ] || kai_die "contract: no ticket key in branch or title (see the ticket-ref gate)"
 
-dir="specs/$key"
+dir="docs/specs/$key"
 problems=
 if [ ! -f "$dir/evidence.md" ]; then
   problems="$problems  $dir/evidence.md is missing (run /kai:prove)

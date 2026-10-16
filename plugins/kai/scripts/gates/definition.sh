@@ -21,8 +21,8 @@ if [ "$tier" = low ]; then
 fi
 [ -n "$key" ] || kai_die "definition: no ticket key in branch or title (see the ticket-ref gate)"
 
-if ! git cat-file -e "$base:specs/$key/spec.md" 2>/dev/null; then
-  printf 'definition: %s is a %s-tier change, but its spec is not approved yet.\nMerge specs/%s/spec.md into %s in a Definition PR first (/kai:spec writes the spec).\n' \
+if ! git cat-file -e "$base:docs/specs/$key/spec.md" 2>/dev/null; then
+  printf 'definition: %s is a %s-tier change, but its spec is not approved yet.\nMerge docs/specs/%s/spec.md into %s in a Definition PR first (/kai:spec writes the spec).\n' \
     "$key" "$tier" "$key" "$base" >&2
   exit 1
 fi

@@ -25,41 +25,41 @@ touch ran-second"
 @test "writes a Markdown evidence file" {
   write_config jira PAY "echo all good"
   commit_config
-  run "$KAI" verify --evidence specs/PAY-1/evidence.md
+  run "$KAI" verify --evidence docs/specs/PAY-1/evidence.md
   [ "$status" -eq 0 ]
-  grep -q 'Result: \*\*PASS\*\*' specs/PAY-1/evidence.md
-  grep -q "^kai verify on commit $(git rev-parse HEAD) at " specs/PAY-1/evidence.md
-  grep -q '^## PASS: echo all good (exit 0)$' specs/PAY-1/evidence.md
-  grep -q '^all good$' specs/PAY-1/evidence.md
+  grep -q 'Result: \*\*PASS\*\*' docs/specs/PAY-1/evidence.md
+  grep -q "^kai verify on commit $(git rev-parse HEAD) at " docs/specs/PAY-1/evidence.md
+  grep -q '^## PASS: echo all good (exit 0)$' docs/specs/PAY-1/evidence.md
+  grep -q '^all good$' docs/specs/PAY-1/evidence.md
 }
 
-@test "evidence describes a commit, so it refuses uncommitted changes outside specs/" {
+@test "evidence describes a commit, so it refuses uncommitted changes outside docs/specs/" {
   write_config jira PAY "echo all good"
   commit_config
   echo change >>README.md
-  run "$KAI" verify --evidence specs/PAY-1/evidence.md
+  run "$KAI" verify --evidence docs/specs/PAY-1/evidence.md
   [ "$status" -eq 1 ]
   [[ "$output" == *"commit your changes first: evidence must describe a commit, and these files differ from it:"* ]]
   [[ "$output" == *" M README.md"* ]]
-  [ ! -e specs/PAY-1/evidence.md ]
+  [ ! -e docs/specs/PAY-1/evidence.md ]
   git checkout -q README.md
   echo 'test("new")' >new.test.js
-  run "$KAI" verify --evidence specs/PAY-1/evidence.md
+  run "$KAI" verify --evidence docs/specs/PAY-1/evidence.md
   [ "$status" -eq 1 ]
   [[ "$output" == *"?? new.test.js"* ]]
   rm new.test.js
-  mkdir -p specs/PAY-1 && echo plan >specs/PAY-1/plan.md
-  run "$KAI" verify --evidence specs/PAY-1/evidence.md
+  mkdir -p docs/specs/PAY-1 && echo plan >docs/specs/PAY-1/plan.md
+  run "$KAI" verify --evidence docs/specs/PAY-1/evidence.md
   [ "$status" -eq 0 ]
 }
 
 @test "the evidence keeps a command's full output, the terminal its last 40 lines" {
   write_config jira PAY "seq 1 250; exit 1"
   commit_config
-  run "$KAI" verify --evidence specs/PAY-1/evidence.md
+  run "$KAI" verify --evidence docs/specs/PAY-1/evidence.md
   [ "$status" -eq 1 ]
-  grep -qx 1 specs/PAY-1/evidence.md
-  grep -qx 250 specs/PAY-1/evidence.md
+  grep -qx 1 docs/specs/PAY-1/evidence.md
+  grep -qx 250 docs/specs/PAY-1/evidence.md
   [ "$(printf '%s\n' "$output" | grep -c '^      [0-9]*$')" -eq 40 ]
 }
 
@@ -68,10 +68,10 @@ touch ran-second"
   mkdir src && echo x >src/app.js
   commit_config
   cd src
-  run "$KAI" verify --evidence specs/PAY-1/evidence.md
+  run "$KAI" verify --evidence docs/specs/PAY-1/evidence.md
   [ "$status" -eq 0 ]
-  grep -q '^all good$' "$TEST_REPO/specs/PAY-1/evidence.md"
-  [ ! -e "$TEST_REPO/src/specs" ]
+  grep -q '^all good$' "$TEST_REPO/docs/specs/PAY-1/evidence.md"
+  [ ! -e "$TEST_REPO/src/docs/specs" ]
 }
 
 @test "warns and succeeds when nothing is configured" {
@@ -82,11 +82,11 @@ touch ran-second"
   [[ "$output" == *"nothing to verify"* ]]
 }
 
-@test "the fingerprint ignores changes under specs/" {
+@test "the fingerprint ignores changes under docs/specs/" {
   write_config jira PAY true
   "$KAI" verify
   before=$(cat "$(git rev-parse --absolute-git-dir)/kai/verified")
-  mkdir -p specs/PAY-1 && echo x >specs/PAY-1/spec.md
+  mkdir -p docs/specs/PAY-1 && echo x >docs/specs/PAY-1/spec.md
   . "$REPO_ROOT/plugins/kai/scripts/lib/common.sh"
   kai_load_config
   [ "$(kai_fingerprint)" = "$before" ]

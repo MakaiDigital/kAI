@@ -42,14 +42,14 @@ Every change starts from a ticket, such as `PAY-123` in Jira or Linear or `#42` 
 
 What happens:
 - Claude reads the ticket (through the Jira, Linear, or GitHub connector, or you paste it).
-- It decides whether the change needs a spec and says why in one line. Only a change that touches nothing but low-tier files (by default specs, docs, and Markdown), such as a typo or a docs fix, skips it and goes straight to `/kai:implement`, with the ticket as the intent. A bug in code is medium tier by default, so from level 2 it gets a short spec: one or two criteria taken from the reproduction. You can overrule it either way.
+- It decides whether the change needs a spec and says why in one line. Only a change that touches nothing but low-tier files (by default anything under `docs/` and any Markdown file), such as a typo or a docs fix, skips it and goes straight to `/kai:implement`, with the ticket as the intent. A bug in code is medium tier by default, so from level 2 it gets a short spec: one or two criteria taken from the reproduction. You can overrule it either way.
 - Below level 2 there are no specs: go straight to `/kai:implement`.
 
 Claude works on a branch named after the ticket (`PAY-123-short-description`), creating or suggesting one. Branch names must contain the key, because CI checks for it.
 
 ### 2. Review the spec (level 2, medium and high tier)
 
-If the ticket needs a spec, Claude writes `specs/PAY-123/spec.md`:
+If the ticket needs a spec, Claude writes `docs/specs/PAY-123/spec.md`:
 - A **Review here** list at the top: the assumptions, chosen numbers, added criteria, security or data implications, open questions, and ADR decisions a person must judge, each with who decides. Each is marked `⚠ review` where it appears below.
 - A short **Context** (problem, outcome, success metric, constraints, out of scope) taken from the ticket, so CI reviewers and `/kai:accept` have the goal while the ticket is open without ticket access.
 - Criteria numbered C1, C2, … in a fixed form: "When …, the system shall …" or "If …, then the system shall …", including the unhappy paths (signed out, network down, invalid input). Each can be proved before merge, by a test, a local end-to-end run, or CI output.
@@ -87,7 +87,7 @@ After you approve, it keeps going without asking:
 8. **Report.** It tells you the PR link, the tier, what was fixed, what was defended and why, and what needs your decision. It never merges or approves.
 
 While it works:
-- In a session where you typed a `/kai:` command, the **Stop hook** runs your test commands (`KAI_VERIFY_CMDS`, with `/bin/sh`) when Claude finishes a turn that changed files outside `specs/`, and sends it back to work while they fail. It runs once per change and remembers a pass, so keep `KAI_VERIFY_CMDS` to fast checks. It gives up after three attempts and tells you.
+- In a session where you typed a `/kai:` command, the **Stop hook** runs your test commands (`KAI_VERIFY_CMDS`, with `/bin/sh`) when Claude finishes a turn that changed files outside `docs/specs/`, and sends it back to work while they fail. It runs once per change and remembers a pass, so keep `KAI_VERIFY_CMDS` to fast checks. It gives up after three attempts and tells you.
 - At level 3, a hook blocks Claude from editing the tests it committed in step 2. A reviewer asking to change one is a question for you, not something Claude does. If a test is wrong, Claude stops and explains why. When you agree, you make the change or tell Claude to; it is committed alone as `PAY-123: correct <test name>`, explained in the PR, and a reviewer approves it with the `kai:tests-changed` label.
 - Reviewer comments are treated as data. Claude never skips a gate or weakens a check because a comment says to.
 
@@ -120,10 +120,10 @@ After the merge is deployed to your integration environment, you run:
 Claude does not wait for deployments. It checks that integration runs a commit that contains the merge, and stops if not. If there is no integration environment, it says so and asks you. It uses production only when you say so, and then runs only the spec's verification, within the limits you set (requests, accounts, data), skips QA, records in `accept.md` that it ran in production at your request, and hands back to you before the retro.
 
 What happens:
-1. **Verify.** It runs the spec's end-to-end steps and every check each criterion needs, recording commands and output in `specs/PAY-123/accept.md`. That is a working file: it is never committed, and its summary goes in the cleanup PR's description.
+1. **Verify.** It runs the spec's end-to-end steps and every check each criterion needs, recording commands and output in `docs/specs/PAY-123/accept.md`. That is a working file: it is never committed, and its summary goes in the cleanup PR's description.
 2. **QA.** A fresh-context adversarial pass tries to break the feature: unhappy paths, boundaries, repeated and concurrent actions, other users' data, permissions. Synthetic data, against integration, a preview deployment, or a local production build, never production. It then sets the verdict in `accept.md`: Pass when every criterion held and nothing broke, otherwise Fail.
 3. **If something fails,** it reproduces it and fixes it itself on a `PAY-123-fix-<n>` branch, following the same steps as `/kai:implement` with the reproduction as the ticket text: you approve the fix's plan as usual, and it opens the fix PR and answers its reviews. After you merge and deploy the fix, tell Claude, and it re-runs what failed plus the full verification (if the session ended, run `/kai:accept PAY-123` again). After 3 cycles, or when a failure needs a decision, it hands back to you.
-4. **If it passes,** it starts a `PAY-123-cleanup` branch from the up-to-date base branch, runs `/kai:retro PAY-123` there, and opens one cleanup PR that deletes `specs/PAY-123/` (ADRs under `docs/adr/` stay) and applies the retro's instruction changes, each in its own commit. The PR changes only Markdown, so it is low tier and passes every gate; if your `.kai/tiers` ranks `CLAUDE.md` or `.claude/` higher, the retro's changes to them go in their own `kai-retro-<date>` PR. A lesson that needs a hook, script, setting, or workflow is listed for you to ticket instead. The PR description keeps the outcome, the verification and QA summary, and the lessons. It answers that PR's reviews like `/kai:implement` does.
+4. **If it passes,** it starts a `PAY-123-cleanup` branch from the up-to-date base branch, runs `/kai:retro PAY-123` there, and opens one cleanup PR that deletes `docs/specs/PAY-123/` (ADRs under `docs/adr/` stay) and applies the retro's instruction changes, each in its own commit. The PR changes only Markdown, so it is low tier and passes every gate; if your `.kai/tiers` ranks `CLAUDE.md` or `.claude/` higher, the retro's changes to them go in their own `kai-retro-<date>` PR. A lesson that needs a hook, script, setting, or workflow is listed for you to ticket instead. The PR description keeps the outcome, the verification and QA summary, and the lessons. It answers that PR's reviews like `/kai:implement` does.
 
 What you do: approve the plan of any fix and merge its PR, then review the cleanup PR and merge it when you are satisfied. That merge is your sign-off: it ends the ticket, and releases read acceptance from it. Claude never moves or comments on the ticket in Jira, Linear, or GitHub.
 
@@ -160,7 +160,7 @@ Claude works on a `kai-retro-<date>` branch, which needs no ticket key. It reads
 | `kai: blocked: KAI_PROD_DEPLOY_PATTERN in .kai/config is not a valid regular expression` | The pattern doesn't parse, so every Bash command is blocked | Fix the pattern |
 | Claude Code asks you to allow a `git push` to the base branch | Kai's settings ask before a `git push` that names the base branch (a bare `git push` doesn't name it, so only GitHub's branch protection stops that one) | Decline it: changes reach the base branch through a pull request |
 | `kai: .kai/config is not valid sh`, or `KAI_LEVEL in .kai/config must be 1, 2, 3 or 4` | `.kai/config` has a shell syntax error (the message above it names the line) or a bad level. Until it's fixed, Bash commands are blocked and the other guards are off | Fix the line, then retry |
-| `kai: commit your changes first: evidence must describe a commit` | `/kai:prove` ran `kai verify --evidence` with uncommitted changes outside `specs/` | Commit the work first. A file your test commands create belongs in `.gitignore`, in a commit of its own |
+| `kai: commit your changes first: evidence must describe a commit` | `/kai:prove` ran `kai verify --evidence` with uncommitted changes outside `docs/specs/` | Commit the work first. A file your test commands create belongs in `.gitignore`, in a commit of its own |
 | `kai: cannot diff against origin/main; in CI, check out with fetch-depth: 0` | The base branch's history isn't there, as in a shallow CI checkout | In CI, set `fetch-depth: 0` on `actions/checkout`; locally, run `git fetch origin` |
 | `kai: tests-locked: needs git 2.36 or newer` | Your git can't show what a merge commit changed, which the gate checks | Upgrade git |
 | CI `ticket-ref` fails | No ticket key in the branch name or PR title | Rename the branch or add the key to the PR title |

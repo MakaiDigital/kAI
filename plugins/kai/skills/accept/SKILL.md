@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Accept
 
-Tests prove the code matches the criteria. Acceptance checks that the criteria matched the ticket, by watching the deployed feature run and trying to break it. When it passes, the ticket's working documents in `specs/<KEY>/` are removed, what was learned is folded back into the repository, and the ticket is done.
+Tests prove the code matches the criteria. Acceptance checks that the criteria matched the ticket, by watching the deployed feature run and trying to break it. When it passes, the ticket's working documents in `docs/specs/<KEY>/` are removed, what was learned is folded back into the repository, and the ticket is done.
 
 The engineer runs this once the deployment to integration is complete. Do not wait for or detect deployments.
 
@@ -16,14 +16,14 @@ If the repository has no `.kai/config`, it does not use Kai. Say so and help dir
 ## 1. Prepare
 
 - The key comes from `$ARGUMENTS`. Acceptance happens after merge, so the branch usually no longer carries it; ask if it is missing. Work from the base branch, up to date.
-- Read `specs/<KEY>/spec.md` (its **Context** and **End-to-end verification**), the plan and evidence. With no spec, use the ticket and the plan.
+- Read `docs/specs/<KEY>/spec.md` (its **Context** and **End-to-end verification**), the plan and evidence. With no spec, use the ticket and the plan.
 - Confirm the integration environment and how to reach it, and that the change is there: the commit it reports as running (a version or health endpoint, if it has one) must contain the ticket's latest merge commit, which after a fix cycle is the fix PR's (`git merge-base --is-ancestor <merge commit> <deployed commit>`). If you cannot reach it, or it runs older code, say so and stop. Evidence from somewhere else is evidence of the wrong thing.
 - Integration only. With no integration environment, say so and ask the person. Use production only when they say so, and then run only step 2's verification, within the limits they set (requests, accounts, data); skip step 3, and record in `accept.md` that it ran in production at their request. Without QA there is no Verdict: leave it Pending and hand back before the retro, since accepting without QA is their call.
 - Use synthetic test data. Never record personal data, credentials, or tokens.
 
 ## 2. Verify
 
-Start from `${CLAUDE_PLUGIN_ROOT}/templates/accept.md` and save it as `specs/<KEY>/accept.md`. It is a working file: never commit it; its summary goes in the cleanup PR description. Run the spec's end-to-end steps exactly as written (curl sequence, contract test, UI walkthrough with browser tools if you have them), then every check each criterion needs, and record the command, the output, and the criteria it shows. If a step cannot be run as written, record that and why rather than improvising a different check: a procedure that does not work is a finding. A step only production can show (real traffic, a production alert) is the exception: record it as not run, for the release owner.
+Start from `${CLAUDE_PLUGIN_ROOT}/templates/accept.md` and save it as `docs/specs/<KEY>/accept.md`. It is a working file: never commit it; its summary goes in the cleanup PR description. Run the spec's end-to-end steps exactly as written (curl sequence, contract test, UI walkthrough with browser tools if you have them), then every check each criterion needs, and record the command, the output, and the criteria it shows. If a step cannot be run as written, record that and why rather than improvising a different check: a procedure that does not work is a finding. A step only production can show (real traffic, a production alert) is the exception: record it as not run, for the release owner.
 
 ## 3. Try to break it
 
@@ -49,7 +49,7 @@ First create the cleanup branch from the up-to-date base: `git fetch origin && g
 
 On `<KEY>-cleanup`:
 
-- Delete only `specs/<KEY>/`: `git rm -r` its tracked files, and commit that alone as `<KEY>: cleanup`.
+- Delete only `docs/specs/<KEY>/`: `git rm -r` its tracked files, and commit that alone as `<KEY>: cleanup`.
 - The PR changes only Markdown: this deletion and the retro's instruction changes, each in its own commit so any one can be reverted alone. That keeps it low tier, so it passes every gate without an exemption; the retro puts changes to files `.kai/tiers` ranks higher in their own PR. Lessons that need a hook, script, setting, or workflow are listed for the person to ticket.
 - Push with `git push -u origin <KEY>-cleanup` and open a PR titled `<KEY>: cleanup`. Its description holds what the files held, since they no longer will: the outcome, the verification and QA summary from `accept.md` (what was run, what was attempted, what failed and was fixed in which PR), and the retro's lessons with the evidence for each. Then remove the untracked `accept.md`.
 
