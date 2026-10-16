@@ -17,7 +17,7 @@ The ticket is the intent; there is no separate intent document. `/kai:spec` read
 
 | Command | What it does | Output |
 |---|---|---|
-| `/kai:spec <KEY>` | Reads the ticket, decides whether it needs a spec (only a change that touches nothing but low-tier files skips it), then writes numbered EARS criteria, a contract mapping each to a test, and a short "Review here" list of what a person must judge. Drafts an ADR when the change needs one (level 2) | `specs/<KEY>/spec.md`, `docs/adr/NNNN-*.md` |
+| `/kai:spec <KEY>` | Reads the ticket, decides whether it needs a spec (only a change that touches nothing but low-tier files skips it), then writes numbered EARS criteria, a diagram of the behavior, a contract mapping each to a test, and a short "Review here" list of what a person must judge. Drafts an ADR when the change needs one (level 2) | `docs/specs/<KEY>/spec.md`, `docs/adr/NNNN-*.md` |
 | `/kai:adr` | Records an architecture decision with options and trade-offs. `/kai:spec` runs it when needed; call it directly for a decision outside a spec (level 2) | `docs/adr/NNNN-*.md` |
 | `/kai:implement` | Plans (stops for approval), commits failing tests, implements the minimum, proves it, gets an independent review and fixes it, opens the PR, then answers its trusted reviewers (fixing what is right, defending with evidence what is not) until reviews are satisfied and checks are green, for up to five rounds | `plan.md`, tests, code, `evidence.md`, pull request |
 | `/kai:prove` | Runs the team's checks and maps each planned test (and spec criterion) to its result. `/kai:implement` calls it; run it alone to re-check | `evidence.md` |
@@ -40,7 +40,7 @@ The settings `kai init` writes also deny `gh pr merge` and adding the `kai:tests
 
 ## Kai for Product (claude.ai and Cowork)
 
-`kai-product` lets product managers and other non-engineers write the spec and acceptance criteria in claude.ai or Cowork, without git or a terminal. Its `spec` skill produces the same `specs/<KEY>/spec.md` file engineering's Kai reads, and delivers it as the Definition PR:
+`kai-product` lets product managers and other non-engineers write the spec and acceptance criteria in claude.ai or Cowork, without git or a terminal. Its `spec` skill produces the same `docs/specs/<KEY>/spec.md` file engineering's Kai reads, and delivers it as the Definition PR:
 
 - With a GitHub connector that can write to the repository (claude.ai's built-in GitHub integration is read-only), it opens the PR after the person approves its title and body.
 - Without one, it hands over the file and a note for the engineering lead.
@@ -96,7 +96,7 @@ The plugin puts `kai` on Claude's PATH. The same script backs the hooks and the 
 kai key [TEXT]              ticket key from TEXT or the current branch
 kai verify [--evidence F]   run KAI_VERIFY_CMDS; optionally write the evidence to F
 kai tier [--base REF]       risk tier of the change, from .kai/tiers
-kai metrics [--weeks N]     weekly speed and quality report from the specs/ history
+kai metrics [--weeks N]     weekly speed and quality report from the docs/specs/ history
 kai gate ticket-ref         CI gate: branch or PR title must reference a ticket
 kai gate definition         CI gate (level 2): medium/high-tier code needs a merged spec
 kai gate tests-locked       CI gate (level 3): tests from the ticket's failing-tests commits are unchanged
@@ -113,7 +113,7 @@ Set `KAI_LEVEL` in `.kai/config` (or `--level` when installing). CI judges each 
 Kai adds only one gate at level 2. The rest comes from GitHub settings you configure once per repository (at any level):
 
 - **Branch protection on `main`:** require a pull request, at least one approval, and the `kai` check. This is what stops direct pushes, for people and agents alike. Private repositories need a paid GitHub plan for branch protection or rulesets; until then, only Kai's permission rules stand in the way of a push to the base branch.
-- **CODEOWNERS**, for example `specs/**/spec.md @your-org/product` and `specs/ @your-org/product @your-org/eng-leads`, so product and engineering both sign off on the Definition PR. Add `.github/workflows/ @your-org/eng-leads` too: a PR runs the workflow files it changes, so an edit to `kai.yml` changes its own checks. Branches in `KAI_TICKET_EXEMPT` (`kai-setup*`, `kai-retro*`, and bot branches by default) skip every gate, so for those PRs the approval is the only check.
+- **CODEOWNERS**, for example `docs/specs/**/spec.md @your-org/product` and `docs/specs/ @your-org/product @your-org/eng-leads`, so product and engineering both sign off on the Definition PR. Add `.github/workflows/ @your-org/eng-leads` too: a PR runs the workflow files it changes, so an edit to `kai.yml` changes its own checks. Branches in `KAI_TICKET_EXEMPT` (`kai-setup*`, `kai-retro*`, and bot branches by default) skip every gate, so for those PRs the approval is the only check.
 - **High-risk paths:** list them in CODEOWNERS with the tech leads and require two approvals, so a human reads that code.
 
 3. **Independent verification.** Tests in a ticket's failing-tests commits are locked for that ticket's PRs: a hook blocks Claude from editing them, and the `tests-locked` gate fails if they change, unless a reviewer adds the `kai:tests-changed` label. The `contract` gate requires every criterion and planned test to be PASS with evidence. `/kai:implement` also runs the gates locally before it opens the PR (its read-only review runs at every level), and `kai-review.yml` posts the same review on trusted PRs (not forks or bots). The review informs the human approver; it never blocks or approves the merge by itself.

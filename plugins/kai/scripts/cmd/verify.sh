@@ -17,9 +17,9 @@ state=$(kai_state_dir)
 fingerprint=${KAI_FINGERPRINT:-$(kai_fingerprint)}
 cd "$KAI_REPO_ROOT" || exit 1
 if [ "$report" != /dev/null ]; then
-  [ -z "$(git status --porcelain -- ':(top)' ':(exclude,top)specs')" ] ||
+  [ -z "$(git status --porcelain -- ':(top)' ':(exclude,top)docs/specs')" ] ||
     kai_die "commit your changes first: evidence must describe a commit, and these files differ from it:
-$(git status --short -- ':(top)' ':(exclude,top)specs')"
+$(git status --short -- ':(top)' ':(exclude,top)docs/specs')"
   mkdir -p "$(dirname -- "$report")"
 fi
 

@@ -5,4 +5,4 @@ argument-hint: [decision title]
 disable-model-invocation: true
 ---
 
-Follow `${CLAUDE_PLUGIN_ROOT}/references/adr.md`. Arguments: $ARGUMENTS
+Follow `${CLAUDE_PLUGIN_ROOT}/references/adr.md`, and write for people by `${CLAUDE_PLUGIN_ROOT}/references/writing.md`. Arguments: $ARGUMENTS

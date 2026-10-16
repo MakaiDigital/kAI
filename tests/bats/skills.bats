@@ -16,6 +16,15 @@ SDLC="$REPO_ROOT/plugins/kai"
   grep -qF '${CLAUDE_PLUGIN_ROOT}/references/answer-reviews.md' "$SDLC/skills/accept/SKILL.md"
 }
 
+@test "every skill and review agent writes for people by the same rules" {
+  for f in "$REPO_ROOT"/plugins/*/skills/*/SKILL.md; do
+    grep -qF '${CLAUDE_PLUGIN_ROOT}/references/writing.md' "$f" || { echo "missing in $f"; false; }
+  done
+  for f in "$SDLC"/agents/*.md; do
+    grep -qF 'KAI_WRITING_STE' "$f" || { echo "missing in $f"; false; }
+  done
+}
+
 @test "procedure files are read as plain files, so they use no skill substitutions" {
   run grep -n 'CLAUDE_PLUGIN_ROOT\|\$ARGUMENTS' "$SDLC"/references/*.md
   [ "$status" -eq 1 ]

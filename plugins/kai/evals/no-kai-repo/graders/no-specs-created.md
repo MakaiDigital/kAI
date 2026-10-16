@@ -1,5 +1,5 @@
 ---
 type: file_exists
-path: specs/**
+path: docs/specs/**
 exists: false
 ---

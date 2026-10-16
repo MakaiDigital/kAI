@@ -13,15 +13,15 @@ if ! key=$(kai_key_from "$branch"); then
   kai_system_message "$jq_note"
   exit 0
 fi
-dir="$KAI_REPO_ROOT/specs/$key"
+dir="$KAI_REPO_ROOT/docs/specs/$key"
 base=$(kai_base_ref 2>/dev/null) || base=
 changed_here() {
   [ -f "$dir/$1" ] || return 1
   [ -n "$base" ] || return 0
-  ! git show "$base:specs/$key/$1" 2>/dev/null | cmp -s - "$dir/$1"
+  ! git show "$base:docs/specs/$key/$1" 2>/dev/null | cmp -s - "$dir/$1"
 }
 case $(printf '%s' "$branch" | tr '[:lower:]' '[:upper:]') in
-  *"$key"-DEFINITION*) next="finish specs/$key/spec.md and open the Definition PR (/kai:spec $key)." ;;
+  *"$key"-DEFINITION*) next="finish docs/specs/$key/spec.md and open the Definition PR (/kai:spec $key)." ;;
   *"$key"-CLEANUP*) next="finish the cleanup PR (/kai:accept $key)." ;;
   *"$key"-FIX-*) next="/kai:implement the fix, starting with its plan." ;;
   *)
@@ -36,4 +36,4 @@ case $(printf '%s' "$branch" | tr '[:lower:]' '[:upper:]') in
     fi
     ;;
 esac
-kai_system_message "$jq_note" "kai: ticket $key. Artifacts are in specs/$key/. Next: $next"
+kai_system_message "$jq_note" "kai: ticket $key. Artifacts are in docs/specs/$key/. Next: $next"

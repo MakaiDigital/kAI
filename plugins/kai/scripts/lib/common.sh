@@ -80,7 +80,7 @@ kai_fingerprint() {
     cd "$KAI_REPO_ROOT" || exit 1
     export GIT_INDEX_FILE="$_idx"
     git add -A >/dev/null 2>&1
-    git rm -r -q --cached --ignore-unmatch -- specs >/dev/null 2>&1
+    git rm -r -q --cached --ignore-unmatch -- docs/specs >/dev/null 2>&1
     git write-tree
   )
   rm -f "$_idx"
@@ -164,7 +164,7 @@ kai_lock_commits() {
 }
 
 kai_lock_files() {
-  git show -z --no-renames --name-only --format= --diff-filter=AM "$1" -- ':(top)' ':(exclude,top)specs' | tr '\000' '\n'
+  git show -z --no-renames --name-only --format= --diff-filter=AM "$1" -- ':(top)' ':(exclude,top)docs/specs' | tr '\000' '\n'
 }
 
 kai_locked_paths() {

@@ -11,8 +11,8 @@ setup() {
 }
 
 at() {
-  mkdir -p "specs/$1"
-  echo x >>"specs/$1/$2"
+  mkdir -p "docs/specs/$1"
+  echo x >>"docs/specs/$1/$2"
   git add -A
   GIT_COMMITTER_DATE="@$3" GIT_AUTHOR_DATE="@$3" git commit -qm "$1 $2"
 }
@@ -63,7 +63,7 @@ merge() {
   at PAY-1 spec.md $((NOW - 6 * DAY))
   at PAY-1 plan.md $((NOW - 5 * DAY))
   at PAY-1 evidence.md $((NOW - 4 * DAY))
-  git rm -rq specs/PAY-1
+  git rm -rq docs/specs/PAY-1
   GIT_COMMITTER_DATE="@$((NOW - 1 * DAY))" GIT_AUTHOR_DATE="@$((NOW - 1 * DAY))" git commit -qm "PAY-1: cleanup"
   run "$KAI" metrics --weeks 4 --base main
   [ "$status" -eq 0 ]
@@ -77,7 +77,7 @@ merge() {
   merge PAY-1-definition $((NOW - 11 * DAY))
   git switch -qc PAY-1-favorites
   at PAY-1 plan.md $((NOW - 9 * DAY))
-  echo contract >>specs/PAY-1/spec.md
+  echo contract >>docs/specs/PAY-1/spec.md
   at PAY-1 evidence.md $((NOW - 7 * DAY))
   merge PAY-1-favorites $((NOW - 4 * DAY))
   run "$KAI" metrics --weeks 4 --base main

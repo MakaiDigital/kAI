@@ -21,7 +21,7 @@ cd "$KAI_REPO_ROOT" || exit 1
 now=${KAI_NOW:-$(date +%s)}
 added() { git log --first-parent -m "$ref" --diff-filter=A --format=%ct -- "$1" | tail -n 1; }
 
-tickets=$(git log --first-parent -m "$ref" --diff-filter=A --name-only --format= -- ':(top)specs/*/evidence.md' | sed 's#/evidence.md$##' | sort -u | while IFS= read -r dir; do
+tickets=$(git log --first-parent -m "$ref" --diff-filter=A --name-only --format= -- ':(top)docs/specs/*/evidence.md' | sed 's#/evidence.md$##' | sort -u | while IFS= read -r dir; do
   done_at=$(added "$dir/evidence.md")
   [ -n "$done_at" ] || continue
   plan=$(added "$dir/plan.md")
@@ -41,7 +41,7 @@ week_of() {
   date -u -d "@$t" +%F 2>/dev/null || date -u -r "$t" +%F
 }
 
-printf '# Kai metrics\n\nLast %s weeks on `%s`, from the `specs/` history. Speed and quality are shown together: neither means much alone.\n\n' "$weeks" "$ref"
+printf '# Kai metrics\n\nLast %s weeks on `%s`, from the `docs/specs/` history. Speed and quality are shown together: neither means much alone.\n\n' "$weeks" "$ref"
 printf '| Week ending | Shipped | Median lead time (days) | Reworked |\n|---|---|---|---|\n'
 printf '%s\n' "$tickets" | awk -v weeks="$weeks" '
   NF {

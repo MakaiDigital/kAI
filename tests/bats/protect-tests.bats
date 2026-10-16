@@ -52,11 +52,11 @@ edit_hook() {
   [ "$status" -eq 2 ]
 }
 
-@test "files under specs/ in a lock commit stay editable" {
-  mkdir -p specs/PAY-1 && echo plan >specs/PAY-1/plan.md
+@test "files under docs/specs/ in a lock commit stay editable" {
+  mkdir -p docs/specs/PAY-1 && echo plan >docs/specs/PAY-1/plan.md
   echo 'test("b")' >test/b.test.js
-  git add specs test && git commit -qm "PAY-1: failing tests"
-  run edit_hook "$PWD/specs/PAY-1/plan.md"
+  git add docs/specs test && git commit -qm "PAY-1: failing tests"
+  run edit_hook "$PWD/docs/specs/PAY-1/plan.md"
   [ "$status" -eq 0 ]
   run edit_hook "$PWD/test/b.test.js"
   [ "$status" -eq 2 ]

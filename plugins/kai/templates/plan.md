@@ -8,6 +8,14 @@
 
 <Two or three sentences: the approach and why it is the smallest change that achieves the outcome.>
 
+<!-- Then a diagram of what changes: the components or modules behind Files touched and how they connect, labeled "(new)" or "(changed)"; unchanged neighbors may appear unlabeled for context. Show nothing that Files touched and Tasks don't say, and redraw it if they change. A Mermaid `flowchart` for structure, `sequenceDiagram` for a call path, or `erDiagram` for a schema change, about a dozen nodes at most, flowchart nodes written as `id["Label"]`, every other label in plain words, and no styling, links or HTML, so GitHub renders it. For a change to one file or function, write "No diagram: <reason>." instead. -->
+
+```mermaid
+flowchart LR
+  caller["Existing caller"] --> changed["Module (changed)"]
+  changed --> added["Module (new)"]
+```
+
 ## Files touched
 
 | Path | Change | Why |

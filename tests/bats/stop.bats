@@ -101,7 +101,7 @@ COUNTING_VERIFY='echo run >>"$(git rev-parse --absolute-git-dir)/runs"'
   start_session "$COUNTING_VERIFY"
   echo change >>README.md
   run_hook stop
-  mkdir -p specs/PAY-1 && echo e >specs/PAY-1/evidence.md
+  mkdir -p docs/specs/PAY-1 && echo e >docs/specs/PAY-1/evidence.md
   git add -A && git commit -qm evidence
   run run_hook stop
   [ "$status" -eq 0 ]

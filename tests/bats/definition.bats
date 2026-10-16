@@ -4,12 +4,12 @@ setup() {
   make_repo
   write_config
   echo "KAI_LEVEL=2" >>.kai/config
-  printf 'specs/* low\n*.md low\n' >.kai/tiers
+  printf 'docs/* low\n*.md low\n' >.kai/tiers
   commit_config
 }
 
 write_definition() {
-  mkdir -p specs/PAY-1 && echo s >specs/PAY-1/spec.md
+  mkdir -p docs/specs/PAY-1 && echo s >docs/specs/PAY-1/spec.md
 }
 
 definition() { "$KAI" gate definition --base main "$@"; }
@@ -78,10 +78,10 @@ definition() { "$KAI" gate definition --base main "$@"; }
 
 @test "a cleanup branch that deletes the spec and adds only Markdown passes as low tier" {
   write_definition
-  echo e >specs/PAY-1/evidence.md
+  echo e >docs/specs/PAY-1/evidence.md
   git add -A && git commit -qm "PAY-1: done"
   git switch -qc PAY-1-cleanup
-  git rm -rq specs/PAY-1 && git commit -qm "PAY-1: cleanup"
+  git rm -rq docs/specs/PAY-1 && git commit -qm "PAY-1: cleanup"
   echo "- A lesson." >>README.md && git commit -qam "PAY-1: retro"
   run definition
   [ "$status" -eq 0 ]
@@ -92,7 +92,7 @@ definition() { "$KAI" gate definition --base main "$@"; }
   write_definition
   git add -A && git commit -qm "PAY-1: definition"
   git switch -qc PAY-1-cleanup
-  git rm -rq specs/PAY-1
+  git rm -rq docs/specs/PAY-1
   echo x >app.js
   git add -A && git commit -qm "PAY-1: cleanup"
   run definition

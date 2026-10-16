@@ -13,7 +13,7 @@ usage: kai <command> [args]
   key [TEXT]              ticket key found in TEXT (default: the current branch)
   verify [--evidence F]   run KAI_VERIFY_CMDS; optionally write the evidence to F
   tier [--base REF]       risk tier of the change (low, medium, high) from .kai/tiers
-  metrics [--weeks N]     weekly speed and quality report from the specs/ history
+  metrics [--weeks N]     weekly speed and quality report from the docs/specs/ history
   gate <name> [args]      CI gate: ticket-ref, definition, tests-locked or contract
   report --dir D [opts]   Markdown report of the gate results in D, for the PR comment
   hook <name>             Claude Code hook: session-start, prompt-expansion, guard-bash, protect-tests or stop
