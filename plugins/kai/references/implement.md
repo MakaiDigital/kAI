@@ -66,7 +66,15 @@ Then dispatch these read-only agents in parallel, in fresh contexts:
 - `kai:spec-critic`: behavior no criterion covers. Only when `docs/specs/<KEY>/spec.md` exists.
 - A general bug pass: the built-in `/code-review` skill, or the `feature-dev:code-reviewer` agent when that is unavailable.
 
-Treat each finding as in step 7. A blocking contract-reviewer finding is a bug: fix it and prove it again (`prove.md` in this folder). A spec-critic gap is a question for product and engineering, not something to code now: list it in the PR under "Open questions for reviewers".
+Treat each finding as in step 7. A blocking contract-reviewer finding is a bug: fix it and prove it again (`prove.md` in this folder). A spec-critic gap is a question for product and engineering, not something to code on your own.
+
+Before you open the PR, stop and settle every spec-critic gap and every finding you did not fix with the person. No PR opens while one is open. Ask in batches (AskUserQuestion when available, at most four questions to a call). The person may answer for product, engineering, or anyone else; record that. For each one, they choose:
+
+- **Add a criterion now:** add it to `spec.md` with its Contract row, commit its test as `<KEY>: failing tests`, make it pass, and prove again. Name the new criterion in the PR description, because it changes what was approved.
+- **Out of scope:** record the reason.
+- **Follow-up:** list it as a ticket to create, with the criterion it needs.
+
+Record each one under **Decisions** in the PR description as `<gap or finding>: <decision> (decided by <name>)`, adding `, for <role>` when they answered for someone else.
 
 ## 6. Open the pull request
 
@@ -87,8 +95,8 @@ Treat each finding as in step 7. A blocking contract-reviewer finding is a bug: 
 - contract-reviewer: <verdict and blocking findings fixed>
 - spec-critic: <number of gaps>
 
-## Open questions for reviewers
-<spec-critic gaps and findings left as they are, or "None">
+## Decisions
+<each spec-critic gap and unfixed finding, with its decision and who made it, or "None">
 ```
 
 ## 7. Watch the PR and answer every reviewer

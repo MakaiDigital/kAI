@@ -38,6 +38,24 @@ definition() { "$KAI" gate definition --base main "$@"; }
   [ "$status" -eq 0 ]
 }
 
+@test "a spec with an open question fails, even in its own Definition PR" {
+  git switch -qc PAY-1-definition
+  mkdir -p docs/specs/PAY-1
+  printf '# Spec\n\n## Review here\n\n- ⚠ Limit of 50 favorites (C2; decides: product)\n' >docs/specs/PAY-1/spec.md
+  run definition
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"docs/specs/PAY-1/spec.md still has open questions"* ]]
+  [[ "$output" == *"5:- ⚠ Limit of 50 favorites"* ]]
+}
+
+@test "a spec whose questions are decided passes" {
+  git switch -qc PAY-1-definition
+  mkdir -p docs/specs/PAY-1
+  printf '# Spec\n\n## Review here\n\n- Limit of 50 favorites: keep 50 (C2; decided by Ana, for product)\n' >docs/specs/PAY-1/spec.md
+  run definition
+  [ "$status" -eq 0 ]
+}
+
 @test "code for a medium change fails until the spec is merged to base" {
   git switch -qc PAY-1-work
   write_definition

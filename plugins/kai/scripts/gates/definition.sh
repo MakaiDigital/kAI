@@ -14,6 +14,12 @@ fi
 [ -n "$base" ] || base=$(kai_base_ref)
 cd "$KAI_REPO_ROOT" || exit 1
 
+if [ -n "$key" ] && open=$(grep -nF '⚠' "docs/specs/$key/spec.md" 2>/dev/null); then
+  printf 'definition: docs/specs/%s/spec.md still has open questions:\n%s\nDecide each one with the person and remove its marker before opening a PR (/kai:spec %s).\n' \
+    "$key" "$(printf '%s\n' "$open" | sed 's/^/  /')" "$key" >&2
+  exit 1
+fi
+
 tier=$(kai_change_tier "$base")
 if [ "$tier" = low ]; then
   printf 'definition: low tier, no spec required\n'

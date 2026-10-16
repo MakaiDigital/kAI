@@ -12,9 +12,9 @@ adr: <docs/adr/NNNN-title.md, or none>
 
 ## Review here
 
-<!-- What a person must judge before approving: assumptions, chosen numbers, added criteria, security or data implications, open questions, and ADR decisions. Everything else follows from the ticket. Each item names its criterion (or its section, when no criterion covers it) and who decides, and carries a `⚠ review` marker where it appears below. Before the Definition PR merges, the reviewers resolve each item (keep or change it, and note who decided) and remove its marker. -->
+<!-- The judgments this spec rests on: assumptions, chosen numbers, added criteria, security or data implications, answers to open questions, and ADR choices. Everything else follows from the ticket. A person decides each one before the Definition PR opens, and may answer for whoever owns it. Each item names its criterion (or its section, when no criterion covers it), the decision, and who made it, adding "for <role>" when they answered for someone else. Reviewers check these first. No open question may remain when the PR opens: the definition gate fails a spec that still holds an open-question marker. -->
 
-- ⚠ <item> (C<n> or the section; decides: <who>)
+- <item>: <decision> (C<n> or the section; decided by <name>, for <role>)
 
 ## Context
 

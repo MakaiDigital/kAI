@@ -21,7 +21,7 @@ The connector must be able to create branches and commits. claude.ai's built-in 
 - Engineering: are they complete (error paths, permissions, limits) and can each one become a test?
 
 ## Review here
-<the spec's Review here list, each item with who decides, or "None">
+<the spec's Review here decisions, each with who decided, or "None">
 ```
 
 6. Share the link and say who should review. The repository's code owners are requested automatically.

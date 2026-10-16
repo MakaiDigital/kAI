@@ -10,7 +10,7 @@ Find the ticket key in the branch name or pull request title (a Jira or Linear k
 
 Work out which kind of PR it is:
 
-- **Definition PR** (only `docs/specs/<KEY>/spec.md` and ADRs): there is no code or evidence yet. Check that the criteria are testable and contradict no ADR, and that the spec's Overview diagram shows only what the criteria say.
+- **Definition PR** (only `docs/specs/<KEY>/spec.md` and ADRs): there is no code or evidence yet. Check that the criteria are testable and contradict no ADR, and that the spec's Overview diagram shows only what the criteria say. Every **Review here** item must be a decision that names who made it, and every ADR must be Accepted. An open question in a PR is blocking.
 - **Change PR**: check everything below.
 - **Fix PR** (`<KEY>-fix-<n>`): a Change PR for a failure that acceptance found.
 - **Cleanup PR** (`<KEY>-cleanup`): it deletes `docs/specs/<KEY>/` and applies the retro's instruction changes. Do not flag the deleted files or the missing plan. Check that it changes only Markdown and that no instruction change weakens a safety rule. A retro PR (`kai-retro-<date>`) is a cleanup PR with no ticket and no specs to delete.

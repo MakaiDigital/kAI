@@ -39,12 +39,12 @@ Good criteria:
 - **Checked facts only.** A criterion about a live page, a vendor, a model, or a quota nobody has checked goes under **Review here** as an open question for engineering.
 - **Made-up data only.**
 
-Present the criteria in plain language, mark the ones that need engineering's judgment (limits, error handling, security) as proposals for engineering to confirm, and revise with the person. Proposing criteria and letting people edit finds more gaps than writing from scratch.
+Present the criteria in plain language, mark the ones that need engineering's judgment (limits, error handling, security) as proposals, and revise with the person. Proposing criteria and letting people edit finds more gaps than writing from scratch.
 
 ## 3. Complete the spec
 
 - **Frontmatter and Context**: the key, ticket link, provisional tier, status `draft`, and `adr: none`, then the problem, outcome, success metric, constraints, and out of scope, from the ticket. Say "none stated in the ticket" rather than inventing a metric, and list it under **Review here**.
-- **Review here**: fill this top section last. List only what a person must judge: assumptions the ticket did not confirm, numbers chosen without a source, criteria you added, security or data implications, and open questions, each with its criterion and who decides. Mark each in the body with `⚠ review`.
+- **Review here**: fill this top section last. List only what a person must judge: assumptions the ticket did not confirm, numbers chosen without a source, criteria you added, security or data implications, and open questions, each with its criterion and who decides. Mark each in the body with `⚠ review`. Then settle every item with the person before you deliver, in batches of at most four questions, with your proposal as the first answer. They may answer for engineering or anyone else. Apply each answer, remove its `⚠` markers, and rewrite the item as `<item>: <decision> (C<n>; decided by <name>, for <role>)`, leaving out "for <role>" when it was their own call. Nothing is delivered while an item is open.
 - **Out of scope**: say it explicitly, or the gap gets filled with guesses.
 - **Overview**: a simple diagram of the flow, drawn once the criteria are settled, showing only what they say. The template has the rules.
 - **Interfaces touched**: the screens, APIs, data, or outside systems involved, in plain words. No file names.
@@ -54,4 +54,4 @@ Present the criteria in plain language, mark the ones that need engineering's ju
 
 ## 4. Deliver
 
-Follow `${CLAUDE_PLUGIN_ROOT}/references/deliver.md` to send the spec to engineering as the Definition PR. If the change needs an architecture decision, say so under **Review here**; engineering writes the ADR and adds it to the same Definition PR. Once it merges, engineering builds against it with Kai.
+Follow `${CLAUDE_PLUGIN_ROOT}/references/deliver.md` to send the spec to engineering as the Definition PR. If the change needs an architecture decision, engineering must write and decide the ADR before the Definition PR opens. So deliver the file without opening the PR, and tell the person that engineering adds the ADR and opens the PR with `/kai:spec <KEY>`. Once it merges, engineering builds against it with Kai.
