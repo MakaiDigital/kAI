@@ -17,9 +17,14 @@ kai_load_config() {
   : "${KAI_VERIFY_CMDS:=}"
   : "${KAI_BASE_BRANCH:=main}"
   : "${KAI_PROD_DEPLOY_PATTERN:=}"
+  : "${KAI_ENFORCE:=block}"
   case $KAI_LEVEL in
     1 | 2 | 3 | 4) ;;
     *) kai_die "KAI_LEVEL in .kai/config must be 1, 2, 3 or 4, not '$KAI_LEVEL'" ;;
+  esac
+  case $KAI_ENFORCE in
+    report | block) ;;
+    *) kai_die "KAI_ENFORCE in .kai/config must be report or block, not '$KAI_ENFORCE'" ;;
   esac
 }
 

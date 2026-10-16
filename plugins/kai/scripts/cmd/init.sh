@@ -155,6 +155,7 @@ KAI_VERIFY_CMDS=$(quote "$verify")
 # Optional, shown with their defaults:
 $base_line
 # KAI_TICKET_EXEMPT="dependabot/* renovate/* kai-setup* kai-retro*"   # branches that need no ticket key; they skip every gate
+# KAI_ENFORCE=block                             # block = a failing gate fails the PR check; report = the gates comment on the PR and the check stays green
 # KAI_PROD_DEPLOY_PATTERN=""                    # regex for production deploys; they then need KAI_RELEASE_APPROVAL
 EOF
 create .kai/config "$work/config"

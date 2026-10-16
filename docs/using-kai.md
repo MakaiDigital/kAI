@@ -104,6 +104,7 @@ In CI:
   | `contract` | 3+ | every criterion and planned test is PASS, with evidence from a passing run updated on this branch |
   | `verify` | opt-in | your test commands pass. Off by default: they already run locally and in your own CI |
 
+- Every run also posts one sticky PR comment, updated in place, with a `VERDICT: PASS` or `VERDICT: FAIL`, a row per gate and the full output of each failing gate. With `KAI_ENFORCE=report` the check stays green and that comment is the verdict; the default `block` also fails the check. On a PR from a fork the report goes to the job summary only. The workflow needs `pull-requests: write`, which `kai init` writes into its template; an existing repository adds it when it takes the new template.
 - At level 3, `kai review` posts an AI review comment. It informs the reviewer but never blocks or approves the merge. A person always approves.
 
 What the reviewer does: judge the change against the spec and contract rather than reading every line. For high-tier changes, also read the code.
@@ -195,6 +196,7 @@ kai metrics              weekly shipped count, lead time, and rework
 | `KAI_VERIFY_CMDS` | The commands that must pass, one per line, run from the repository root with `/bin/sh` |
 | `KAI_BASE_BRANCH` | Optional; `main` by default. Setup writes it when the repository's default branch isn't `main` |
 | `KAI_TICKET_EXEMPT` | Optional; branches that need no key and skip every gate: `dependabot/*`, `renovate/*`, `kai-setup*`, and `kai-retro*` by default |
+| `KAI_ENFORCE` | Optional; `block` by default. `block` fails the PR check when a gate fails. `report` keeps the check green and leaves the verdict to the PR comment |
 | `KAI_PROD_DEPLOY_PATTERN` | Optional; a regex for production deploy commands |
 
 - `.kai/tiers` sets the risk tiers.

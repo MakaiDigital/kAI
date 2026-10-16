@@ -17,7 +17,19 @@ runs:
         PR_TITLE: ${{ github.event.pull_request.title }}
         PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
       run: |
+        results=${RUNNER_TEMP:-${TMPDIR:-/tmp}}/kai-gates
+        rm -rf "$results"
+        mkdir -p "$results"
+        capture() {
+          name=$1
+          shift
+          printf '%s\n' "$name" >>"$results/gates"
+          if "$@" >"$results/$name.out" 2>&1; then echo 0; else echo 1; fi >"$results/$name.status"
+          cat "$results/$name.out"
+          [ "$(cat "$results/$name.status")" = 0 ]
+        }
         status=0
+        hard=0
         if [ -n "$BASE_REF" ]; then
           git rev-parse -q --verify "origin/$BASE_REF^{commit}" >/dev/null ||
             { echo "::error::origin/$BASE_REF not found; check out with fetch-depth: 0"; exit 1; }
@@ -27,19 +39,56 @@ runs:
             done
           fi
         fi
+        enforce=$(sh -c '. ./.kai/config >/dev/null 2>&1; printf %s "${KAI_ENFORCE-}"' 2>/dev/null || true)
+        [ "$enforce" = report ] || enforce=block
+        echo "$enforce" >"$results/mode"
         for gate in $KAI_GATES; do
           echo "::group::$gate"
           case $gate in
             metrics)
               if out=$("$KAI_BIN" metrics); then
-                printf '%s\n' "$out" | tee -a "$GITHUB_STEP_SUMMARY" || status=1
+                printf '%s\n' "$out" | tee -a "$GITHUB_STEP_SUMMARY" || hard=1
               else
                 printf '%s\n' "$out"
-                status=1
+                hard=1
               fi ;;
-            verify) "$KAI_BIN" verify || status=1 ;;
-            *) "$KAI_BIN" gate "$gate" --base "origin/$BASE_REF" --branch "$HEAD_REF" --title "$PR_TITLE" --labels "$PR_LABELS" || status=1 ;;
+            verify) capture verify "$KAI_BIN" verify || status=1 ;;
+            *) capture "$gate" "$KAI_BIN" gate "$gate" --base "origin/$BASE_REF" --branch "$HEAD_REF" --title "$PR_TITLE" --labels "$PR_LABELS" || status=1 ;;
           esac
           echo "::endgroup::"
         done
+        [ "$hard" -eq 0 ] || exit 1
+        if [ "$enforce" = report ]; then exit 0; fi
         exit $status
+    - name: Report gates on the pull request
+      if: always() && github.event_name == 'pull_request'
+      shell: sh
+      env:
+        KAI_BIN: ${{ github.action_path }}/../../plugins/kai/bin/kai
+        GH_TOKEN: ${{ github.token }}
+        PR: ${{ github.event.pull_request.number }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        CAN_COMMENT: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+      run: |
+        results=${RUNNER_TEMP:-${TMPDIR:-/tmp}}/kai-gates
+        [ -f "$results/gates" ] || exit 0
+        report=$results/report.md
+        "$KAI_BIN" report --dir "$results" --sha "$HEAD_SHA" --run-url "$RUN_URL" >"$report"
+        cat "$report" >>"$GITHUB_STEP_SUMMARY"
+        if [ "$CAN_COMMENT" != true ]; then
+          echo "::notice::Kai gates: a pull request from a fork gets a read-only token, so the report is in the job summary only."
+          exit 0
+        fi
+        post() {
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- kai-gates -->"))) | .id' | head -n 1) || return 1
+          if [ -z "$id" ]; then
+            gh pr comment "$PR" --body-file "$report"
+            return
+          fi
+          old=$(gh api "repos/$GITHUB_REPOSITORY/issues/comments/$id" --jq .body) || return 1
+          [ "$old" != "$(cat "$report")" ] || return 0
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@"$report" >/dev/null
+        }
+        post || echo "::warning::Kai gates: could not post the report comment (the workflow needs pull-requests: write). The report is in the job summary."
