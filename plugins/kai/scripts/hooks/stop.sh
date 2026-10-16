@@ -1,9 +1,10 @@
 # shellcheck shell=sh disable=SC2154
 
 [ -n "$KAI_VERIFY_CMDS" ] || exit 0
+state=$(kai_state_dir)
+[ -f "$state/session-$session.workflow" ] || exit 0
 
 max=3
-state=$(kai_state_dir)
 start_file="$state/session-$session.start"
 blocks_file="$state/session-$session.blocks"
 fingerprint=$(kai_fingerprint)

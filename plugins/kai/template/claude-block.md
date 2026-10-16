@@ -1,9 +1,5 @@
 ## How we deliver (Kai)
 
-- Every change is keyed to a ticket; branch names contain the key (`PAY-123-short-description`). Artifacts live in `specs/<KEY>/`.
-- Commit subjects start with the key (`PAY-123: plan`). If the repository enforces Conventional Commits, write `type(PAY-123): …` instead, for example `test(PAY-123): failing tests`.
-- Start with `/kai:spec <KEY>` (it reads the ticket and, from level 2, skips the spec only when the change touches nothing but low-tier files), implement with `/kai:implement` (plan and approval, failing tests, code, `/kai:prove`, independent review, then the PR and its reviews until they are satisfied). From level 4, `/kai:accept` runs the end-to-end check in integration after merge, and `/kai:retro` turns recurring lessons into CLAUDE.md lines, skills, ADRs, or tickets for hooks.
-- From level 2, medium and high tier changes (see `.kai/tiers`) take two PRs: a Definition PR with `spec.md` and any ADR it needed (`/kai:spec`), merged before the Change PR with the code.
-- "Done" means `kai verify` passed and its output is shown in `specs/<KEY>/evidence.md`, not a claim that tests pass.
-- Never push to the base branch, merge or approve a pull request, add the `kai:tests-changed` label, bypass git hooks, or edit a test to make it pass. A wrong test is a question for the human.
-- Follow the minimal-code standard in @.kai/constraints.md.
+- Kai's workflow (ticket, spec, plan, failing tests, evidence, pull request) runs only when someone types one of its commands: `/kai:spec`, `/kai:implement`, `/kai:prove`, `/kai:accept`, `/kai:retro`, or `/kai:adr`. Otherwise, handle the request directly, without specs, plans, or evidence files. If someone asks for that work in words, name the command that does it.
+- In every session: never push to the base branch, merge or approve a pull request, add the `kai:tests-changed` label, or bypass git hooks.
+- This repository's `kai` CI check needs a ticket key in the branch name or pull request title, and from level 2 a merged spec for medium and high tier code.

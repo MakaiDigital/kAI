@@ -1,7 +1,8 @@
 ---
 name: setup
-description: Set Kai up in the current repository, or upgrade an existing setup. It works out the ticket system, project prefixes, test commands, and adoption level, then runs kai init to write .kai/config, risk tiers, the CLAUDE.md block, Claude Code settings, and CI workflows. Use it whenever someone wants to install, add, enable, configure, or upgrade Kai in a repository, or asks how to start using Kai here.
+description: Set Kai up in this repository, or upgrade an existing setup. Works out the ticket system, prefixes, test commands and level, then writes the config, risk tiers, CLAUDE.md block, settings, and CI workflows with kai init.
 argument-hint: [level 1-4]
+disable-model-invocation: true
 ---
 
 # Set up Kai
@@ -11,6 +12,7 @@ Get this repository ready for Kai in a few minutes, without anyone having to kno
 ## 1. Look before asking
 
 - The working directory must be a git repository. If `.kai/config` already exists, this is an **upgrade**: read the current `KAI_LEVEL` and settings from it, and skip to step 3 with `--dry-run` so the person sees what would change. `kai init` never touches their `.kai/config` or `.kai/tiers`, so if the person asks for a different level than the current `KAI_LEVEL`, set it in `.kai/config` yourself and pass the same `--level`.
+- On an upgrade, if `.claude/settings.json` sets `permissions.defaultMode` to `plan`, say that Kai before 0.10.0 set it so that every session started in plan mode, and offer to remove it: `/kai:implement` now enters plan mode itself, and other requests no longer need it. Remove it only if the person agrees, since they may have set it themselves.
 - Work out sensible defaults from the repository, so the questions are confirmations rather than blanks:
   - **Ticket system and prefixes:** look at branch names and recent commit messages (`git branch -a`, `git log --oneline -50`) for keys like `PAY-123` (Jira or Linear) or `#42` (GitHub).
   - **Test commands:** look at `package.json` scripts, `Makefile`, `pyproject.toml`, `go.mod`, `Cargo.toml`, or CI workflows. Prefer the commands CI already runs, including lint and type checks, one per line.

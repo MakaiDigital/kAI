@@ -1,6 +1,7 @@
 # shellcheck shell=sh disable=SC2154
 
-command -v jq >/dev/null || printf '%s\n' "kai: jq is not installed, so Kai's Bash and Edit guards are off. Ask the person to install jq."
+jq_note=
+command -v jq >/dev/null || jq_note="kai: jq is not installed, so Kai's Bash and Edit guards are off. Install jq to turn them on."
 state=$(kai_state_dir)
 find "$state" -name 'session-*' -mtime +7 -exec rm -f {} + 2>/dev/null || true
 if [ -z "$session" ] || [ ! -f "$state/session-$session.start" ]; then
@@ -9,7 +10,7 @@ fi
 
 branch=$(kai_branch)
 if ! key=$(kai_key_from "$branch"); then
-  printf 'kai: no ticket key on branch %s; start a ticket with /kai:spec <KEY>, or accept a deployed one with /kai:accept <KEY>.\n' "${branch:-<detached>}"
+  kai_system_message "$jq_note"
   exit 0
 fi
 dir="$KAI_REPO_ROOT/specs/$key"
@@ -35,4 +36,4 @@ case $(printf '%s' "$branch" | tr '[:lower:]' '[:upper:]') in
     fi
     ;;
 esac
-printf 'kai: ticket %s. Artifacts are in specs/%s/. Next: %s\n' "$key" "$key" "$next"
+kai_system_message "$jq_note" "kai: ticket $key. Artifacts are in specs/$key/. Next: $next"

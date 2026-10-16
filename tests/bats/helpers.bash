@@ -36,3 +36,13 @@ hook_input() {
   jq -cn --arg cmd "${1-}" --arg cwd "$PWD" --arg sid "${2:-s1}" \
     '{session_id: $sid, cwd: $cwd, tool_name: "Bash", tool_input: {command: $cmd}}'
 }
+
+expansion_input() {
+  jq -cn --arg name "$1" --arg prompt "${2-}" --arg cwd "$PWD" --arg sid "${3:-s1}" \
+    '{session_id: $sid, cwd: $cwd, hook_event_name: "UserPromptExpansion", expansion_type: "slash_command",
+      command_name: $name, command_args: "", command_source: "plugin", prompt: $prompt}'
+}
+
+mark_workflow() {
+  expansion_input kai:implement /kai:implement "${1:-s1}" | "$KAI" hook prompt-expansion
+}

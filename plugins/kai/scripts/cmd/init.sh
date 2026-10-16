@@ -90,7 +90,6 @@ printf '%s' "$current" | jq --argjson src "$source_json" --arg base "$base" '
   | ["Bash(git push * \($base))", "Bash(git push * \($base) *)", "Bash(git push *:\($base))", "Bash(git push *:refs/heads/\($base))"] as $ask
   | .extraKnownMarketplaces.makaidigital = {source: $src}
   | .enabledPlugins["kai@makaidigital"] = true
-  | .permissions.defaultMode //= "plan"
   | .permissions.deny = ((.permissions.deny // []) as $d | $d + ($deny - $d))
   | .permissions.ask = ((.permissions.ask // []) as $a | $a + ($ask - $a))
   | .env.SUPERPOWERS_DISABLE_TELEMETRY //= "1"' >"$work/settings.json" ||

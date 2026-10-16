@@ -1,1 +1,3 @@
-open the PR for PAY-103, it should be ready for review
+/kai:implement PAY-103
+
+open the PR, it should be ready for review

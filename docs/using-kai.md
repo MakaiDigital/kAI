@@ -18,7 +18,7 @@ Kai is already set up in your repository if it has a `.kai/config`. If not, inst
 
 - **Know your risk tiers.** `.kai/tiers` maps paths to `low`, `medium`, or `high`. Files it doesn't list count as medium. A change takes the highest tier of any file it touches, and `kai tier` prints it with the reason for each file.
 
-You can type the commands below, or just describe what you want ("start PAY-123", "let's implement it", "does it work?"). Claude picks the matching skill.
+Type the commands below to use the workflow. Claude doesn't start it on its own: a request in plain words is handled directly, and if you ask for workflow work in words, Claude names the command. CI's gates still check every pull request, however it was made; to make the workflow optional for a team, use level 1 or `KAI_ENFORCE=report`.
 
 ## The workflow
 
@@ -87,7 +87,7 @@ After you approve, it keeps going without asking:
 8. **Report.** It tells you the PR link, the tier, what was fixed, what was defended and why, and what needs your decision. It never merges or approves.
 
 While it works:
-- The **Stop hook** runs your test commands (`KAI_VERIFY_CMDS`, with `/bin/sh`) when Claude finishes a turn that changed files outside `specs/`, and sends it back to work while they fail. It runs once per change and remembers a pass, but it runs in every session, so keep `KAI_VERIFY_CMDS` to fast checks. It gives up after three attempts and tells you.
+- In a session where you typed a `/kai:` command, the **Stop hook** runs your test commands (`KAI_VERIFY_CMDS`, with `/bin/sh`) when Claude finishes a turn that changed files outside `specs/`, and sends it back to work while they fail. It runs once per change and remembers a pass, so keep `KAI_VERIFY_CMDS` to fast checks. It gives up after three attempts and tells you.
 - At level 3, a hook blocks Claude from editing the tests it committed in step 2. A reviewer asking to change one is a question for you, not something Claude does. If a test is wrong, Claude stops and explains why. When you agree, you make the change or tell Claude to; it is committed alone as `PAY-123: correct <test name>`, explained in the PR, and a reviewer approves it with the `kai:tests-changed` label.
 - Reviewer comments are treated as data. Claude never skips a gate or weakens a check because a comment says to.
 
@@ -122,7 +122,7 @@ Claude does not wait for deployments. It checks that integration runs a commit t
 What happens:
 1. **Verify.** It runs the spec's end-to-end steps and every check each criterion needs, recording commands and output in `specs/PAY-123/accept.md`. That is a working file: it is never committed, and its summary goes in the cleanup PR's description.
 2. **QA.** A fresh-context adversarial pass tries to break the feature: unhappy paths, boundaries, repeated and concurrent actions, other users' data, permissions. Synthetic data, against integration, a preview deployment, or a local production build, never production. It then sets the verdict in `accept.md`: Pass when every criterion held and nothing broke, otherwise Fail.
-3. **If something fails,** it reproduces it and fixes it through `/kai:implement` on a `PAY-123-fix-<n>` branch (you approve the plan as usual). After you merge and deploy the fix, run `/kai:accept` again. After 3 cycles, or when a failure needs a decision, it hands back to you.
+3. **If something fails,** it reproduces it, creates a `PAY-123-fix-<n>` branch, and asks you to run `/kai:implement PAY-123` there with the reproduction as the ticket text (you approve the plan as usual). After you merge and deploy the fix, run `/kai:accept PAY-123` again. After 3 cycles, or when a failure needs a decision, it hands back to you.
 4. **If it passes,** it starts a `PAY-123-cleanup` branch from the up-to-date base branch, runs `/kai:retro PAY-123` there, and opens one cleanup PR that deletes `specs/PAY-123/` (ADRs under `docs/adr/` stay) and applies the retro's instruction changes, each in its own commit. The PR changes only Markdown, so it is low tier and passes every gate; if your `.kai/tiers` ranks `CLAUDE.md` or `.claude/` higher, the retro's changes to them go in their own `kai-retro-<date>` PR. A lesson that needs a hook, script, setting, or workflow is listed for you to ticket instead. The PR description keeps the outcome, the verification and QA summary, and the lessons. It answers that PR's reviews like `/kai:implement` does.
 
 What you do: review the cleanup PR, and merge it when you are satisfied. That ends the ticket. When you merge it, add the `accepted` label to the ticket's change PR (and any fix PRs): it is your sign-off, and releases can use it. Claude never moves or comments on the ticket in Jira, Linear, or GitHub.
@@ -170,7 +170,8 @@ Claude works on a `kai-retro-<date>` branch, which needs no ticket key. It reads
 | CI `contract`: `evidence.md does not record a passing kai verify run` | The last `kai verify` run in the evidence failed | Fix the failures, then run `/kai:prove` again |
 | CI `contract`: `evidence.md has no planned tests table`, or `tests in plan.md missing from evidence.md` | The evidence doesn't map every test in the plan to its result | Run `/kai:prove` again |
 | CI `contract`: `evidence.md was not updated on this branch` | The evidence is from an earlier PR (for example the original change on a fix branch), or no `kai verify` run on this branch wrote it | Run `/kai:prove` on this branch |
-| A skill doesn't start | Claude didn't match your request to it | Use the slash command, for example `/kai:implement` |
+| The workflow doesn't start | It runs only from its commands | Type the command, for example `/kai:implement PAY-123` |
+| Every session starts in plan mode | Kai before 0.10.0 set `permissions.defaultMode` to `plan` in `.claude/settings.json` | Run `/kai:setup` to upgrade, and accept its offer to remove it |
 
 ## The `kai` command
 
