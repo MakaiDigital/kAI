@@ -1,99 +1,104 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="880" height="613" viewBox="0 0 880 613" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="630" viewBox="0 0 880 630" role="img" aria-labelledby="title desc">
 <title id="title">How Kai works</title>
-<desc id="desc">Three commands take a ticket to done. /kai:spec writes the spec and any ADR for a Definition PR. /kai:implement plans, waits for approval, commits failing tests, writes the minimum code, proves it, reviews it, and answers the change PR reviewers until a person merges it. /kai:accept verifies the deployed change, tries to break it, runs the retro and opens a cleanup PR; if it fails, a fix branch goes back through /kai:implement.</desc>
+<desc id="desc">Three commands take a ticket to done. From level 2, /kai:spec writes the spec and any ADR for a Definition PR, or says to skip it for a low-tier change. /kai:implement plans, waits for your approval, commits failing tests, writes the minimum code, proves it, reviews it, and answers the change PR reviewers until a person merges it. At level 4, /kai:accept verifies the deployed change and tries to break it. When it passes, it runs the retro and opens a cleanup PR. When it fails, it creates a fix branch with the reproduction; you run /kai:implement there, then /kai:accept again.</desc>
 <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8c959f"/></marker>
 <marker id="arrow-fail" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#f43f5e"/></marker>
 </defs>
 <rect x="0" y="0" width="262" height="54" rx="8" fill="#4338ca"/>
-<text x="131.0" y="21" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" fill="#c7d2fe" text-anchor="middle"><tspan font-weight="bold">1 · DEFINE</tspan></text>
+<text x="131.0" y="21" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" fill="#c7d2fe" text-anchor="middle"><tspan font-weight="bold">1 · DEFINE · LEVEL 2+</tspan></text>
 <text x="131.0" y="42" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" fill="#ffffff" text-anchor="middle"><tspan font-weight="bold">/kai:spec PAY-123</tspan></text>
 <rect x="0" y="68" width="262" height="50" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
 <text x="131.0" y="89" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Reads the ticket from Jira,</tspan></text>
 <text x="131.0" y="106" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Linear, or GitHub</tspan></text>
 <line x1="131.0" y1="119" x2="131.0" y2="127" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
-<rect x="0" y="129" width="262" height="50" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
-<text x="131.0" y="150" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Low-tier files only? Skips the</tspan></text>
-<text x="131.0" y="167" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">spec and goes to /kai:implement</tspan></text>
-<line x1="131.0" y1="180" x2="131.0" y2="188" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
-<rect x="0" y="190" width="262" height="67" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
-<text x="131.0" y="211" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Writes spec.md: EARS criteria</tspan></text>
-<text x="131.0" y="228" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">and a contract that maps each</tspan></text>
-<text x="131.0" y="245" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">criterion to a test</tspan></text>
-<line x1="131.0" y1="258" x2="131.0" y2="266" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
-<rect x="0" y="268" width="262" height="50" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
-<text x="131.0" y="289" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Records an ADR in docs/adr/</tspan></text>
-<text x="131.0" y="306" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">when the change needs a decision</tspan></text>
-<line x1="131.0" y1="319" x2="131.0" y2="327" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
-<rect x="0" y="329" width="262" height="67" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="1.2"/>
-<text x="131.0" y="350" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="bold">Definition PR</tspan></text>
-<text x="131.0" y="367" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">Product and engineering approve</tspan></text>
-<text x="131.0" y="384" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">and merge it before any code</tspan></text>
+<rect x="0" y="129" width="262" height="67" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
+<text x="131.0" y="150" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Low-tier files only, or level 1?</tspan></text>
+<text x="131.0" y="167" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Skips the spec and tells you</tspan></text>
+<text x="131.0" y="184" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">to run /kai:implement</tspan></text>
+<line x1="131.0" y1="197" x2="131.0" y2="205" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="0" y="207" width="262" height="67" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
+<text x="131.0" y="228" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Asks what the ticket leaves open,</tspan></text>
+<text x="131.0" y="245" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">writes spec.md: EARS criteria and</tspan></text>
+<text x="131.0" y="262" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">a contract mapping each to a test</tspan></text>
+<line x1="131.0" y1="275" x2="131.0" y2="283" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="0" y="285" width="262" height="67" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
+<text x="131.0" y="306" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Drafts an ADR in docs/adr/ when</tspan></text>
+<text x="131.0" y="323" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">the change needs a decision;</tspan></text>
+<text x="131.0" y="340" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">a person picks the option</tspan></text>
+<line x1="131.0" y1="353" x2="131.0" y2="361" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="0" y="363" width="262" height="67" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="1.2"/>
+<text x="131.0" y="384" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="bold">Definition PR</tspan></text>
+<text x="131.0" y="401" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">Product and engineering approve</tspan></text>
+<text x="131.0" y="418" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">and merge it before any code</tspan></text>
 <rect x="309" y="0" width="262" height="54" rx="8" fill="#4338ca"/>
-<text x="440.0" y="21" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" fill="#c7d2fe" text-anchor="middle"><tspan font-weight="bold">2 · BUILD</tspan></text>
+<text x="440.0" y="21" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" fill="#c7d2fe" text-anchor="middle"><tspan font-weight="bold">2 · BUILD · EVERY LEVEL</tspan></text>
 <text x="440.0" y="42" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" fill="#ffffff" text-anchor="middle"><tspan font-weight="bold">/kai:implement PAY-123</tspan></text>
 <rect x="309" y="68" width="262" height="33" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
-<text x="440.0" y="89" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Explores the code, writes plan.md</tspan></text>
+<text x="440.0" y="89" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Explores the code, drafts the plan</tspan></text>
 <line x1="440.0" y1="102" x2="440.0" y2="110" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
 <rect x="309" y="112" width="262" height="33" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
 <text x="440.0" y="133" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#451a03" text-anchor="middle"><tspan font-weight="normal">You approve the plan</tspan></text>
 <line x1="440.0" y1="146" x2="440.0" y2="154" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
 <rect x="309" y="156" width="262" height="50" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
-<text x="440.0" y="177" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Commits the failing tests,</tspan></text>
-<text x="440.0" y="194" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">locked for the ticket</tspan></text>
+<text x="440.0" y="177" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Commits the failing tests; from</tspan></text>
+<text x="440.0" y="194" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">level 3 they can't be edited</tspan></text>
 <line x1="440.0" y1="207" x2="440.0" y2="215" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
 <rect x="309" y="217" width="262" height="50" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
-<text x="440.0" y="238" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Writes the minimum code</tspan></text>
-<text x="440.0" y="255" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">that makes them pass</tspan></text>
+<text x="440.0" y="238" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Writes the minimum code; the Stop</tspan></text>
+<text x="440.0" y="255" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">hook runs kai verify until it passes</tspan></text>
 <line x1="440.0" y1="268" x2="440.0" y2="276" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
 <rect x="309" y="278" width="262" height="50" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
-<text x="440.0" y="299" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Proves it: kai verify writes</tspan></text>
-<text x="440.0" y="316" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">evidence.md for every criterion</tspan></text>
+<text x="440.0" y="299" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Proves it: evidence.md quotes a</tspan></text>
+<text x="440.0" y="316" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">passing line for each planned test</tspan></text>
 <line x1="440.0" y1="329" x2="440.0" y2="337" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
-<rect x="309" y="339" width="262" height="50" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
-<text x="440.0" y="360" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Independent review by read-only</tspan></text>
-<text x="440.0" y="377" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">agents, then fixes what they find</tspan></text>
-<line x1="440.0" y1="390" x2="440.0" y2="398" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
-<rect x="309" y="400" width="262" height="84" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="1.2"/>
-<text x="440.0" y="421" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="bold">Change PR</tspan></text>
-<text x="440.0" y="438" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">CI gates post a verdict comment.</tspan></text>
-<text x="440.0" y="455" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">Claude fixes or defends, with</tspan></text>
-<text x="440.0" y="472" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">evidence, each reviewer's finding</tspan></text>
-<line x1="440.0" y1="485" x2="440.0" y2="493" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
-<rect x="309" y="495" width="262" height="50" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
-<text x="440.0" y="516" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#451a03" text-anchor="middle"><tspan font-weight="normal">A person approves and merges,</tspan></text>
-<text x="440.0" y="533" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#451a03" text-anchor="middle"><tspan font-weight="normal">and it deploys to integration</tspan></text>
+<rect x="309" y="339" width="262" height="67" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
+<text x="440.0" y="360" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Reviews it with read-only agents,</tspan></text>
+<text x="440.0" y="377" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">and the gates from level 3; fixes</tspan></text>
+<text x="440.0" y="394" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">bugs, lists spec gaps for reviewers</tspan></text>
+<line x1="440.0" y1="407" x2="440.0" y2="415" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="309" y="417" width="262" height="84" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="1.2"/>
+<text x="440.0" y="438" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="bold">Change PR</tspan></text>
+<text x="440.0" y="455" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">CI gates post a verdict comment.</tspan></text>
+<text x="440.0" y="472" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">Claude fixes or defends each</tspan></text>
+<text x="440.0" y="489" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">finding, for up to five rounds</tspan></text>
+<line x1="440.0" y1="502" x2="440.0" y2="510" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="309" y="512" width="262" height="50" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+<text x="440.0" y="533" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#451a03" text-anchor="middle"><tspan font-weight="normal">A person approves and merges;</tspan></text>
+<text x="440.0" y="550" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#451a03" text-anchor="middle"><tspan font-weight="normal">your pipeline deploys to integration</tspan></text>
 <rect x="618" y="0" width="262" height="54" rx="8" fill="#4338ca"/>
-<text x="749.0" y="21" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" fill="#c7d2fe" text-anchor="middle"><tspan font-weight="bold">3 · ACCEPT</tspan></text>
+<text x="749.0" y="21" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" fill="#c7d2fe" text-anchor="middle"><tspan font-weight="bold">3 · ACCEPT · LEVEL 4</tspan></text>
 <text x="749.0" y="42" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" fill="#ffffff" text-anchor="middle"><tspan font-weight="bold">/kai:accept PAY-123</tspan></text>
 <rect x="618" y="68" width="262" height="50" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
-<text x="749.0" y="89" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Verifies the deployed change</tspan></text>
-<text x="749.0" y="106" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">against the spec and the ticket</tspan></text>
+<text x="749.0" y="89" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Confirms integration runs the merge</tspan></text>
+<text x="749.0" y="106" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">and verifies it against the spec</tspan></text>
 <line x1="749.0" y1="119" x2="749.0" y2="127" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
 <rect x="618" y="129" width="262" height="33" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
 <text x="749.0" y="150" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Tries to break it with adversarial QA</tspan></text>
 <line x1="749.0" y1="163" x2="749.0" y2="171" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
 <rect x="618" y="173" width="262" height="67" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1.2"/>
-<text x="749.0" y="194" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">Runs the retro: lessons go into</tspan></text>
-<text x="749.0" y="211" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">CLAUDE.md, skills, or ADRs, and</tspan></text>
-<text x="749.0" y="228" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">hooks or scripts become tickets</tspan></text>
+<text x="749.0" y="194" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">When it passes, runs the retro:</tspan></text>
+<text x="749.0" y="211" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">lessons go into CLAUDE.md, skills,</tspan></text>
+<text x="749.0" y="228" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1e1b4b" text-anchor="middle"><tspan font-weight="normal">or ADRs; hooks become tickets</tspan></text>
 <line x1="749.0" y1="241" x2="749.0" y2="249" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
 <rect x="618" y="251" width="262" height="67" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="1.2"/>
 <text x="749.0" y="272" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="bold">Cleanup PR</tspan></text>
-<text x="749.0" y="289" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">Deletes specs/PAY-123, keeps</tspan></text>
-<text x="749.0" y="306" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">ADRs, applies the retro's changes</tspan></text>
+<text x="749.0" y="289" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">Deletes specs/PAY-123, keeps ADRs,</tspan></text>
+<text x="749.0" y="306" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">applies the retro, answers reviews</tspan></text>
 <line x1="749.0" y1="319" x2="749.0" y2="327" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
-<rect x="618" y="329" width="262" height="33" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
-<text x="749.0" y="350" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#451a03" text-anchor="middle"><tspan font-weight="normal">A person merges it: done</tspan></text>
-<line x1="630" y1="383" x2="868" y2="383" stroke="#8c959f" stroke-width="1" stroke-dasharray="4 4"/>
-<rect x="618" y="401" width="262" height="67" rx="6" fill="#ffe4e6" stroke="#f43f5e" stroke-width="1.2" stroke-dasharray="5 3"/>
-<text x="749.0" y="422" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#4c0519" text-anchor="middle"><tspan font-weight="bold">If it fails:</tspan><tspan font-weight="normal"> creates PAY-123-fix-n</tspan></text>
-<text x="749.0" y="439" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#4c0519" text-anchor="middle"><tspan font-weight="normal">with the reproduction, and you</tspan></text>
-<text x="749.0" y="456" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#4c0519" text-anchor="middle"><tspan font-weight="normal">run /kai:implement on it</tspan></text>
+<rect x="618" y="329" width="262" height="50" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+<text x="749.0" y="350" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#451a03" text-anchor="middle"><tspan font-weight="normal">A person merges it and labels the</tspan></text>
+<text x="749.0" y="367" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#451a03" text-anchor="middle"><tspan font-weight="normal">change PR accepted: done</tspan></text>
+<line x1="630" y1="400" x2="868" y2="400" stroke="#8c959f" stroke-width="1" stroke-dasharray="4 4"/>
+<rect x="618" y="418" width="262" height="84" rx="6" fill="#ffe4e6" stroke="#f43f5e" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text x="749.0" y="439" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#4c0519" text-anchor="middle"><tspan font-weight="bold">If it fails:</tspan><tspan font-weight="normal"> creates PAY-123-fix-n</tspan></text>
+<text x="749.0" y="456" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#4c0519" text-anchor="middle"><tspan font-weight="normal">with the reproduction. You run</tspan></text>
+<text x="749.0" y="473" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#4c0519" text-anchor="middle"><tspan font-weight="normal">/kai:implement there, then</tspan></text>
+<text x="749.0" y="490" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#4c0519" text-anchor="middle"><tspan font-weight="normal">/kai:accept again (up to 3 cycles)</tspan></text>
 <line x1="266" y1="27.0" x2="305" y2="27.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
 <line x1="575" y1="27.0" x2="614" y2="27.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
-<path d="M 262 154.0 H 285.5 V 84.5 H 306" fill="none" stroke="#8c959f" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
-<path d="M 618 434.5 H 594.5 V 84.5 H 574" fill="none" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow-fail)"/>
-<rect x="0" y="563" width="880" height="50" rx="8" fill="#334155"/>
-<text x="440.0" y="584" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#f1f5f9" text-anchor="middle"><tspan font-weight="bold">In every session:</tspan><tspan font-weight="normal"> hooks block skipping git hooks, production deploys without</tspan></text>
-<text x="440.0" y="601" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#f1f5f9" text-anchor="middle"><tspan font-weight="normal">a named approval, and edits to locked tests. Claude never merges or approves a pull request.</tspan></text>
+<path d="M 262 162.5 H 285.5 V 84.5 H 306" fill="none" stroke="#8c959f" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+<path d="M 618 460.0 H 594.5 V 84.5 H 574" fill="none" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow-fail)"/>
+<rect x="0" y="580" width="880" height="50" rx="8" fill="#334155"/>
+<text x="440.0" y="601" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#f1f5f9" text-anchor="middle"><tspan font-weight="bold">In every session:</tspan><tspan font-weight="normal"> hooks block skipping git hooks, production deploys without a named approval,</tspan></text>
+<text x="440.0" y="618" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#f1f5f9" text-anchor="middle"><tspan font-weight="normal">and, from level 3, edits to locked tests. Claude can't merge, and asks before pushing to the base branch.</tspan></text>
 </svg>
