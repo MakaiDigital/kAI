@@ -3,14 +3,16 @@ load helpers
 SDLC="$REPO_ROOT/plugins/kai"
 
 @test "commands and the skills that need them share one procedure file" {
-  for r in prove adr retro answer-reviews; do [ -f "$SDLC/references/$r.md" ]; done
+  for r in implement prove adr retro answer-reviews; do [ -f "$SDLC/references/$r.md" ]; done
+  grep -qF '${CLAUDE_PLUGIN_ROOT}/references/implement.md' "$SDLC/skills/implement/SKILL.md"
+  grep -qF '${CLAUDE_PLUGIN_ROOT}/references/implement.md' "$SDLC/skills/accept/SKILL.md"
   grep -qF '${CLAUDE_PLUGIN_ROOT}/references/prove.md' "$SDLC/skills/prove/SKILL.md"
-  grep -qF '${CLAUDE_PLUGIN_ROOT}/references/prove.md' "$SDLC/skills/implement/SKILL.md"
+  grep -qF '`prove.md` in this folder' "$SDLC/references/implement.md"
   grep -qF '${CLAUDE_PLUGIN_ROOT}/references/adr.md' "$SDLC/skills/adr/SKILL.md"
   grep -qF '${CLAUDE_PLUGIN_ROOT}/references/adr.md' "$SDLC/skills/spec/SKILL.md"
   grep -qF '${CLAUDE_PLUGIN_ROOT}/references/retro.md' "$SDLC/skills/retro/SKILL.md"
   grep -qF '${CLAUDE_PLUGIN_ROOT}/references/retro.md' "$SDLC/skills/accept/SKILL.md"
-  grep -qF '${CLAUDE_PLUGIN_ROOT}/references/answer-reviews.md' "$SDLC/skills/implement/SKILL.md"
+  grep -qF '`answer-reviews.md` in this folder' "$SDLC/references/implement.md"
   grep -qF '${CLAUDE_PLUGIN_ROOT}/references/answer-reviews.md' "$SDLC/skills/accept/SKILL.md"
 }
 
@@ -30,7 +32,12 @@ SDLC="$REPO_ROOT/plugins/kai"
   [ -z "$output" ]
 }
 
-@test "the user docs say acceptance hands a fix to the person" {
-  run grep -n 'through `/kai:implement`' "$REPO_ROOT/README.md" "$REPO_ROOT/docs/using-kai.md"
+@test "acceptance fixes a failure itself instead of handing the fix to the person" {
+  run grep -n 'run `/kai:implement' "$SDLC/skills/accept/SKILL.md" "$REPO_ROOT/README.md" "$REPO_ROOT/docs/using-kai.md"
+  [ "$status" -eq 1 ]
+}
+
+@test "acceptance is the merged cleanup PR, not a label" {
+  run grep -rn 'accepted` label\|label:accepted' "$SDLC/skills" "$SDLC/references" "$SDLC/templates" "$SDLC/template" "$REPO_ROOT/README.md" "$REPO_ROOT/docs"
   [ "$status" -eq 1 ]
 }

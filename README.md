@@ -11,7 +11,7 @@ Kai is deliberately thin. It supplies the workflow, templates, and guardrails, a
 
 ![How Kai works: from level 2, /kai:spec writes the spec and any ADR for a Definition PR, or says to skip it for a low-tier change; /kai:implement plans, waits for your approval, commits failing tests, writes the minimum code, proves it, reviews it, and answers the change PR reviewers until a person merges it; at level 4, /kai:accept verifies the deployed change and tries to break it, then runs the retro and opens a cleanup PR, or, when it fails, creates a fix branch for you to run /kai:implement on and then /kai:accept again](docs/kai-flow.svg)
 
-The ticket is the intent; there is no separate intent document. `/kai:spec` reads it and either writes a spec (and an ADR when the change needs a decision) for a Definition PR, or, when the change touches only low-tier files, says why it can skip one. `/kai:implement` asks for approval once, at the plan (approve it with "Yes, and use auto mode"), then carries the work to a reviewed, green PR. After a person merges it and it is deployed, `/kai:accept` verifies it in integration, tries to break it, and finishes with a cleanup PR that removes the ticket's working documents. At level 4, only ADRs remain as documentation; the rest is read from the code.
+The ticket is the intent; there is no separate intent document. `/kai:spec` reads it and either writes a spec (and an ADR when the change needs a decision) for a Definition PR, or, when the change touches only low-tier files, says why it can skip one. `/kai:implement` asks for approval once, at the plan (approve it with "Yes, and use auto mode"), then carries the work to a reviewed, green PR. After a person merges it and it is deployed, `/kai:accept` verifies it in integration, tries to break it, fixes what fails in a fix PR, and finishes with a cleanup PR that removes the ticket's working documents. At level 4, only ADRs remain as documentation; the rest is read from the code.
 
 ## Commands
 
@@ -21,7 +21,7 @@ The ticket is the intent; there is no separate intent document. `/kai:spec` read
 | `/kai:adr` | Records an architecture decision with options and trade-offs. `/kai:spec` runs it when needed; call it directly for a decision outside a spec (level 2) | `docs/adr/NNNN-*.md` |
 | `/kai:implement` | Plans (stops for approval), commits failing tests, implements the minimum, proves it, gets an independent review and fixes it, opens the PR, then answers its trusted reviewers (fixing what is right, defending with evidence what is not) until reviews are satisfied and checks are green, for up to five rounds | `plan.md`, tests, code, `evidence.md`, pull request |
 | `/kai:prove` | Runs the team's checks and maps each planned test (and spec criterion) to its result. `/kai:implement` calls it; run it alone to re-check | `evidence.md` |
-| `/kai:accept <KEY>` | After the change is deployed to integration, verifies it, tries to break it, and for each failure creates a `<KEY>-fix-<n>` branch with the reproduction and asks you to run `/kai:implement` there; once it passes, runs the retro and opens a cleanup PR that deletes the ticket's specs (keeping ADRs) and applies the retro's instruction changes (level 4) | cleanup pull request |
+| `/kai:accept <KEY>` | After the change is deployed to integration, verifies it, tries to break it, and fixes each failure itself in a `<KEY>-fix-<n>` PR (you approve its plan), then verifies again; once it passes, runs the retro and opens a cleanup PR that deletes the ticket's specs (keeping ADRs) and applies the retro's instruction changes (level 4) | cleanup pull request |
 | `/kai:retro` | Finds the lessons worth keeping in a ticket or a period and applies the instruction changes as separate commits; a lesson that needs a hook or script becomes a ticket. `/kai:accept` runs it; run it alone for a sprint view (level 4) | skill, ADR, or CLAUDE.md changes |
 
 Two read-only review agents back `/kai:implement` and the CI review: `kai:contract-reviewer` (every PASS has evidence, every change traces to a criterion) and `kai:spec-critic` (behavior no criterion covers, proposed as EARS criteria).
@@ -122,13 +122,17 @@ The CI review needs a Claude credential as a repository secret (`ANTHROPIC_API_K
 
 4. **Close the loop.** Once the change is deployed to integration, the engineer runs `/kai:accept`: Claude verifies it, tries to break it, fixes failures through the same PR flow, and when it passes opens a cleanup PR that deletes the ticket's specs (only ADRs stay as documentation) and applies the retro's instruction changes. A person merges it, and that is the end of the ticket. `kai metrics` reports speed next to quality every week, reading ticket history from git, which survives the deletion.
 
-Kai doesn't gate releases. Acceptance happens after merge, so `main` can hold merged changes that aren't accepted yet. The person who merges a ticket's cleanup PR adds the `accepted` label to its change PR (and any fix PRs). A release that should take only accepted changes is cut from a commit older than the oldest change PR without the label. This lists them, oldest first:
+Kai doesn't gate releases. Acceptance happens after merge, so `main` can hold merged changes that aren't accepted yet. A ticket is accepted when its `<KEY>: cleanup` PR merges. A release that should take only accepted changes is cut from a commit older than the oldest change or fix PR whose ticket has no merged cleanup PR. This lists them, oldest first:
 
 ```sh
-gh pr list --state merged --base main --limit 500 \
-  --search "merged:>=<last release date> -label:accepted" --json number,title,mergedAt,headRefName \
-  --jq 'sort_by(.mergedAt) | .[] | select(.title | ascii_downcase | test(": (definition|cleanup)$") | not)
-    | select(.headRefName | test("^(kai-setup|kai-retro|dependabot/|renovate/)") | not) | "\(.mergedAt) #\(.number) \(.title)"'
+gh pr list --state merged --base main --limit 500 --search "merged:>=<last release date>" \
+  --json number,title,mergedAt,headRefName |
+  jq -r '[.[].title | select(test(": cleanup$"; "i")) | sub(": cleanup$"; ""; "i")] as $accepted
+    | sort_by(.mergedAt) | .[]
+    | select(.title | ascii_downcase | test(": (definition|cleanup)$") | not)
+    | select(.headRefName | test("^(kai-setup|kai-retro|dependabot/|renovate/)") | not)
+    | select((.title | split(":")[0]) as $key | any($accepted[]; . == $key) | not)
+    | "\(.mergedAt) #\(.number) \(.title)"'
 ```
 
 Measure a baseline before turning on levels 3 and 4, and keep reading speed and quality together: `kai metrics` shows lead time next to rework on purpose.
