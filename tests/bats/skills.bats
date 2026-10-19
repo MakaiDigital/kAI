@@ -50,3 +50,31 @@ SDLC="$REPO_ROOT/plugins/kai"
   run grep -rn 'accepted` label\|label:accepted' "$SDLC/skills" "$SDLC/references" "$SDLC/templates" "$SDLC/template" "$REPO_ROOT/README.md" "$REPO_ROOT/docs"
   [ "$status" -eq 1 ]
 }
+
+@test "the reviewer and the REVIEW.md template tag findings Important, Nit or Pre-existing" {
+  for f in "$SDLC/agents/contract-reviewer.md" "$SDLC/template/REVIEW.md"; do
+    for tag in Important Nit Pre-existing; do grep -q "\*\*$tag\*\*" "$f" || { echo "$tag missing in $f"; false; }; done
+  done
+}
+
+@test "a Pre-existing finding never blocks, and the verdict turns on Important findings" {
+  grep -q '\*\*Pre-existing\*\*.*never blocks' "$SDLC/agents/contract-reviewer.md"
+  grep -q '\*\*Pre-existing\*\*.*Never blocks' "$SDLC/template/REVIEW.md"
+  grep -qF '`VERDICT: PASS` if there are no Important findings' "$SDLC/agents/contract-reviewer.md"
+}
+
+@test "a review starts with its count, and says so when there is nothing to fix" {
+  grep -qF 'Nothing to fix.' "$SDLC/agents/contract-reviewer.md"
+  grep -qF 'Nothing to fix.' "$SDLC/template/REVIEW.md"
+}
+
+@test "answering reviews stops after three rounds" {
+  grep -q 'for up to three rounds' "$SDLC/references/answer-reviews.md"
+  run grep -rn 'five rounds\|fifth round' "$SDLC/skills" "$SDLC/references" "$REPO_ROOT/README.md" "$REPO_ROOT/docs"
+  [ "$status" -eq 1 ]
+}
+
+@test "the PR description says how risky the change is and how to revert it" {
+  grep -qx '## Risk' "$SDLC/references/implement.md"
+  grep -qx '## How to revert' "$SDLC/references/implement.md"
+}
