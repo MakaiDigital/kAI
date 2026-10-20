@@ -66,7 +66,7 @@ Then dispatch these read-only agents in parallel, in fresh contexts:
 - `kai:spec-critic`: behavior no criterion covers. Only when `docs/specs/<KEY>/spec.md` exists.
 - A general bug pass: the built-in `/code-review` skill, or the `feature-dev:code-reviewer` agent when that is unavailable.
 
-Treat each finding as in step 7. A blocking contract-reviewer finding is a bug: fix it and prove it again (`prove.md` in this folder). A spec-critic gap is a question for product and engineering, not something to code on your own.
+Treat each finding as in step 7. An Important contract-reviewer finding is a bug: fix it and prove it again (`prove.md` in this folder). A spec-critic gap is a question for product and engineering, not something to code on your own.
 
 Before you open the PR, stop and settle every spec-critic gap and every finding you did not fix with the person. No PR opens while one is open. Ask in batches (AskUserQuestion when available, at most four questions to a call). The person may answer for product, engineering, or anyone else; record that. For each one, they choose:
 
@@ -91,8 +91,14 @@ Record each one under **Decisions** in the PR description as `<gap or finding>: 
 ## Evidence
 [evidence.md](docs/specs/<KEY>/evidence.md). `kai verify` result: PASS
 
+## Risk
+<the tier `kai tier` reports, and from the plan's Risks: what could break, and how you would notice>
+
+## How to revert
+<from the plan's Risks: how to undo the change, for example revert this PR, turn a flag off, or run a data step>
+
 ## Review
-- contract-reviewer: <verdict and blocking findings fixed>
+- contract-reviewer: <its count line and verdict, and the Important findings fixed>
 - spec-critic: <number of gaps>
 
 ## Decisions

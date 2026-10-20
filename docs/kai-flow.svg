@@ -60,7 +60,7 @@
 <text x="440.0" y="438" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="bold">Change PR</tspan></text>
 <text x="440.0" y="455" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">CI gates post a verdict comment.</tspan></text>
 <text x="440.0" y="472" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">Claude fixes or defends each</tspan></text>
-<text x="440.0" y="489" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">finding, for up to five rounds</tspan></text>
+<text x="440.0" y="489" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">finding, for up to three rounds</tspan></text>
 <line x1="440.0" y1="502" x2="440.0" y2="510" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
 <rect x="309" y="512" width="262" height="50" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
 <text x="440.0" y="533" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#451a03" text-anchor="middle"><tspan font-weight="normal">A person approves and merges;</tspan></text>
