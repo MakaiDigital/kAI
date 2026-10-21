@@ -20,10 +20,15 @@ changed_here() {
   [ -n "$base" ] || return 0
   ! git show "$base:docs/specs/$key/$1" 2>/dev/null | cmp -s - "$dir/$1"
 }
-# A plan on the base branch without evidence came from the Definition PR; with evidence, it belongs to an earlier change.
+# A plan on the base branch came from a Definition PR when the ticket has no evidence there, or the plan changed after the
+# evidence (a spec redone after acceptance). Otherwise it belongs to an earlier change.
 has_plan() {
   changed_here plan.md && return 0
-  [ -f "$dir/plan.md" ] && ! git cat-file -e "$base:docs/specs/$key/evidence.md" 2>/dev/null
+  [ -f "$dir/plan.md" ] || return 1
+  evidence_at=$(git log -1 --format=%H "$base" -- "docs/specs/$key/evidence.md" 2>/dev/null)
+  [ -n "$evidence_at" ] || return 0
+  plan_at=$(git log -1 --format=%H "$base" -- "docs/specs/$key/plan.md" 2>/dev/null)
+  [ "$plan_at" != "$evidence_at" ] && git merge-base --is-ancestor "$evidence_at" "$plan_at" 2>/dev/null
 }
 case $(printf '%s' "$branch" | tr '[:lower:]' '[:upper:]') in
   *"$key"-DEFINITION*) next="finish the spec and plan in docs/specs/$key/ and open the Definition PR (/kai:spec $key)." ;;

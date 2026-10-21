@@ -69,6 +69,8 @@ EOF
     prove | accept | planned)
       mkdir -p docs/specs/PAY-103
       spec='none (ticket PAY-103)' c1='Outcome: shopper can remove' c2='Outcome: removal is safe' c3='Constraint: signed out'
+      status=Approved approver='Sam (engineering)'
+      [ "$variant" != planned ] || status=Proposed approver="the Definition PR's merge"
       if [ "$level" -ge 2 ] || [ "$variant" = accept ]; then
         spec='[spec.md](spec.md)' c1=C1 c2=C2 c3=C3
         cat >docs/specs/PAY-103/spec.md <<'EOF'
@@ -129,8 +131,8 @@ EOF
 # Plan: PAY-103 Remove a product from favorites
 
 - **Spec:** $spec
-- **Status:** Approved
-- **Approved by:** Sam (engineering)
+- **Status:** $status
+- **Approved by:** $approver
 
 ## Summary
 

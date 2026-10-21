@@ -3,5 +3,5 @@ type: regex
 target:
   source: file
   path: pr.md
-pattern: '## Plan'
+pattern: '## Plan\s+Built as planned'
 ---

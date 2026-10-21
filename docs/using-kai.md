@@ -217,4 +217,4 @@ kai metrics              weekly shipped count, lead time, and rework
 
 ## Product managers
 
-Product managers can write the spec and acceptance criteria in claude.ai or Cowork with the `kai-product` plugin, with no git or terminal needed. It produces the same `spec.md` and opens (or hands over) the Definition PR. Developers then pick up from step 3.
+Product managers can write the spec and acceptance criteria in claude.ai or Cowork with the `kai-product` plugin, with no git or terminal needed. It produces the same `spec.md` and opens (or hands over) the Definition PR. Before it merges, a developer runs `/kai:spec <KEY>` on its branch, which checks the spec against the code, grills them on it, and adds the plan (step 2). Once it merges, they continue from step 3.

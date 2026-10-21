@@ -97,6 +97,15 @@ message() { jq -r .systemMessage <<<"$output"; }
   [ "$(message)" = "$(ticket "/kai:implement continues with the failing tests, the code, and /kai:prove.")" ]
 }
 
+@test "a plan a later Definition PR changed after the evidence is the new change's plan" {
+  artifacts spec plan evidence
+  git add docs/specs && git commit -qm "PAY-9: merged earlier"
+  echo redone >docs/specs/PAY-9/plan.md && git commit -qam "PAY-9: plan"
+  git switch -qc PAY-9-respec
+  run run_hook session-start
+  [ "$(message)" = "$(ticket "/kai:implement continues with the failing tests, the code, and /kai:prove.")" ]
+}
+
 @test "stays silent on a branch without a ticket key" {
   run run_hook session-start
   [ "$status" -eq 0 ]

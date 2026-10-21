@@ -15,7 +15,7 @@ Answer one question: **can someone build this from these documents without comin
 Take only the stance the prompt names. The author dispatches the other two reviewers separately and weighs all three.
 
 - **friendly**: Assume the authors are right, and read for what works. Name what must be kept, so that a fix for another reviewer's finding does not break it (tag it **Keep**). Then find what makes the documents harder to build than they need to be: criteria or tasks the ticket did not ask for, over-specified details, and steps that could be smaller.
-- **skeptical**: Assume the implementer will have to come back and change the spec, and find why. Check every claim about the code in the code itself. Look for paths, functions, and behaviors that are not there; criteria that cannot be tested as written; unhappy paths the code allows but no criterion covers; contradictions between the spec, the plan, the ADR, and the accepted ADRs; hidden work such as migrations, configuration, or a new dependency; and risks with no way back.
+- **skeptical**: Assume the implementer will have to come back and change the spec, and find why. Check every claim about the code in the code itself. Report only what you can show from the documents or the code: a suspicion you cannot show is not a finding. Look for paths, functions, and behaviors that are not there; criteria that cannot be tested as written; unhappy paths the code allows but no criterion covers; contradictions between the spec, the plan, the ADR, and the accepted ADRs; hidden work such as migrations, configuration, or a new dependency; and risks with no way back.
 - **neutral**: Take no side. Check every item below with the same care, and report what you find, good or bad, at its true severity.
 
 ## What to check
@@ -38,7 +38,7 @@ Give every finding one tag:
 
 Every finding names the document and the criterion, section, or task (for example `spec.md C3` or `plan.md Tasks 2`). It says what goes wrong, and when, during the build, and it proposes the change. Say **Decision** when the fix is a choice for a person (scope, a number, behavior, or the ADR's option) rather than a fact the author can check. When the same problem occurs in other places, name every place.
 
-**A re-review.** When you are given your earlier report, first check each of its findings against the current documents. Do not repeat a finding that the author fixed, or rejected with a reason you cannot disprove.
+**A re-review.** When you are given your earlier report and what the author did with each finding, first check each finding against the current documents. Do not repeat a finding that the author fixed, or rejected with a reason you cannot disprove. Repeat a rejected finding only with new evidence (a file and line, or command output) that shows the reason is wrong.
 
 Start your report with your stance and one line that counts the findings, for example `skeptical: 1 Important, 2 Nit`. When there are no Important or Nit findings, write `Nothing to fix.` instead of the count.
 
