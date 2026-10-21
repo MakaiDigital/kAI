@@ -47,6 +47,6 @@ Say that the settings it writes deny `gh pr merge` and adding the `kai:tests-cha
 - Tell the person what happens next:
   - Teammates who open the repository in Claude Code are prompted to install Kai.
   - On GitHub, protect the main branch: require a pull request, an approval, and the `kai` check. Branch protection and rulesets need a paid GitHub plan for private repositories; until then, only Kai's permission rules stand in the way of a push to the base branch.
-  - Approve plans with "Yes, and use auto mode", so Claude carries the work to the pull request without asking again.
+  - From level 2, `/kai:spec` writes the plan into the Definition PR, and merging it approves the plan. When `/kai:implement` asks to approve a plan instead (level 1, a low-tier change, or a fix), approve it with "Yes, and use auto mode", so Claude carries the work to the pull request without asking again.
   - Start the first change with `/kai:spec <KEY>`.
 - If any `*.kai-new` files were written, list them and offer to merge each one. Until a workflow or agent `.kai-new` is merged, CI keeps running the old file, so the upgrade isn't finished. Require the `kai` check only once the new `kai.yml` is in, since an older one reports its check under another name.

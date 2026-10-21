@@ -54,4 +54,4 @@ Present the criteria in plain language, mark the ones that need engineering's ju
 
 ## 4. Deliver
 
-Follow `${CLAUDE_PLUGIN_ROOT}/references/deliver.md` to send the spec to engineering as the Definition PR. If the change needs an architecture decision, engineering must write and decide the ADR before the Definition PR opens. So deliver the file without opening the PR, and tell the person that engineering adds the ADR and opens the PR with `/kai:spec <KEY>`. Once it merges, engineering builds against it with Kai.
+Follow `${CLAUDE_PLUGIN_ROOT}/references/deliver.md` to send the spec to engineering as the Definition PR. If the change needs an architecture decision, engineering must write and decide the ADR before the Definition PR opens. So deliver the file without opening the PR, and tell the person that engineering adds the ADR and opens the PR with `/kai:spec <KEY>`. Engineering adds the plan with `/kai:spec <KEY>` before it merges, then builds from both with Kai.

@@ -6,7 +6,7 @@ Kai is already set up in your repository if it has a `.kai/config`. If not, inst
 
 ## Before you start
 
-- **Install the plugins.** Open the repository in Claude Code. The first time, accept the prompts to trust the folder and install `kai@makaidigital`, which also installs Superpowers and feature-dev. Run `/plugin` to confirm all three are enabled.
+- **Install the plugins.** Open the repository in Claude Code. The first time, accept the prompts to trust the folder and install `kai@makaidigital`, which also installs Superpowers, feature-dev, and `mattpocock-skills` (the `grilling` skill behind Matt Pocock's grill-me). Run `/plugin` to confirm all four are enabled.
 - **Know your level.** Run `grep KAI_LEVEL .kai/config`. The level decides which steps below apply:
 
 | Level | Adds |
@@ -26,8 +26,8 @@ You ask Claude for four things, and each ends in a pull request you review:
 
 | Step | Command | You review |
 |---|---|---|
-| 1. Specify | `/kai:spec PAY-123` | The Definition PR: the spec's **Review here** list, and any ADR (or Claude's one-line reason for skipping) |
-| 2. Implement | `/kai:implement` | The plan, once, before any code; then the finished PR |
+| 1. Define | `/kai:spec PAY-123` | The Definition PR: the spec's **Review here** list, the plan, and any ADR (or Claude's one-line reason for skipping) |
+| 2. Implement | `/kai:implement` | The finished PR (and a plan first, only when no Definition PR merged one) |
 | 3. Merge and deploy | (your process) | The PR, as a code owner |
 | 4. Accept | `/kai:accept PAY-123` | The cleanup PR; merging it ends the ticket |
 
@@ -47,10 +47,20 @@ What happens:
 
 Claude works on a branch named after the ticket (`PAY-123-short-description`), creating or suggesting one. Branch names must contain the key, because CI checks for it.
 
-### 2. Review the spec (level 2, medium and high tier)
+### 2. Define it: spec, plan, and review (level 2, medium and high tier)
 
-If the ticket needs a spec, Claude writes `docs/specs/PAY-123/spec.md`:
-- A **Review here** list at the top: the assumptions, chosen numbers, added criteria, security or data implications, answers to open questions, and ADR choices the spec rests on. Claude asks you about each one before it opens any PR. You can answer for someone else, such as the product owner, and the spec records who decided and for whom.
+If the ticket needs a spec, Claude settles everything the build needs before any code, so that `/kai:implement` never has to come back and change it:
+
+1. **Explore.** `feature-dev:code-explorer` agents map how the code the ticket touches works today, its tests, and anything in it that conflicts with the ticket. Criteria about existing behavior rest on what they find, not on guesses.
+2. **Draft the spec.** Claude writes `docs/specs/PAY-123/spec.md` (described below), and marks every assumption with `⚠`.
+3. **Grill you.** Claude interviews you with the `grilling` skill from Matt Pocock's grill-me, a round at a time: each round asks every question it can ask yet, numbered, with Claude's recommended answer, so "yes" accepts it. It looks up facts itself and asks you only for decisions. Each answer goes into the spec, and is recorded under **Review here** with who decided. It ends when nothing is left assumed and you agree on the result.
+4. **Decide any ADR.** If the change needs a new service, dependency, data store, external integration, or trust boundary, `feature-dev:code-architect` agents propose two or three options, and Claude drafts `docs/adr/NNNN-title.md` comparing them. You choose (you can choose for the tech lead); you do not run `/kai:adr` for this.
+5. **Write the plan.** `docs/specs/PAY-123/plan.md`: a diagram of what changes, the files to change, tasks, tests named by behavior (for example `rejects_expired_token`) and mapped to the criteria, and risks. Anything planning shows to be wrong in the spec is fixed now.
+6. **Review all of it.** Three read-only `kai:definition-reviewer` agents check the spec, plan and ADR, each with a stance: **friendly** (what must be kept, and what is harder to build than it needs to be), **skeptical** (why the build would have to change the spec), and **neutral** (every item, evenly). Claude weighs the three against the code, fixes what is wrong, asks you about anything that needs a decision, and rejects the rest with a reason. It repeats the review on the changed documents, for up to three rounds, until a round finds nothing new that matters.
+7. **Open the Definition PR.** Only then does Claude push branch `PAY-123-definition` and open `PAY-123: definition`, with the **Review here** decisions, a summary of the plan, and what the review changed.
+
+The spec contains:
+- A **Review here** list at the top: the assumptions, chosen numbers, added criteria, security or data implications, answers to open questions, and ADR choices the spec rests on, each with who decided. You can answer for someone else, such as the product owner, and the spec records who decided and for whom.
 - A short **Context** (problem, outcome, success metric, constraints, out of scope) taken from the ticket, so CI reviewers and `/kai:accept` have the goal while the ticket is open without ticket access.
 - An **Overview** diagram of the behavior, with criterion IDs on the steps they govern, when there is a flow to draw. It is Mermaid, which GitHub draws in the PR, and it shows only what the criteria say.
 - Criteria numbered C1, C2, … in a fixed form: "When …, the system shall …" or "If …, then the system shall …", including the unhappy paths (signed out, network down, invalid input). Each can be proved before merge, by a test, a local end-to-end run, or CI output.
@@ -58,32 +68,31 @@ If the ticket needs a spec, Claude writes `docs/specs/PAY-123/spec.md`:
 - A contract table mapping each criterion to a test, every row starting as FAIL.
 - YAML frontmatter (key, ticket, tier, status, ADR) that reviewers read.
 
-If the change needs a new service, dependency, data store, external integration, or trust boundary, Claude also drafts `docs/adr/NNNN-title.md` with two or three options for the tech lead to decide. You do not run `/kai:adr` for this. Claude asks you to choose an option before it opens the Definition PR (you can choose for the tech lead), then sets it to Accepted and fills in its Decision.
-
 What you do:
-1. Read the **Review here** decisions first, then check the criteria with product. Each must be testable, and together they must cover the ticket. No question is left open: the `definition` check fails a spec that still holds a `⚠` marker.
-2. Merge the spec (and ADR) on their own, as a **Definition PR**: branch `PAY-123-definition`, title `PAY-123: definition`. Claude prepares it for you.
-3. Wait for the merge before writing code. CI's `definition` check fails code for a medium- or high-tier ticket until its spec is on the main branch. If Claude skipped the spec and the tier turns out higher, write it then.
+1. Answer the grilling, then read the Definition PR: the **Review here** decisions first, then the criteria with product, then the plan with engineering. Each criterion must be testable, together they must cover the ticket, and the plan must be how you want it built. No question is left open: the `definition` check fails a spec that still holds a `⚠` marker.
+2. Comment on the PR to ask for changes. Claude answers the automated reviews while the session lasts; for comments people leave later, run `/kai:spec PAY-123` again on the branch.
+3. Merge it on its own. That merge approves the spec and the plan together, before any code. CI's `definition` check fails code for a medium- or high-tier ticket until its spec is on the main branch. If Claude skipped the spec and the tier turns out higher, write it then.
 
 ### 3. Implement (all levels)
 
-Claude starts the code on a fresh branch from the up-to-date base branch, or picks up the ticket's open PR or unmerged branch. A fix or follow-up branch gets its own plan, even though it inherits the earlier change's. Run:
+Claude starts the code on a fresh branch from the up-to-date base branch, or picks up the ticket's open PR or unmerged branch. It builds from the plan the Definition PR merged. A fix or follow-up branch gets its own plan, even though it inherits the earlier change's. Run:
 
 ```
 /kai:implement
 ```
 
-Claude takes the ticket to a reviewed, green pull request. You are asked once, at the plan:
-1. **Plan.** Claude explores the code and presents a plan: a diagram of what changes, files to change, tasks, tests named by behavior (for example `rejects_expired_token`) and mapped to the criteria, and risks. Then it stops and waits for you.
+Claude takes the ticket to a reviewed, green pull request:
+1. **Plan.** With a plan the Definition PR merged, there is nothing to approve: Claude checks that the code it names is still there and starts on the tests. Without one (at level 1, for a low-tier change, for a fix, or after a spec merged without a plan), Claude explores the code, presents a plan, and stops for you.
    - **You approve or push back.** Push back if the plan adds files or dependencies you didn't expect, has tests that don't map to a criterion, or has criteria with no test. A wrong plan costs minutes to fix; wrong code costs hours.
    - **Approve with "Yes, and use auto mode",** so Claude commits, pushes the ticket branch, and opens the PR without asking. Kai's settings still ask before a push to the base branch and deny merging.
+   - **If the code departs from the plan,** Claude updates `plan.md` and names the departure in the PR. It stops and asks you first when the departure changes the approach, adds a file or dependency the plan doesn't list, or needs a criterion to change.
 
-After you approve, it keeps going without asking:
+Then it keeps going without asking:
 2. **Failing tests.** Claude writes the planned tests, confirms they fail for the right reason, and commits them on their own as `PAY-123: failing tests` (or `test(PAY-123): failing tests` where the repository enforces Conventional Commits).
 3. **Implementation.** Claude writes the smallest change that makes the tests pass, following `.kai/constraints.md`.
 4. **Proof.** It runs `/kai:prove`: `kai verify`, then a table matching every planned test to the output line that shows it passing. A planned test that never ran is **MISSING**, which counts as a failure. The spec's contract table is updated and committed as `PAY-123: evidence`.
 5. **Review.** At level 3 it first runs the same gates CI will run. At every level, fresh-context, read-only reviewers then check the change: `kai:contract-reviewer` (every PASS is real, every change traces to a criterion), `kai:spec-critic` (behavior no criterion covers) and `/code-review` (or the `feature-dev:code-reviewer` agent). Important findings get fixed.
-6. **Pull request.** It pushes the ticket branch and opens the PR with the outcome, contract, evidence and review in the description.
+6. **Pull request.** It pushes the ticket branch and opens the PR with the outcome, any departure from the plan, the contract, evidence and review in the description.
 7. **Watching the PR.** After every push it waits for CI and the automated reviewers CI runs (the Kai review, a PR review agent, an adversarial reviewer), not for people. It answers each finding from those reviewers and from the repository's members and collaborators: it fixes what is right and re-proves, and where it believes the code is correct it replies with evidence and leaves the code alone. Findings from anyone else are listed for you, not acted on. A defense gets one round; if the reviewer repeats the point it becomes a decision for you. Each finding is tagged Important, Nit or Pre-existing; a Pre-existing one becomes a follow-up rather than a fix. It stops after three rounds, and asks you to reconsider the approach if reviewers still find new problems; it stops earlier if it stops converging, a check is red for a reason it cannot fix, or only people are left to act. If the session ends while it waits, `/kai:implement PAY-123` picks it up again.
 8. **Report.** It tells you the PR link, the tier, what was fixed, what was defended and why, and what needs your decision. It never merges or approves.
 
@@ -145,7 +154,7 @@ Claude works on a `kai-retro-<date>` branch, which needs no ticket key. It reads
 | What the change is for (the ticket and spec) | Product owner |
 | Whether the criteria are complete and testable (Definition PR) | Product and engineering |
 | Architecture decisions (ADR) | Tech lead or service owner |
-| The plan, before any code | The developer running Kai (tech lead for high tier) |
+| The plan, before any code | Engineering, in the Definition PR (or the developer running Kai, in the session, when none was merged; tech lead for high tier) |
 | Changing a committed test | A reviewer, with the `kai:tests-changed` label |
 | Merging | A code owner approving the PR (two for high tier) |
 | Accepting the change (the cleanup PR) | Product owner or service owner (two people for high tier) |

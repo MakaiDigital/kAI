@@ -1,8 +1,8 @@
 # Plan: {{KEY}} <title>
 
 - **Spec:** [spec.md](spec.md) <!-- or the ticket link, when the change needed no spec -->
-- **Status:** Proposed <!-- Proposed | Approved | Done -->
-- **Approved by:** <name, date>
+- **Status:** Proposed <!-- Proposed | Approved | Done. In a Definition PR it stays Proposed: merging the PR approves it, as it approves the spec. -->
+- **Approved by:** <name, date, or "the Definition PR's merge">
 
 ## Summary
 

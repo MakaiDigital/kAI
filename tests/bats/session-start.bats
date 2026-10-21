@@ -49,11 +49,11 @@ message() { jq -r .systemMessage <<<"$output"; }
   [ "$(message)" = "$(ticket "/kai:implement to review the change, open the PR, and answer its reviews.")" ]
 }
 
-@test "a definition branch finishes the spec, whatever the case of its name" {
+@test "a definition branch finishes the spec and plan, whatever the case of its name" {
   echo KAI_LEVEL=2 >>.kai/config
   git switch -qc pay-9-definition
   run run_hook session-start
-  [ "$(message)" = "$(ticket "finish docs/specs/PAY-9/spec.md and open the Definition PR (/kai:spec PAY-9).")" ]
+  [ "$(message)" = "$(ticket "finish the spec and plan in docs/specs/PAY-9/ and open the Definition PR (/kai:spec PAY-9).")" ]
 }
 
 @test "a cleanup branch finishes the cleanup PR" {
@@ -84,6 +84,15 @@ message() { jq -r .systemMessage <<<"$output"; }
   run run_hook session-start
   [ "$(message)" = "$(ticket "/kai:implement (plan first, then tests, code, review, and the PR).")" ]
   echo y >docs/specs/PAY-9/plan.md && git commit -qam "PAY-9: plan"
+  run run_hook session-start
+  [ "$(message)" = "$(ticket "/kai:implement continues with the failing tests, the code, and /kai:prove.")" ]
+}
+
+@test "a plan the Definition PR merged is this change's plan, so the build starts with the tests" {
+  echo KAI_LEVEL=2 >>.kai/config
+  artifacts spec plan
+  git add docs/specs && git commit -qm "PAY-9: definition"
+  git switch -qc PAY-9-thing
   run run_hook session-start
   [ "$(message)" = "$(ticket "/kai:implement continues with the failing tests, the code, and /kai:prove.")" ]
 }

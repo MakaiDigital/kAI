@@ -20,14 +20,19 @@ changed_here() {
   [ -n "$base" ] || return 0
   ! git show "$base:docs/specs/$key/$1" 2>/dev/null | cmp -s - "$dir/$1"
 }
+# A plan on the base branch without evidence came from the Definition PR; with evidence, it belongs to an earlier change.
+has_plan() {
+  changed_here plan.md && return 0
+  [ -f "$dir/plan.md" ] && ! git cat-file -e "$base:docs/specs/$key/evidence.md" 2>/dev/null
+}
 case $(printf '%s' "$branch" | tr '[:lower:]' '[:upper:]') in
-  *"$key"-DEFINITION*) next="finish docs/specs/$key/spec.md and open the Definition PR (/kai:spec $key)." ;;
+  *"$key"-DEFINITION*) next="finish the spec and plan in docs/specs/$key/ and open the Definition PR (/kai:spec $key)." ;;
   *"$key"-CLEANUP*) next="finish the cleanup PR (/kai:accept $key)." ;;
   *"$key"-FIX-*) next="/kai:implement the fix, starting with its plan." ;;
   *)
-    if [ "$KAI_LEVEL" -ge 2 ] && [ ! -f "$dir/spec.md" ] && ! changed_here plan.md; then
+    if [ "$KAI_LEVEL" -ge 2 ] && [ ! -f "$dir/spec.md" ] && ! has_plan; then
       next="/kai:spec $key (a change that touches only low-tier files can skip it; medium and high tier changes need a merged spec before code)."
-    elif ! changed_here plan.md; then
+    elif ! has_plan; then
       next="/kai:implement (plan first, then tests, code, review, and the PR)."
     elif ! changed_here evidence.md; then
       next="/kai:implement continues with the failing tests, the code, and /kai:prove."

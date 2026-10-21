@@ -8,11 +8,12 @@
     {
       "name": "kai",
       "source": "./plugins/kai",
-      "description": "AI-native SDLC workflow: spec, adr, implement, prove, accept (verify, QA, cleanup) and retro skills, review agents, metrics, and guardrail hooks",
+      "description": "AI-native SDLC workflow: spec (explore, interview, ADR, plan, review), implement, prove, accept (verify, QA, cleanup) and retro skills, review agents, metrics, and guardrail hooks",
       "category": "workflow",
       "dependencies": [
         "superpowers",
-        "feature-dev"
+        "feature-dev",
+        "mattpocock-skills"
       ]
     },
     {
@@ -55,6 +56,27 @@
       },
       "description": "Anthropic's feature-dev agents (code-explorer, code-architect, code-reviewer), pinned",
       "category": "upstream"
+    },
+    {
+      "name": "mattpocock-skills",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/mattpocock/skills.git",
+        "path": "skills/productivity",
+        "ref": "v1.3.1",
+        "sha": "24fe0ef7737efae15c87225755e9f6f5965e4888"
+      },
+      "description": "Matt Pocock's grilling skill (the interview behind grill-me), pinned",
+      "version": "1.3.1",
+      "author": {
+        "name": "Matt Pocock"
+      },
+      "license": "MIT",
+      "homepage": "https://github.com/mattpocock/skills",
+      "category": "upstream",
+      "skills": [
+        "./grilling"
+      ]
     }
   ]
 }

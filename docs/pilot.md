@@ -47,7 +47,7 @@ Claude detects your ticket system, project prefixes, and test commands from the 
 
 ## 5. Run real tickets, one level at a time
 
-Follow [using-kai.md](using-kai.md) for each ticket, and raise the level once the previous one feels routine. Approve each plan with "Yes, and use auto mode", so Claude carries the ticket to a pull request without stopping to ask.
+Follow [using-kai.md](using-kai.md) for each ticket, and raise the level once the previous one feels routine. From level 2 the plan arrives in the Definition PR, after Claude has grilled you on the spec. When Claude asks you to approve a plan in the session instead, approve it with "Yes, and use auto mode", so Claude carries the ticket to a pull request without stopping to ask.
 
 | Week | Level | Try |
 |---|---|---|
@@ -76,7 +76,7 @@ Keep one entry per ticket in a notes file outside the repository, or in a shared
 - Skills that didn't start when they should have, or started when they shouldn't:
 - Hook or check blocks that were wrong, or ones that should have fired and didn't:
 - Plans that were too big or too vague, or tests that didn't match what you meant:
-- Specs, or evidence you had to rewrite, and why:
+- Specs or plans that had to change during implementation (what the grilling and the definition review missed), or evidence you had to rewrite, and why:
 
 ### Evidence
 <paste the relevant part of the transcript, a screenshot, or the file you had to fix>
