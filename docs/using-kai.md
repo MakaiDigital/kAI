@@ -88,7 +88,7 @@ Claude takes the ticket to a reviewed, green pull request:
    - **If the code departs from the plan,** Claude updates `plan.md` and names the departure in the PR. It stops and asks you first when the departure changes the approach, adds a file or dependency the plan doesn't list, or needs a criterion to change.
 
 Then it keeps going without asking:
-2. **Failing tests.** Claude writes the planned tests, confirms they fail for the right reason, and commits them on their own as `PAY-123: failing tests` (or `test(PAY-123): failing tests` where the repository enforces Conventional Commits).
+2. **Failing tests.** Claude writes the planned tests, confirms they fail for the right reason, and commits them on their own as `PAY-123: failing tests` (or `test(PAY-123): failing tests` where the repository enforces Conventional Commits). If your pre-commit hook runs the test suite, it rejects this commit, because the tests fail by design until the code exists. Claude then runs the hook's other checks itself and commits with `--no-verify`, which Kai allows on this one commit only.
 3. **Implementation.** Claude writes the smallest change that makes the tests pass, following `.kai/constraints.md`.
 4. **Proof.** It runs `/kai:prove`: `kai verify`, then a table matching every planned test to the output line that shows it passing. A planned test that never ran is **MISSING**, which counts as a failure. The spec's contract table is updated and committed as `PAY-123: evidence`.
 5. **Review.** At level 3 it first runs the same gates CI will run. At every level, fresh-context, read-only reviewers then check the change: `kai:contract-reviewer` (every PASS is real, every change traces to a criterion), `kai:spec-critic` (behavior no criterion covers) and `/code-review` (or the `feature-dev:code-reviewer` agent). Important findings get fixed.
@@ -164,7 +164,7 @@ Claude works on a `kai-retro-<date>` branch, which needs no ticket key. It reads
 | You see | What it means | What to do |
 |---|---|---|
 | `kai: verification failed (attempt 1 of 3)` | The Stop hook ran your tests and they fail | Let Claude fix them. If a failure is unrelated to your change, Claude should say so with evidence |
-| `kai: blocked: … skip the repository's git hooks` | Claude tried `--no-verify`, `git commit -n`, a switch such as `HUSKY=0` or `LEFTHOOK=0`, pre-commit's `SKIP=` on a git command, or changed `core.hooksPath` | Fix what the git hook reports instead |
+| `kai: blocked: … skip the repository's git hooks` | Claude tried `--no-verify`, `git commit -n`, a switch such as `HUSKY=0` or `LEFTHOOK=0`, pre-commit's `SKIP=` on a git command, or changed `core.hooksPath`, on anything but the ticket's failing-tests commit | Fix what the git hook reports instead. Only `git commit --no-verify -m "PAY-123: failing tests"`, alone and during a `/kai:` command, may skip hooks |
 | `kai: blocked: … was locked by the "PAY-123: failing tests" commit` | Claude tried to edit a locked test | If the test really is wrong, you make the change or tell Claude to, commit it alone as `PAY-123: correct <test name>`, and have a reviewer add `kai:tests-changed` |
 | `kai: blocked: production deploys need a named release manager` | A command matched `KAI_PROD_DEPLOY_PATTERN` | Get release approval, then restart the session with `KAI_RELEASE_APPROVAL=<name>` |
 | `kai: blocked: KAI_PROD_DEPLOY_PATTERN in .kai/config is not a valid regular expression` | The pattern doesn't parse, so every Bash command is blocked | Fix the pattern |

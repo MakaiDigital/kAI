@@ -32,7 +32,7 @@ Guardrail hooks run in every session:
 
 - **UserPromptExpansion** marks the session when you type a `/kai:` command, which turns on the Stop hook's checks for that session.
 - **Stop**, in a session marked that way, runs `kai verify` and keeps Claude working until the configured checks pass (it gives up with a warning after a few attempts).
-- **PreToolUse (Bash)** blocks skipping git hooks (`--no-verify`, `git commit -n`, `core.hooksPath`, the `HUSKY=0` and `LEFTHOOK=0` switches, and pre-commit's `SKIP=` on a git command, also inside `sh -c`, `eval` or a git alias) and production deploys without a named release approval.
+- **PreToolUse (Bash)** blocks skipping git hooks (`--no-verify`, `git commit -n`, `core.hooksPath`, the `HUSKY=0` and `LEFTHOOK=0` switches, and pre-commit's `SKIP=` on a git command, also inside `sh -c`, `eval` or a git alias) and production deploys without a named release approval. The one exception is TDD's red step: in a session marked by a `/kai:` command, a single `git commit --no-verify -m "<KEY>: failing tests"` for the branch's ticket may skip a pre-commit hook that runs the test suite, since the new tests fail until the code exists.
 - **PreToolUse (Edit, Write, NotebookEdit)** at level 3 blocks edits to tests locked by the ticket's `<KEY>: failing tests` commits.
 - **SessionStart** tells you which ticket the branch is for and what the next step is.
 
