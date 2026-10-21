@@ -39,9 +39,14 @@ guard() { run_hook guard-bash "$1"; }
   [ "$status" -eq 2 ]
 }
 
+stage_tests() {
+  mkdir -p test/helpers && echo t >test/cart.test.js && echo h >test/helpers/make_cart.js && git add test
+}
+
 @test "during the workflow, the ticket's failing-tests commit may skip git hooks that run the failing tests" {
   git switch -qc PAY-1-work
   mark_workflow
+  stage_tests
   run guard "git commit --no-verify -m \"PAY-1: failing tests\""
   [ "$status" -eq 0 ]
   run guard "git commit -n -m 'test(PAY-1): failing tests'"
@@ -50,8 +55,34 @@ guard() { run_hook guard-bash "$1"; }
   [ "$status" -eq 0 ]
 }
 
+@test "test files in common layouts count as tests" {
+  git switch -qc PAY-1-work
+  mark_workflow
+  mkdir -p pkg/cart/__tests__ spec tests/fixtures
+  for f in pkg/cart/__tests__/cart.js pkg/cart/cart_test.go pkg/cart/test_cart.py pkg/cart/CartTest.java \
+    pkg/cart/cart.spec.ts spec/cart_spec.rb tests/fixtures/cart.json; do
+    echo t >"$f"
+  done
+  git add pkg spec tests
+  run guard "git commit --no-verify -m \"PAY-1: failing tests\""
+  [ "$status" -eq 0 ]
+}
+
+@test "the failing-tests commit may not skip git hooks with code staged, or with nothing staged" {
+  git switch -qc PAY-1-work
+  mark_workflow
+  run guard "git commit --no-verify -m \"PAY-1: failing tests\""
+  [ "$status" -eq 2 ]
+  stage_tests
+  mkdir -p src && echo code >src/cart.js && git add src
+  run guard "git commit --no-verify -m \"PAY-1: failing tests\""
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"only test files staged"* ]]
+}
+
 @test "no other commit, command, ticket or session may skip git hooks" {
   git switch -qc PAY-1-work
+  stage_tests
   run guard "git commit --no-verify -m \"PAY-1: failing tests\""
   [ "$status" -eq 2 ]
   [[ "$output" == *'git commit --no-verify -m "<KEY>: failing tests"'* ]]
@@ -68,7 +99,8 @@ git commit --no-verify -m \"PAY-1: implement\"" \
     "HUSKY=0 git commit -m \"PAY-1: failing tests\"" \
     "git -c core.hooksPath=/dev/null commit -m \"PAY-1: failing tests\"" \
     "sh -c \"git commit --no-verify -m 'PAY-1: failing tests'\"" \
-    "git push --no-verify -m \"PAY-1: failing tests\""; do
+    "git push --no-verify -m \"PAY-1: failing tests\"" \
+    "$(printf 'git commit --no-verify -m "PAY-1: failing tests"\r')"; do
     run guard "$c"
     [ "$status" -eq 2 ] || { echo "allowed: $c"; false; }
   done
