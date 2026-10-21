@@ -3,11 +3,13 @@ load helpers
 SDLC="$REPO_ROOT/plugins/kai"
 
 @test "commands and the skills that need them share one procedure file" {
-  for r in implement prove adr retro answer-reviews; do [ -f "$SDLC/references/$r.md" ]; done
+  for r in implement plan prove adr retro answer-reviews; do [ -f "$SDLC/references/$r.md" ]; done
   grep -qF '${CLAUDE_PLUGIN_ROOT}/references/implement.md' "$SDLC/skills/implement/SKILL.md"
   grep -qF '${CLAUDE_PLUGIN_ROOT}/references/implement.md' "$SDLC/skills/accept/SKILL.md"
   grep -qF '${CLAUDE_PLUGIN_ROOT}/references/prove.md' "$SDLC/skills/prove/SKILL.md"
   grep -qF '`prove.md` in this folder' "$SDLC/references/implement.md"
+  grep -qF '${CLAUDE_PLUGIN_ROOT}/references/plan.md' "$SDLC/skills/spec/SKILL.md"
+  grep -qF '`plan.md` in this folder' "$SDLC/references/implement.md"
   grep -qF '${CLAUDE_PLUGIN_ROOT}/references/adr.md' "$SDLC/skills/adr/SKILL.md"
   grep -qF '${CLAUDE_PLUGIN_ROOT}/references/adr.md' "$SDLC/skills/spec/SKILL.md"
   grep -qF '${CLAUDE_PLUGIN_ROOT}/references/retro.md' "$SDLC/skills/retro/SKILL.md"
@@ -72,6 +74,33 @@ SDLC="$REPO_ROOT/plugins/kai"
   grep -q 'for up to three rounds' "$SDLC/references/answer-reviews.md"
   run grep -rn 'five rounds\|fifth round' "$SDLC/skills" "$SDLC/references" "$REPO_ROOT/README.md" "$REPO_ROOT/docs"
   [ "$status" -eq 1 ]
+}
+
+@test "every upstream skill Kai names is pinned in the marketplace and installed with kai" {
+  m="$REPO_ROOT/.claude-plugin/marketplace.json"
+  refs=$(grep -rhoE '`(superpowers|mattpocock-skills):[a-z-]+`' "$SDLC/skills" "$SDLC/references" | tr -d '`' | sort -u)
+  printf '%s\n' "$refs" | grep -qx 'mattpocock-skills:grilling'
+  for ref in $refs; do
+    plugin=${ref%%:*} skill=${ref#*:}
+    jq -e --arg p "$plugin" --arg s "./$skill" '.plugins[] | select(.name == $p) | .skills | index($s)' "$m" >/dev/null || { echo "$ref is not pinned"; false; }
+    jq -e --arg p "$plugin" '.plugins[] | select(.name == "kai") | .dependencies | index($p)' "$m" >/dev/null || { echo "$plugin is not a kai dependency"; false; }
+  done
+}
+
+@test "the spec grills the developer, and a friendly, a skeptical and a neutral reviewer check the definition before its PR" {
+  grep -qF '`mattpocock-skills:grilling`' "$SDLC/skills/spec/SKILL.md"
+  for stance in friendly skeptical neutral; do
+    grep -q "^- \*\*$stance\*\*:" "$SDLC/skills/spec/SKILL.md" || { echo "$stance missing in the spec skill"; false; }
+    grep -q "^- \*\*$stance\*\*:" "$SDLC/agents/definition-reviewer.md" || { echo "$stance missing in the agent"; false; }
+  done
+  grep -qF '`kai:definition-reviewer`' "$SDLC/skills/spec/SKILL.md"
+  grep -qF '`VERDICT: PASS` if there are no Important findings' "$SDLC/agents/definition-reviewer.md"
+}
+
+@test "implement builds from a plan the Definition PR merged, without planning again" {
+  grep -qF 'With a plan the Definition PR merged' "$SDLC/references/implement.md"
+  grep -qF 'Do not plan again' "$SDLC/references/implement.md"
+  grep -qx '## Plan' "$SDLC/references/implement.md"
 }
 
 @test "the PR description says how risky the change is and how to revert it" {

@@ -7,6 +7,7 @@ setup() {
   printf 'docs/* low\n*.md low\n' >.kai/tiers
   mkdir -p docs/specs/PAY-1
   printf '# Spec\n\n## Criteria\n\n- **C1** When a shopper taps, the system shall save.\n\n## Contract\n\n| Criterion | Test | Status | Evidence |\n|---|---|---|---|\n| C1 | `saves` | | |\n' >docs/specs/PAY-1/spec.md
+  echo plan >docs/specs/PAY-1/plan.md
   git add -A && git commit -qm "PAY-1: definition"
   ORIGIN="$BATS_TEST_TMPDIR/origin.git"
   git init -q --bare -b main "$ORIGIN"
@@ -41,7 +42,6 @@ report_step() {
 
 change_pr() {
   git switch -qc PAY-1-work
-  echo plan >docs/specs/PAY-1/plan.md && git add -A && git commit -qm "PAY-1: plan"
   mkdir -p test && echo 'test("saves")' >test/save.test.js && git add -A && git commit -qm "PAY-1: failing tests"
   echo impl >app.js && git add -A && git commit -qm "PAY-1: implement"
   printf '# Evidence\n\nkai verify on commit %s at 2026-10-05T00:00:00Z.\n\nResult: **PASS**\n\n## Planned tests\n\n| Criterion | Test | Result | Output line |\n|---|---|---|---|\n| C1 | `saves` | PASS | `✔ saves` |\n' \

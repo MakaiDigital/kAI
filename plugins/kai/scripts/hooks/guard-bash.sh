@@ -13,11 +13,34 @@ if printf '%s\n' "$cmd" | grep -qiE '(^|[^[:alnum:]_.-])(eval|(ba|da|k|z)?sh)[[:
   words="$words;$cmd"
 fi
 lines=$(printf '%s\n' "$words" | tr '&|' ';;' | tr ';' '\n')
+
+# TDD's red step: a pre-commit hook that runs the test suite always rejects the ticket's failing-tests commit. During
+# the workflow, that one commit may skip hooks: a single-line `git commit` whose message is exactly its subject, with
+# only test files added or modified. The shape allows no -a and no paths, so the staged files are exactly what it
+# commits; --no-renames lists both sides of a move, so code cannot leave through a rename into a test folder.
+failing_tests_commit() {
+  [ -f "$(kai_state_dir)/session-$session.workflow" ] || return 1
+  ft_breaks=$(printf '\n\rx')
+  case $hook_command in *["${ft_breaks%x}"]*) return 1 ;; esac
+  ft_key=$(kai_key_from "$(kai_branch)") || return 1
+  ft_subject="(test\\($ft_key\\)|$ft_key): failing tests"
+  ft_flags='([[:space:]]+(--no-verify|-n|-q|--quiet))*'
+  printf '%s\n' "$cmd" | grep -qiE "^[[:space:]]*git[[:space:]]+commit${ft_flags}[[:space:]]+-m[[:space:]]*(\"$ft_subject\"|'$ft_subject')${ft_flags}[[:space:];]*\$" || return 1
+  ft_staged=$(git diff --cached --no-renames --name-only 2>/dev/null) || return 1
+  [ -n "$ft_staged" ] || return 1
+  ft_other=$(git diff --cached --no-renames --name-only --diff-filter=am 2>/dev/null) || return 1
+  [ -z "$ft_other" ] || return 1
+  ! printf '%s\n' "$ft_staged" | grep -qvE \
+    '(^|/)(tests?|specs?|__tests__|testdata|fixtures?)/|(^|/)test_[^/]*$|([._-](test|spec)s?|Tests?|Spec)\.[^/]*$'
+}
+
 if printf '%s\n' "$lines" | grep -qiE -e "$git_cmd.*--no-veri" -e 'core\.hookspath' \
   -e "$git_cmd(.*[[:space:]])?commit[[:space:]](.*[[:space:]])?-[[:alpha:]]*n" ||
   printf '%s\n' "$lines" | grep -qE -e '(^|[^[:alnum:]_])(HUSKY=0|HUSKY_SKIP_HOOKS=|LEFTHOOK=(0|false))' \
     -e "(^|[^[:alnum:]_])SKIP=[^[:space:]]*[[:space:]](.*[[:space:]])?git[[:space:]]"; then
-  block "this would skip the repository's git hooks. Fix what the hook reports instead of bypassing it."
+  if ! failing_tests_commit; then
+    block "this would skip the repository's git hooks. Fix what the hook reports instead of bypassing it. Only the ticket's failing-tests commit may skip them, during the workflow, as one command with only test files staged: git commit --no-verify -m \"<KEY>: failing tests\"."
+  fi
 fi
 
 if [ -n "$KAI_PROD_DEPLOY_PATTERN" ] && [ -z "${KAI_RELEASE_APPROVAL:-}" ]; then

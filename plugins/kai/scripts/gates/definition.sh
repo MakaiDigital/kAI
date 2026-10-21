@@ -28,8 +28,13 @@ fi
 [ -n "$key" ] || kai_die "definition: no ticket key in branch or title (see the ticket-ref gate)"
 
 if ! git cat-file -e "$base:docs/specs/$key/spec.md" 2>/dev/null; then
-  printf 'definition: %s is a %s-tier change, but its spec is not approved yet.\nMerge docs/specs/%s/spec.md into %s in a Definition PR first (/kai:spec writes the spec).\n' \
+  printf 'definition: %s is a %s-tier change, but its spec is not approved yet.\nMerge docs/specs/%s/spec.md and plan.md into %s in a Definition PR first (/kai:spec writes both).\n' \
     "$key" "$tier" "$key" "$base" >&2
   exit 1
 fi
-printf 'definition: %s (%s tier) has an approved spec\n' "$key" "$tier"
+if ! git cat-file -e "$base:docs/specs/$key/plan.md" 2>/dev/null; then
+  printf 'definition: %s is a %s-tier change, but its plan is not approved yet.\nMerge docs/specs/%s/plan.md into %s in a Definition PR first (/kai:spec writes it on top of the merged spec).\n' \
+    "$key" "$tier" "$key" "$base" >&2
+  exit 1
+fi
+printf 'definition: %s (%s tier) has an approved spec and plan\n' "$key" "$tier"

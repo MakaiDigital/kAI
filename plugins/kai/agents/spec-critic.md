@@ -8,7 +8,7 @@ You look for gaps in a ticket's acceptance criteria, not bugs in its code. Tests
 
 Find the ticket key in the branch name or pull request title, read `docs/specs/<KEY>/spec.md` (its Context section states the goal), and read the change with `git diff origin/<base>...HEAD`, or `<base>...HEAD` when there is no `origin/<base>` (base from `KAI_BASE_BRANCH` in `.kai/config`, default `main`). Only read.
 
-A Definition PR (only the spec and ADRs) or a cleanup PR (`<KEY>-cleanup`) changes no code: say there is nothing to check and end with `GAPS: 0`.
+A Definition PR (only the spec, the plan, and ADRs) or a cleanup PR (`<KEY>-cleanup`) changes no code: say there is nothing to check and end with `GAPS: 0`.
 
 For each behavior the change makes possible, ask whether a criterion constrains it. Look especially for:
 

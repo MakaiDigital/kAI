@@ -2,29 +2,29 @@
 
 Makai's AI-native SDLC for Claude Code. Every change moves through a chain of committed artifacts (spec, plan, failing tests, code, evidence), and the rules that must always hold are enforced by hooks and CI rather than left to the model.
 
-Kai is deliberately thin. It supplies the workflow, templates, and guardrails, and builds on pinned upstream plugins for the heavy lifting: [Superpowers](https://github.com/obra/superpowers) for test-driven development and verification discipline, and Anthropic's `feature-dev` agents for codebase exploration.
+Kai is deliberately thin. It supplies the workflow, templates, and guardrails, and builds on pinned upstream plugins for the heavy lifting: [Superpowers](https://github.com/obra/superpowers) for test-driven development and verification discipline, Anthropic's `feature-dev` agents for codebase exploration and design options, and the `grilling` skill behind [Matt Pocock's grill-me](https://github.com/mattpocock/skills) for interviewing the developer about the spec.
 
 - **Developers:** [Using Kai](docs/using-kai.md) walks through a change step by step, from ticket to done.
 - **Trying it in a repository:** [Piloting Kai](docs/pilot.md) covers installing, measuring a baseline, and sending feedback.
 
 ## The flow
 
-![How Kai works: from level 2, /kai:spec writes the spec and any ADR for a Definition PR, or says to skip it for a low-tier change; /kai:implement plans, waits for your approval, commits failing tests, writes the minimum code, proves it, reviews it, and answers the change PR reviewers until a person merges it; at level 4, /kai:accept verifies the deployed change and tries to break it, fixes what fails in a fix PR and verifies again, then runs the retro and opens a cleanup PR](docs/kai-flow.svg)
+![How Kai works: from level 2, /kai:spec explores the code, writes the spec, grills you on it, decides any ADR, writes the plan, and has a friendly, a skeptical and a neutral reviewer check them for a Definition PR, or says to skip it for a low-tier change; /kai:implement builds from the merged plan, commits failing tests, writes the minimum code, proves it, reviews it, and answers the change PR reviewers until a person merges it; at level 4, /kai:accept verifies the deployed change and tries to break it, fixes what fails in a fix PR and verifies again, then runs the retro and opens a cleanup PR](docs/kai-flow.svg)
 
-The ticket is the intent; there is no separate intent document. `/kai:spec` reads it and either writes a spec (and an ADR when the change needs a decision) for a Definition PR, or, when the change touches only low-tier files, says why it can skip one. `/kai:implement` asks for approval once, at the plan (approve it with "Yes, and use auto mode"), then carries the work to a reviewed, green PR. After a person merges it and it is deployed, `/kai:accept` verifies it in integration, tries to break it, fixes what fails in a fix PR, and finishes with a cleanup PR that removes the ticket's working documents. At level 4, only ADRs remain as documentation; the rest is read from the code.
+The ticket is the intent; there is no separate intent document. `/kai:spec` reads it, explores the code, and writes the spec; then it grills you on the spec, decides any ADR with you, writes the plan, and has three reviewers (friendly, skeptical, and neutral) check all of it before it opens the Definition PR. When the change touches only low-tier files, it says why it can skip all this instead. Merging the Definition PR approves the spec and the plan together, so `/kai:implement` builds from that plan without planning again and carries the work to a reviewed, green PR. It asks you to approve a plan only when none was merged (at level 1, for a low-tier change, or for a fix); approve it with "Yes, and use auto mode". After a person merges the change and it is deployed, `/kai:accept` verifies it in integration, tries to break it, fixes what fails in a fix PR, and finishes with a cleanup PR that removes the ticket's working documents. At level 4, only ADRs remain as documentation; the rest is read from the code.
 
 ## Commands
 
 | Command | What it does | Output |
 |---|---|---|
-| `/kai:spec <KEY>` | Reads the ticket, decides whether it needs a spec (only a change that touches nothing but low-tier files skips it), then writes numbered EARS criteria, a diagram of the behavior, a contract mapping each to a test, and a short "Review here" list of the decisions you made, before any PR, on what the ticket left open. Drafts an ADR when the change needs one (level 2) | `docs/specs/<KEY>/spec.md`, `docs/adr/NNNN-*.md` |
+| `/kai:spec <KEY>` | Reads the ticket and decides whether it needs a spec (only a change that touches nothing but low-tier files skips it). Explores the code with `feature-dev:code-explorer` agents, then writes numbered EARS criteria, a diagram of the behavior, a contract mapping each to a test, and a short "Review here" list. Grills you on the draft until nothing in it is assumed, drafts an ADR when the change needs one (`feature-dev:code-architect` agents propose the options; you choose), and writes the plan. Three `kai:definition-reviewer` agents (friendly, skeptical, neutral) review the spec, plan and ADR, for up to three rounds, before the Definition PR opens (level 2) | `docs/specs/<KEY>/spec.md`, `plan.md`, `docs/adr/NNNN-*.md` |
 | `/kai:adr` | Records an architecture decision with options and trade-offs. `/kai:spec` runs it when needed; call it directly for a decision outside a spec (level 2) | `docs/adr/NNNN-*.md` |
-| `/kai:implement` | Plans (stops for approval), commits failing tests, implements the minimum, proves it, gets an independent review and fixes it, opens the PR, then answers its trusted reviewers (fixing what is right, defending with evidence what is not) until reviews are satisfied and checks are green, for up to three rounds | `plan.md`, tests, code, `evidence.md`, pull request |
+| `/kai:implement` | Builds from the plan the Definition PR merged (or, when none was, plans and stops for approval), commits failing tests, implements the minimum, proves it, gets an independent review and fixes it, opens the PR, then answers its trusted reviewers (fixing what is right, defending with evidence what is not) until reviews are satisfied and checks are green, for up to three rounds | tests, code, `evidence.md`, pull request |
 | `/kai:prove` | Runs the team's checks and maps each planned test (and spec criterion) to its result. `/kai:implement` calls it; run it alone to re-check | `evidence.md` |
 | `/kai:accept <KEY>` | After the change is deployed to integration, verifies it, tries to break it, and fixes each failure itself in a `<KEY>-fix-<n>` PR (you approve its plan), then verifies again; once it passes, runs the retro and opens a cleanup PR that deletes the ticket's specs (keeping ADRs) and applies the retro's instruction changes (level 4) | cleanup pull request |
 | `/kai:retro` | Finds the lessons worth keeping in a ticket or a period and applies the instruction changes as separate commits; a lesson that needs a hook or script becomes a ticket. `/kai:accept` runs it; run it alone for a sprint view (level 4) | skill, ADR, or CLAUDE.md changes |
 
-Two read-only review agents back `/kai:implement` and the CI review: `kai:contract-reviewer` (every PASS has evidence, every change traces to a criterion) and `kai:spec-critic` (behavior no criterion covers, proposed as EARS criteria).
+Two read-only review agents back `/kai:implement` and the CI review: `kai:contract-reviewer` (every PASS has evidence, every change traces to a criterion) and `kai:spec-critic` (behavior no criterion covers, proposed as EARS criteria). A third, `kai:definition-reviewer`, backs `/kai:spec`: it reviews the spec, plan and ADR before the Definition PR opens, once with each stance, and Claude weighs the three reviews against the code before it changes anything.
 
 The workflow runs only from these commands. A plain request, such as "add a removeFavorite function", is handled directly, without specs or plans. Superpowers' skills are the exception: they are model-invoked, so its test-driven development, debugging, verification, and code-review skills can still start on their own when you ask for a feature or a fix.
 
@@ -32,7 +32,7 @@ Guardrail hooks run in every session:
 
 - **UserPromptExpansion** marks the session when you type a `/kai:` command, which turns on the Stop hook's checks for that session.
 - **Stop**, in a session marked that way, runs `kai verify` and keeps Claude working until the configured checks pass (it gives up with a warning after a few attempts).
-- **PreToolUse (Bash)** blocks skipping git hooks (`--no-verify`, `git commit -n`, `core.hooksPath`, the `HUSKY=0` and `LEFTHOOK=0` switches, and pre-commit's `SKIP=` on a git command, also inside `sh -c`, `eval` or a git alias) and production deploys without a named release approval.
+- **PreToolUse (Bash)** blocks skipping git hooks (`--no-verify`, `git commit -n`, `core.hooksPath`, the `HUSKY=0` and `LEFTHOOK=0` switches, and pre-commit's `SKIP=` on a git command, also inside `sh -c`, `eval` or a git alias) and production deploys without a named release approval. The one exception is TDD's red step: in a session marked by a `/kai:` command, a single `git commit --no-verify -m "<KEY>: failing tests"` for the branch's ticket, with only test files staged, may skip a pre-commit hook that runs the test suite, since the new tests fail until the code exists.
 - **PreToolUse (Edit, Write, NotebookEdit)** at level 3 blocks edits to tests locked by the ticket's `<KEY>: failing tests` commits.
 - **SessionStart** tells you which ticket the branch is for and what the next step is.
 
@@ -44,6 +44,8 @@ The settings `kai init` writes also deny `gh pr merge` and adding the `kai:tests
 
 - With a GitHub connector that can write to the repository (claude.ai's built-in GitHub integration is read-only), it opens the PR after the person approves its title and body.
 - Without one, it hands over the file and a note for the engineering lead.
+
+That PR holds the what and the why. Once it merges, engineering runs `/kai:spec <KEY>`, which builds the how on it: it checks the spec against the code, grills the engineer, writes the plan, has all of it reviewed, and opens a Definition PR of its own. The `definition` gate needs the spec and the plan merged before any code.
 
 It bundles no connectors: it uses whichever Jira, Linear, or GitHub connectors your organization has approved and enabled. An organization admin adds `kai-product` from the `makaidigital` marketplace in claude.ai's organization settings. It has no `bin/`, which would stop claude.ai and Cowork from installing it. Anthropic's product-management plugin can be installed alongside it for roadmaps and stakeholder updates. In Claude Code, don't enable `kai-product` or `superpowers@claude-plugins-official` next to `kai`: `kai-product` also has a skill named `spec`, and the official Superpowers' session hook and entry skills compete with Kai's.
 
@@ -98,7 +100,7 @@ kai verify [--evidence F]   run KAI_VERIFY_CMDS; optionally write the evidence t
 kai tier [--base REF]       risk tier of the change, from .kai/tiers
 kai metrics [--weeks N]     weekly speed and quality report from the docs/specs/ history
 kai gate ticket-ref         CI gate: branch or PR title must reference a ticket
-kai gate definition         CI gate (level 2): medium/high-tier code needs a merged spec
+kai gate definition         CI gate (level 2): medium/high-tier code needs a merged spec and plan
 kai gate tests-locked       CI gate (level 3): tests from the ticket's failing-tests commits are unchanged
 kai gate contract           CI gate (level 3): every criterion and planned test is PASS with evidence
 ```
@@ -108,7 +110,7 @@ kai gate contract           CI gate (level 3): every criterion and planned test 
 Set `KAI_LEVEL` in `.kai/config` (or `--level` when installing). CI judges each PR by the base branch's `.kai/config` and `.kai/tiers`, so a change to either takes effect once it is merged.
 
 1. **Implement, prove.** Guardrail hooks, `kai verify` in the Stop hook and `/kai:prove`, and the `ticket-ref` gate in CI.
-2. **Specs and tiers.** `/kai:spec` and `/kai:adr`. Medium and high tier changes take two PRs: a Definition PR with `spec.md` (and any ADR), then the Change PR with the code. The `definition` gate enforces the order.
+2. **Specs and tiers.** `/kai:spec` and `/kai:adr`. Medium and high tier changes take two PRs: a Definition PR with `spec.md`, `plan.md` and any ADR, then the Change PR with the code. The `definition` gate enforces the order.
 
 Kai adds only one gate at level 2. The rest comes from GitHub settings you configure once per repository (at any level):
 

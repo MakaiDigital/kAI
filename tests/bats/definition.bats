@@ -9,7 +9,7 @@ setup() {
 }
 
 write_definition() {
-  mkdir -p docs/specs/PAY-1 && echo s >docs/specs/PAY-1/spec.md
+  mkdir -p docs/specs/PAY-1 && echo s >docs/specs/PAY-1/spec.md && echo p >docs/specs/PAY-1/plan.md
 }
 
 definition() { "$KAI" gate definition --base main "$@"; }
@@ -67,14 +67,27 @@ definition() { "$KAI" gate definition --base main "$@"; }
   [[ "$output" == *"its spec is not approved yet"* ]]
 }
 
-@test "code passes once the spec is on the base branch" {
+@test "code for a medium change fails while only the spec is on the base branch" {
+  mkdir -p docs/specs/PAY-1 && echo s >docs/specs/PAY-1/spec.md
+  git add -A && git commit -qm "PAY-1: spec from product"
+  git switch -qc PAY-1-work
+  echo p >docs/specs/PAY-1/plan.md
+  echo x >app.js
+  git add -A && git commit -qm "plan and code together"
+  run definition
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"its plan is not approved yet"* ]]
+  [[ "$output" == *"Merge docs/specs/PAY-1/plan.md into main"* ]]
+}
+
+@test "code passes once the spec and plan are on the base branch" {
   write_definition
   git add -A && git commit -qm "PAY-1: definition"
   git switch -qc PAY-1-work
   echo x >app.js
   run definition
   [ "$status" -eq 0 ]
-  [[ "$output" == *"has an approved spec"* ]]
+  [[ "$output" == *"has an approved spec and plan"* ]]
 }
 
 @test "uses the PR title when the branch has no key" {

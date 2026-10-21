@@ -66,9 +66,11 @@ EOF
     build)
       git switch -qc PAY-102-remove-favorite
       ;;
-    prove | accept)
+    prove | accept | planned)
       mkdir -p docs/specs/PAY-103
       spec='none (ticket PAY-103)' c1='Outcome: shopper can remove' c2='Outcome: removal is safe' c3='Constraint: signed out'
+      status=Approved approver='Sam (engineering)'
+      [ "$variant" != planned ] || status=Proposed approver="the Definition PR's merge"
       if [ "$level" -ge 2 ] || [ "$variant" = accept ]; then
         spec='[spec.md](spec.md)' c1=C1 c2=C2 c3=C3
         cat >docs/specs/PAY-103/spec.md <<'EOF'
@@ -129,8 +131,8 @@ EOF
 # Plan: PAY-103 Remove a product from favorites
 
 - **Spec:** $spec
-- **Status:** Approved
-- **Approved by:** Sam (engineering)
+- **Status:** $status
+- **Approved by:** $approver
 
 ## Summary
 
@@ -171,6 +173,16 @@ None.
 \`kai verify\`.
 EOF
       git add -A && git commit -qm "PAY-103: plan"
+      ;;
+  esac
+  if [ "$variant" = planned ] || { [ "$variant" = prove ] && [ "$level" -ge 2 ]; }; then
+    # From level 2 the Definition PR merges the spec and the plan; the change branch starts from them.
+    git switch -q main
+    git merge -q --ff-only PAY-103-remove-favorite
+    git switch -q PAY-103-remove-favorite
+  fi
+  case $variant in
+    prove | accept)
       cat >>test/favorites.test.js <<'EOF'
 
 test("removes_favorite_for_signed_in_user", () => {
