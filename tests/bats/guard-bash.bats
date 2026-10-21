@@ -68,6 +68,21 @@ stage_tests() {
   [ "$status" -eq 0 ]
 }
 
+@test "the failing-tests commit may not move code into a test folder or delete files while skipping git hooks" {
+  mkdir -p src test && echo code >src/cart.js && echo t >test/old.test.js && git add src test && git commit -qm code
+  git switch -qc PAY-1-work
+  mark_workflow
+  echo more >>test/old.test.js && git add test
+  run guard "git commit --no-verify -m \"PAY-1: failing tests\""
+  [ "$status" -eq 0 ]
+  git mv src/cart.js test/cart.js
+  run guard "git commit --no-verify -m \"PAY-1: failing tests\""
+  [ "$status" -eq 2 ]
+  git reset -q --hard && git rm -q test/old.test.js
+  run guard "git commit --no-verify -m \"PAY-1: failing tests\""
+  [ "$status" -eq 2 ]
+}
+
 @test "the failing-tests commit may not skip git hooks with code staged, or with nothing staged" {
   git switch -qc PAY-1-work
   mark_workflow

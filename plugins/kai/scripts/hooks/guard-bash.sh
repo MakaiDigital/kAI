@@ -16,7 +16,8 @@ lines=$(printf '%s\n' "$words" | tr '&|' ';;' | tr ';' '\n')
 
 # TDD's red step: a pre-commit hook that runs the test suite always rejects the ticket's failing-tests commit. During
 # the workflow, that one commit may skip hooks: a single-line `git commit` whose message is exactly its subject, with
-# only test files staged. The shape allows no -a and no paths, so the staged files are exactly what it commits.
+# only test files added or modified. The shape allows no -a and no paths, so the staged files are exactly what it
+# commits; --no-renames lists both sides of a move, so code cannot leave through a rename into a test folder.
 failing_tests_commit() {
   [ -f "$(kai_state_dir)/session-$session.workflow" ] || return 1
   ft_breaks=$(printf '\n\rx')
@@ -25,8 +26,10 @@ failing_tests_commit() {
   ft_subject="(test\\($ft_key\\)|$ft_key): failing tests"
   ft_flags='([[:space:]]+(--no-verify|-n|-q|--quiet))*'
   printf '%s\n' "$cmd" | grep -qiE "^[[:space:]]*git[[:space:]]+commit${ft_flags}[[:space:]]+-m[[:space:]]*(\"$ft_subject\"|'$ft_subject')${ft_flags}[[:space:];]*\$" || return 1
-  ft_staged=$(git diff --cached --name-only 2>/dev/null) || return 1
+  ft_staged=$(git diff --cached --no-renames --name-only 2>/dev/null) || return 1
   [ -n "$ft_staged" ] || return 1
+  ft_other=$(git diff --cached --no-renames --name-only --diff-filter=am 2>/dev/null) || return 1
+  [ -z "$ft_other" ] || return 1
   ! printf '%s\n' "$ft_staged" | grep -qvE \
     '(^|/)(tests?|specs?|__tests__|testdata|fixtures?)/|(^|/)test_[^/]*$|([._-](test|spec)s?|Tests?|Spec)\.[^/]*$'
 }
