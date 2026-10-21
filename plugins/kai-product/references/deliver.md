@@ -24,13 +24,13 @@ The connector must be able to create branches and commits. claude.ai's built-in 
 <the spec's Review here decisions, each with who decided, or "None">
 ```
 
-6. Share the link and say who should review. The repository's code owners are requested automatically. Ask engineering not to merge it until they have run `/kai:spec <KEY>` on its branch, which checks the criteria against the code and adds the plan to the same PR.
+6. Share the link and say who should review. The repository's code owners are requested automatically.
 
 ## Without one
 
 Give the person the finished file to download, named exactly `docs/specs/<KEY>/spec.md`, and a short message they can send to their engineering lead:
 
-> Here is the spec for <KEY>. Please put it under `docs/specs/<KEY>/` on a branch named `<KEY>-definition` and run `/kai:spec <KEY>` there: it checks the criteria against the code, adds the plan, and opens the Definition PR (title "<KEY>: definition"), so product and engineering can review both before build starts.
+> Here is the spec for <KEY>. Please open a Definition PR with it under `docs/specs/<KEY>/` (branch `<KEY>-definition`, title "<KEY>: definition") so product and engineering can review the criteria before build starts.
 
 ## Either way
 

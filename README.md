@@ -45,7 +45,7 @@ The settings `kai init` writes also deny `gh pr merge` and adding the `kai:tests
 - With a GitHub connector that can write to the repository (claude.ai's built-in GitHub integration is read-only), it opens the PR after the person approves its title and body.
 - Without one, it hands over the file and a note for the engineering lead.
 
-Before anyone merges it, engineering runs `/kai:spec <KEY>` on that branch. It checks the spec against the code, grills the engineer on it, adds the plan, and has all of it reviewed, in the same PR, so the merge approves a plan that `/kai:implement` can build from.
+That PR holds the what and the why. Once it merges, engineering runs `/kai:spec <KEY>`, which builds the how on it: it checks the spec against the code, grills the engineer, writes the plan, has all of it reviewed, and opens a Definition PR of its own. The `definition` gate needs the spec and the plan merged before any code.
 
 It bundles no connectors: it uses whichever Jira, Linear, or GitHub connectors your organization has approved and enabled. An organization admin adds `kai-product` from the `makaidigital` marketplace in claude.ai's organization settings. It has no `bin/`, which would stop claude.ai and Cowork from installing it. Anthropic's product-management plugin can be installed alongside it for roadmaps and stakeholder updates. In Claude Code, don't enable `kai-product` or `superpowers@claude-plugins-official` next to `kai`: `kai-product` also has a skill named `spec`, and the official Superpowers' session hook and entry skills compete with Kai's.
 
@@ -100,7 +100,7 @@ kai verify [--evidence F]   run KAI_VERIFY_CMDS; optionally write the evidence t
 kai tier [--base REF]       risk tier of the change, from .kai/tiers
 kai metrics [--weeks N]     weekly speed and quality report from the docs/specs/ history
 kai gate ticket-ref         CI gate: branch or PR title must reference a ticket
-kai gate definition         CI gate (level 2): medium/high-tier code needs a merged spec
+kai gate definition         CI gate (level 2): medium/high-tier code needs a merged spec and plan
 kai gate tests-locked       CI gate (level 3): tests from the ticket's failing-tests commits are unchanged
 kai gate contract           CI gate (level 3): every criterion and planned test is PASS with evidence
 ```

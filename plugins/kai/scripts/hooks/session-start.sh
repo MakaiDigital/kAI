@@ -35,8 +35,8 @@ case $(printf '%s' "$branch" | tr '[:lower:]' '[:upper:]') in
   *"$key"-CLEANUP*) next="finish the cleanup PR (/kai:accept $key)." ;;
   *"$key"-FIX-*) next="/kai:implement the fix, starting with its plan." ;;
   *)
-    if [ "$KAI_LEVEL" -ge 2 ] && [ ! -f "$dir/spec.md" ] && ! has_plan; then
-      next="/kai:spec $key (a change that touches only low-tier files can skip it; medium and high tier changes need a merged spec before code)."
+    if [ "$KAI_LEVEL" -ge 2 ] && ! has_plan && { [ ! -f "$dir/spec.md" ] || [ ! -f "$dir/plan.md" ]; }; then
+      next="/kai:spec $key (a change that touches only low-tier files can skip it; medium and high tier changes need a merged spec and plan before code)."
     elif ! has_plan; then
       next="/kai:implement (plan first, then tests, code, review, and the PR)."
     elif ! changed_here evidence.md; then

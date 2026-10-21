@@ -71,7 +71,7 @@ The spec contains:
 What you do:
 1. Answer the grilling, then read the Definition PR: the **Review here** decisions first, then the criteria with product, then the plan with engineering. Each criterion must be testable, together they must cover the ticket, and the plan must be how you want it built. No question is left open: the `definition` check fails a spec that still holds a `⚠` marker.
 2. Comment on the PR to ask for changes. Claude answers the automated reviews while the session lasts; for comments people leave later, run `/kai:spec PAY-123` again on the branch.
-3. Merge it on its own. That merge approves the spec and the plan together, before any code. CI's `definition` check fails code for a medium- or high-tier ticket until its spec is on the main branch. If Claude skipped the spec and the tier turns out higher, write it then.
+3. Merge it on its own. That merge approves the spec and the plan together, before any code. CI's `definition` check fails code for a medium- or high-tier ticket until its spec and plan are on the main branch. If Claude skipped the spec and the tier turns out higher, write it then.
 
 ### 3. Implement (all levels)
 
@@ -109,7 +109,7 @@ In CI:
   | Gate | Level | What it checks |
   |---|---|---|
   | `ticket-ref` | all | the branch or PR title has a ticket key |
-  | `definition` | 2+ | the spec was merged first |
+  | `definition` | 2+ | the spec and plan were merged first |
   | `tests-locked` | 3+ | the PR has its failing-tests commit, and the tests locked for the ticket are unchanged |
   | `contract` | 3+ | every criterion and planned test is PASS, with evidence from a passing run updated on this branch |
   | `verify` | opt-in | your test commands pass. Off by default: they already run locally and in your own CI |
@@ -217,4 +217,4 @@ kai metrics              weekly shipped count, lead time, and rework
 
 ## Product managers
 
-Product managers can write the spec and acceptance criteria in claude.ai or Cowork with the `kai-product` plugin, with no git or terminal needed. It produces the same `spec.md` and opens (or hands over) the Definition PR. Before it merges, a developer runs `/kai:spec <KEY>` on its branch, which checks the spec against the code, grills them on it, and adds the plan (step 2). Once it merges, they continue from step 3.
+Product managers can write the spec and acceptance criteria in claude.ai or Cowork with the `kai-product` plugin, with no git or terminal needed. It produces the same `spec.md`, with the what and the why, and opens (or hands over) its own Definition PR. Once that merges, a developer runs `/kai:spec <KEY>`, which builds the how on it: it explores the code, grills them, writes the plan, and opens a second Definition PR (step 2). Code starts from step 3 once both are merged.

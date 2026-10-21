@@ -175,13 +175,13 @@ EOF
       git add -A && git commit -qm "PAY-103: plan"
       ;;
   esac
+  if [ "$variant" = planned ] || { [ "$variant" = prove ] && [ "$level" -ge 2 ]; }; then
+    # From level 2 the Definition PR merges the spec and the plan; the change branch starts from them.
+    git switch -q main
+    git merge -q --ff-only PAY-103-remove-favorite
+    git switch -q PAY-103-remove-favorite
+  fi
   case $variant in
-    planned)
-      # The Definition PR merged the spec and the plan; the change branch starts from them.
-      git switch -q main
-      git merge -q --ff-only PAY-103-remove-favorite
-      git switch -q PAY-103-remove-favorite
-      ;;
     prove | accept)
       cat >>test/favorites.test.js <<'EOF'
 

@@ -24,13 +24,23 @@ message() { jq -r .systemMessage <<<"$output"; }
   echo KAI_LEVEL=2 >>.kai/config
   git switch -qc PAY-9-thing
   run run_hook session-start
-  [ "$(message)" = "$(ticket "/kai:spec PAY-9 (a change that touches only low-tier files can skip it; medium and high tier changes need a merged spec before code).")" ]
+  [ "$(message)" = "$(ticket "/kai:spec PAY-9 (a change that touches only low-tier files can skip it; medium and high tier changes need a merged spec and plan before code).")" ]
 }
 
-@test "suggests building once the spec exists at level 2" {
+@test "a spec without a plan at level 2, such as one product wrote, goes back to /kai:spec for its plan" {
   echo KAI_LEVEL=2 >>.kai/config
-  git switch -qc PAY-9-thing
   artifacts spec
+  git add docs/specs && git commit -qm "PAY-9: spec from product"
+  git switch -qc PAY-9-thing
+  run run_hook session-start
+  [ "$(message)" = "$(ticket "/kai:spec PAY-9 (a change that touches only low-tier files can skip it; medium and high tier changes need a merged spec and plan before code).")" ]
+}
+
+@test "a follow-up change at level 2 plans in the session, since the earlier change's plan is merged" {
+  echo KAI_LEVEL=2 >>.kai/config
+  artifacts spec plan evidence
+  git add docs/specs && git commit -qm "PAY-9: merged earlier"
+  git switch -qc PAY-9-offline
   run run_hook session-start
   [ "$(message)" = "$(ticket "/kai:implement (plan first, then tests, code, review, and the PR).")" ]
 }
