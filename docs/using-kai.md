@@ -90,11 +90,11 @@ Claude takes the ticket to a reviewed, green pull request:
 Then it keeps going without asking:
 2. **Failing tests.** Claude writes the planned tests, confirms they fail for the right reason, and commits them on their own as `PAY-123: failing tests` (or `test(PAY-123): failing tests` where the repository enforces Conventional Commits). If your pre-commit hook runs the test suite, it rejects this commit, because the tests fail by design until the code exists. Claude then runs the hook's other checks itself and commits with `--no-verify`, which Kai allows on this one commit only.
 3. **Implementation.** Claude writes the smallest change that makes the tests pass, following `.kai/constraints.md`.
-4. **Proof.** It runs `/kai:prove`: `kai verify`, then a table matching every planned test to the output line that shows it passing. A planned test that never ran is **MISSING**, which counts as a failure. The spec's contract table is updated and committed as `PAY-123: evidence`.
+4. **Proof.** It runs `/kai:prove`: `kai verify`, then the change itself, end to end, the way the repository's `verify` skill says (`/kai:setup` writes it). The evidence gets an **Observed** table of what was run and what was seen for each step of the spec's end-to-end verification, and a table matching every planned test to the output line that shows it passing. A planned test that never ran is **MISSING**, which counts as a failure. A step that needs the deployed system is marked **LATER**, for `/kai:accept`. The spec's contract table is updated and committed as `PAY-123: evidence`.
 5. **Review.** At level 3 it first runs the same gates CI will run. At every level, fresh-context, read-only reviewers then check the change: `kai:contract-reviewer` (every PASS is real, every change traces to a criterion), `kai:spec-critic` (behavior no criterion covers) and `/code-review` (or the `feature-dev:code-reviewer` agent). Important findings get fixed.
-6. **Pull request.** It pushes the ticket branch and opens the PR with the outcome, any departure from the plan, the contract, evidence and review in the description.
+6. **Pull request.** It pushes the ticket branch and opens the PR with the outcome, any departure from the plan, the contract, evidence and review in the description. A **Needs a person** section lists each reason a person must read part of the change (a high tier, a file that changes how agents or CI behave, a review check that found something, a changed criterion or locked test, a failed end-to-end step, a decision), with where to start, or says that no reason was found.
 7. **Watching the PR.** After every push it waits for CI and the automated reviewers CI runs (the Kai review, a PR review agent, an adversarial reviewer), not for people. It answers each finding from those reviewers and from the repository's members and collaborators: it fixes what is right and re-proves, and where it believes the code is correct it replies with evidence and leaves the code alone. Findings from anyone else are listed for you, not acted on. A defense gets one round; if the reviewer repeats the point it becomes a decision for you. Each finding is tagged Important, Nit or Pre-existing; a Pre-existing one becomes a follow-up rather than a fix. It stops after three rounds, and asks you to reconsider the approach if reviewers still find new problems; it stops earlier if it stops converging, a check is red for a reason it cannot fix, or only people are left to act. If the session ends while it waits, `/kai:implement PAY-123` picks it up again.
-8. **Report.** It tells you the PR link, the tier, what was fixed, what was defended and why, and what needs your decision. It never merges or approves.
+8. **Report.** It tells you the PR link, the tier, where a person must look, what was fixed, what was defended and why, and what needs your decision. It never merges or approves.
 
 While it works:
 - In a session where you typed a `/kai:` command, the **Stop hook** runs your test commands (`KAI_VERIFY_CMDS`, with `/bin/sh`) when Claude finishes a turn that changed files outside `docs/specs/`, and sends it back to work while they fail. It runs once per change and remembers a pass, so keep `KAI_VERIFY_CMDS` to fast checks. It gives up after three attempts and tells you.
@@ -115,7 +115,8 @@ In CI:
   | `verify` | opt-in | your test commands pass. Off by default: they already run locally and in your own CI |
 
 - Every run also posts one sticky PR comment, updated in place, with a `VERDICT: PASS` or `VERDICT: FAIL`, a row per gate and the full output of each failing gate. With `KAI_ENFORCE=report` the check stays green and that comment is the verdict; the default `block` also fails the check. On a PR from a fork the report goes to the job summary only. The workflow needs `pull-requests: write`, which `kai init` writes into its template; an existing repository adds it when it takes the new template.
-- At level 3, `kai review` posts an AI review comment. It informs the reviewer but never blocks or approves the merge. A person always approves.
+- At level 3, `kai review` posts an AI review comment. It waits for the `kai` check and skips a commit the gates reject, so a review is never spent on code that must change. It runs the rows of `REVIEW.md`'s Checks table that the diff triggers, names them on a `Checks run:` line, and ends with a `Needs a person:` line. It informs the reviewer but never blocks or approves the merge. A person always approves.
+- To try a gate without blocking anyone, list it in `KAI_OBSERVE`. An observed gate shows `👀 would fail` in the comment and the check stays green.
 
 What the reviewer does: judge the change against the spec and contract rather than reading every line. For high-tier changes, also read the code.
 
@@ -145,7 +146,7 @@ What you do: approve the plan of any fix and merge its PR, then review the clean
 /kai:retro 2w
 ```
 
-Claude works on a `kai-retro-<date>` branch, which needs no ticket key. It reads merged PRs and their reviews, `kai metrics`, and success metrics that are due, finds the lessons worth keeping, and applies the instruction changes as separate commits (a skill, an ADR, a `CLAUDE.md` line, or a deletion of instructions nothing needed). It keeps rules that prevent harm even when nothing triggered them. A lesson that needs a hook, script, setting, or workflow becomes a ticket for `/kai:implement`. The report goes in the PR description; no retro file is kept. Review the PR to approve the changes.
+Claude works on a `kai-retro-<date>` branch, which needs no ticket key. It reads merged PRs and their reviews, `kai metrics`, and success metrics that are due, finds the lessons worth keeping, and applies the instruction changes as separate commits (a skill, an ADR, a `CLAUDE.md` line, a row in `REVIEW.md`'s Checks table, or a deletion of instructions nothing needed). Before a lesson becomes a rule, three agents try to disprove it. For each problem that got past a review (a fix PR, a revert, an acceptance failure, a finding only a person raised), it replays the reviewer on the reviewed commit, records the case in `.kai/escapes.md`, and reports by tier how many PRs merged with no finding from a person and no escape: that number is what tells you when a tier can go without a human read. It keeps rules that prevent harm even when nothing triggered them. A lesson that needs a hook, script, setting, or workflow becomes a ticket for `/kai:implement`. The report goes in the PR description; no retro file is kept. Review the PR to approve the changes.
 
 ## Who decides what
 
@@ -192,7 +193,7 @@ kai key                  the ticket key on the current branch
 kai tier                 the change's risk tier, with the reason for each file
 kai verify               run the test commands from .kai/config
 kai gate <name>          run a CI check locally: ticket-ref, definition, tests-locked, contract
-kai metrics              weekly shipped count, lead time, and rework
+kai metrics              weekly shipped count, lead time, rework, and reverts
 ```
 
 ## Configuration
@@ -208,12 +209,15 @@ kai metrics              weekly shipped count, lead time, and rework
 | `KAI_BASE_BRANCH` | Optional; `main` by default. Setup writes it when the repository's default branch isn't `main` |
 | `KAI_TICKET_EXEMPT` | Optional; branches that need no key and skip every gate: `dependabot/*`, `renovate/*`, `kai-setup*`, and `kai-retro*` by default |
 | `KAI_ENFORCE` | Optional; `block` by default. `block` fails the PR check when a gate fails. `report` keeps the check green and leaves the verdict to the PR comment |
+| `KAI_OBSERVE` | Optional; empty by default. Gates that report what they would have blocked and never fail the check, space-separated, for example `"verify"`. Start a new gate here, read its reports, then remove it. CI reads it from the base branch |
 | `KAI_PROD_DEPLOY_PATTERN` | Optional; a regex for production deploy commands |
 | `KAI_WRITING_STE` | Optional; `100` by default. How close the specs, plans, ADRs, evidence, PR descriptions, and review findings Kai writes get to ASD-STE100, the Simplified Technical English of aerospace manuals: short sentences, active voice, one term for one thing. `0` turns the rules off; `100` applies the full standard |
 
 - `.kai/tiers` sets the risk tiers.
 - `.kai/constraints.md` is the minimal-code standard Claude follows.
-- `REVIEW.md` (level 3) tells the reviewer what to check.
+- `REVIEW.md` (level 3) tells the reviewer what to check. Its Checks table holds one row for each mistake the owners of the code want caught: a trigger a diff can show, the question to ask, and the incident or PR behind it.
+- `.claude/skills/verify/SKILL.md` says how to start and drive the application, so `/kai:prove` can watch the change run. Keep it fast and reliable.
+- `.kai/escapes.md` lists the problems that got past a check or a review. `/kai:retro` writes it and replays it against the reviewer.
 
 ## Product managers
 

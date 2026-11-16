@@ -42,6 +42,11 @@ runs:
         enforce=$(sh -c '. ./.kai/config >/dev/null 2>&1; printf %s "${KAI_ENFORCE-}"' 2>/dev/null || true)
         [ "$enforce" = report ] || enforce=block
         echo "$enforce" >"$results/mode"
+        observe=$(sh -c '. ./.kai/config >/dev/null 2>&1; printf %s "${KAI_OBSERVE-}"' 2>/dev/null || true)
+        echo "$observe" >"$results/observe"
+        failed() {
+          case " $observe " in *" $1 "*) ;; *) status=1 ;; esac
+        }
         for gate in $KAI_GATES; do
           echo "::group::$gate"
           case $gate in
@@ -52,8 +57,8 @@ runs:
                 printf '%s\n' "$out"
                 hard=1
               fi ;;
-            verify) capture verify "$KAI_BIN" verify || status=1 ;;
-            *) capture "$gate" "$KAI_BIN" gate "$gate" --base "origin/$BASE_REF" --branch "$HEAD_REF" --title "$PR_TITLE" --labels "$PR_LABELS" || status=1 ;;
+            verify) capture verify "$KAI_BIN" verify || failed verify ;;
+            *) capture "$gate" "$KAI_BIN" gate "$gate" --base "origin/$BASE_REF" --branch "$HEAD_REF" --title "$PR_TITLE" --labels "$PR_LABELS" || failed "$gate" ;;
           esac
           echo "::endgroup::"
         done

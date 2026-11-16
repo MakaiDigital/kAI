@@ -36,14 +36,22 @@ tickets=$(git log --first-parent -m "$ref" --diff-filter=A --name-only --format=
   printf '%s %s %s\n' "$week" "$(((done_at - ${start:-$done_at}) / 3600))" "$reworked"
 done | sort -k1,1n -k2,2n)
 
+reverts=$(git log --first-parent "$ref" --format='%ct %s' |
+  awk -v now="$now" -v weeks="$weeks" '{
+    t = $1; sub(/^[0-9]+ /, "")
+    w = int((now - t) / 604800)
+    if (w < weeks && (/^Revert / || / from [^ ]*\/revert-[0-9]+-/)) print "R", w
+  }')
+
 week_of() {
   t=$((now - $1 * 604800))
   date -u -d "@$t" +%F 2>/dev/null || date -u -r "$t" +%F
 }
 
 printf '# Kai metrics\n\nLast %s weeks on `%s`, from the `docs/specs/` history. Speed and quality are shown together: neither means much alone.\n\n' "$weeks" "$ref"
-printf '| Week ending | Shipped | Median lead time (days) | Reworked |\n|---|---|---|---|\n'
-printf '%s\n' "$tickets" | awk -v weeks="$weeks" '
+printf '| Week ending | Shipped | Median lead time (days) | Reworked | Reverts |\n|---|---|---|---|---|\n'
+printf '%s\n%s\n' "$reverts" "$tickets" | awk -v weeks="$weeks" '
+  $1 == "R" { rv[$2]++; allrv++; next }
   NF {
     n[$1]++; lead[$1, n[$1]] = $2; rw[$1] += $3
     all[++total] = $2; allrw += $3
@@ -55,16 +63,16 @@ printf '%s\n' "$tickets" | awk -v weeks="$weeks" '
     for (w in m) sq += (m[w] - mean) ^ 2
     sd = cnt > 1 ? sqrt(sq / (cnt - 1)) : 0
     for (w = weeks - 1; w >= 0; w--) {
-      if (!n[w]) { printf "| @%d | 0 | - | - |\n", w; continue }
+      if (!n[w]) { printf "| @%d | 0 | - | - | %d |\n", w, rv[w]; continue }
       flag = (cnt >= 4 && sd > 0 && m[w] > mean + 2 * sd) ? " ▲" : ""
-      printf "| @%d | %d | %.1f%s | %d of %d |\n", w, n[w], m[w], flag, rw[w], n[w]
+      printf "| @%d | %d | %.1f%s | %d of %d | %d |\n", w, n[w], m[w], flag, rw[w], n[w], rv[w]
     }
     if (total) {
       for (i = 1; i <= total; i++) for (j = i + 1; j <= total; j++) if (all[j] < all[i]) { t = all[i]; all[i] = all[j]; all[j] = t }
       med = (total % 2) ? all[(total + 1) / 2] : (all[total / 2] + all[total / 2 + 1]) / 2
-      printf "\n**%d tickets shipped**, median lead time **%.1f days**, **%d%% reworked**.\n", total, med / 24, 100 * allrw / total
+      printf "\n**%d tickets shipped**, median lead time **%.1f days**, **%d%% reworked**, **%d reverts**.\n", total, med / 24, 100 * allrw / total, allrv
     } else {
-      printf "\nNo tickets shipped in this period.\n"
+      printf "\nNo tickets shipped in this period. %d reverts.\n", allrv
     }
   }' | while IFS= read -r line; do
   case $line in
@@ -73,4 +81,4 @@ printf '%s\n' "$tickets" | awk -v weeks="$weeks" '
   esac
 done
 
-printf '\nLead time runs from the first of `spec.md` and `plan.md` landing on the base branch to `evidence.md` landing there. A ticket counts as reworked when its spec changed after its plan landed, or its spec, plan or evidence changed again after the evidence landed (deleting them at acceptance does not count). ▲ marks a week whose median lead time is more than two standard deviations above the mean for the period.\n'
+printf '\nLead time runs from the first of `spec.md` and `plan.md` landing on the base branch to `evidence.md` landing there. A ticket counts as reworked when its spec changed after its plan landed, or its spec, plan or evidence changed again after the evidence landed (deleting them at acceptance does not count); a fix after acceptance re-proves the ticket, so it counts here. A revert is a commit on the base branch whose subject starts with `Revert`, or a merged GitHub revert pull request: it is a problem that every check and review missed. ▲ marks a week whose median lead time is more than two standard deviations above the mean for the period.\n'

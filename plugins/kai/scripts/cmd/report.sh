@@ -14,18 +14,32 @@ done
 [ -f "$dir/gates" ] || kai_die "report: no gate results in '$dir'"
 
 mode=$(cat "$dir/mode" 2>/dev/null || true)
+observe=$(cat "$dir/observe" 2>/dev/null || true)
+observed() {
+  case " $observe " in *" $1 "*) return 0 ;; esac
+  return 1
+}
 verdict=PASS
+watched=
 while read -r gate; do
-  [ "$(cat "$dir/$gate.status")" = 0 ] || verdict=FAIL
+  [ "$(cat "$dir/$gate.status")" != 0 ] || continue
+  if observed "$gate"; then watched="$watched $gate"; else verdict=FAIL; fi
 done <"$dir/gates"
 
 printf '<!-- kai-gates -->\n## Kai gates\n\n**VERDICT: %s**\n\n' "$verdict"
 if [ "$mode" = report ] && [ "$verdict" = FAIL ]; then
   printf 'KAI_ENFORCE=report: this is a report, so the check stays green.\n\n'
 fi
+[ -z "$watched" ] || printf 'KAI_OBSERVE:%s would have failed. An observed gate reports and does not block.\n\n' "$watched"
 printf '| Gate | Result | Detail |\n|---|---|---|\n'
 while read -r gate; do
-  if [ "$(cat "$dir/$gate.status")" = 0 ]; then result='✅ pass'; else result='❌ fail'; fi
+  if [ "$(cat "$dir/$gate.status")" = 0 ]; then
+    result='✅ pass'
+  elif observed "$gate"; then
+    result='👀 would fail'
+  else
+    result='❌ fail'
+  fi
   detail=$(sed -n '/./{p;q;}' "$dir/$gate.out" | sed 's/|/\\|/g')
   printf '| %s | %s | %s |\n' "$gate" "$result" "$detail"
 done <"$dir/gates"

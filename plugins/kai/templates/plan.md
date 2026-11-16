@@ -33,15 +33,15 @@ Smallest first. Each task ends green.
 
 ## Tests
 
-Named by behavior. Every test maps to a spec criterion (or, without a spec, a ticket outcome); every criterion has at least one test.
+Named by behavior. Every test maps to a spec criterion (or, without a spec, a ticket outcome); every criterion has at least one test. Kind is `example`, `property` (must hold for every generated input) or `differential` (old and new code agree on the same inputs).
 
-| Criterion | Test | File |
-|---|---|---|
-| C1 | `rejects_expired_token` | `tests/...` |
+| Criterion | Test | File | Kind |
+|---|---|---|---|
+| C1 | `rejects_expired_token` | `tests/...` | example |
 
 ## Risks
 
-<What could break, how we would notice, how we roll back.>
+<What could break, how we would notice, how we roll back. For a differential test, each approved difference between the old and the new behavior.>
 
 ## Existing decisions relied on
 
@@ -49,4 +49,4 @@ Named by behavior. Every test maps to a spec criterion (or, without a spec, a ti
 
 ## Verification
 
-<`kai verify` plus any manual or end-to-end check needed to show the outcome.>
+<`kai verify`, then the end-to-end steps run before the PR (from the spec's End-to-end verification), and any step that waits for the deployed system.>

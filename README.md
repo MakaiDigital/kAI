@@ -20,9 +20,9 @@ The ticket is the intent; there is no separate intent document. `/kai:spec` read
 | `/kai:spec <KEY>` | Reads the ticket and decides whether it needs a spec (only a change that touches nothing but low-tier files skips it). Explores the code with `feature-dev:code-explorer` agents, then writes numbered EARS criteria, a diagram of the behavior, a contract mapping each to a test, and a short "Review here" list. Grills you on the draft until nothing in it is assumed, drafts an ADR when the change needs one (`feature-dev:code-architect` agents propose the options; you choose), and writes the plan. Three `kai:definition-reviewer` agents (friendly, skeptical, neutral) review the spec, plan and ADR, for up to three rounds, before the Definition PR opens (level 2) | `docs/specs/<KEY>/spec.md`, `plan.md`, `docs/adr/NNNN-*.md` |
 | `/kai:adr` | Records an architecture decision with options and trade-offs. `/kai:spec` runs it when needed; call it directly for a decision outside a spec (level 2) | `docs/adr/NNNN-*.md` |
 | `/kai:implement` | Builds from the plan the Definition PR merged (or, when none was, plans and stops for approval), commits failing tests, implements the minimum, proves it, gets an independent review and fixes it, opens the PR, then answers its trusted reviewers (fixing what is right, defending with evidence what is not) until reviews are satisfied and checks are green, for up to three rounds | tests, code, `evidence.md`, pull request |
-| `/kai:prove` | Runs the team's checks and maps each planned test (and spec criterion) to its result. `/kai:implement` calls it; run it alone to re-check | `evidence.md` |
+| `/kai:prove` | Runs the team's checks, runs the change end to end and records what it saw, and maps each planned test (and spec criterion) to its result. `/kai:implement` calls it; run it alone to re-check | `evidence.md` |
 | `/kai:accept <KEY>` | After the change is deployed to integration, verifies it, tries to break it, and fixes each failure itself in a `<KEY>-fix-<n>` PR (you approve its plan), then verifies again; once it passes, runs the retro and opens a cleanup PR that deletes the ticket's specs (keeping ADRs) and applies the retro's instruction changes (level 4) | cleanup pull request |
-| `/kai:retro` | Finds the lessons worth keeping in a ticket or a period and applies the instruction changes as separate commits; a lesson that needs a hook or script becomes a ticket. `/kai:accept` runs it; run it alone for a sprint view (level 4) | skill, ADR, or CLAUDE.md changes |
+| `/kai:retro` | Finds the lessons worth keeping in a ticket or a period and applies the instruction changes as separate commits; a lesson that needs a hook or script becomes a ticket. It replays the reviewer on each problem a review missed. `/kai:accept` runs it; run it alone for a sprint view (level 4) | skill, ADR, `REVIEW.md` or CLAUDE.md changes |
 
 Two read-only review agents back `/kai:implement` and the CI review: `kai:contract-reviewer` (every PASS has evidence, every change traces to a criterion) and `kai:spec-critic` (behavior no criterion covers, proposed as EARS criteria). A third, `kai:definition-reviewer`, backs `/kai:spec`: it reviews the spec, plan and ADR before the Definition PR opens, once with each stance, and Claude weighs the three reviews against the code before it changes anything.
 
@@ -60,7 +60,7 @@ Requirements: Claude Code, `git` 2.36 or newer, `jq`, and an authenticated `gh` 
    claude plugin install kai@makaidigital
    ```
 
-2. Open the repository in Claude Code and run `/kai:setup`. Claude works out the ticket system, prefixes, and test commands, previews the changes, writes them with `kai init`, and proposes high-risk paths for `.kai/tiers`.
+2. Open the repository in Claude Code and run `/kai:setup`. Claude works out the ticket system, prefixes, and test commands, previews the changes, writes them with `kai init`, proposes high-risk paths for `.kai/tiers`, and writes a project `verify` skill that says how to start and drive the application.
 
 To script it instead, Claude can run `kai init` directly, for example `kai init --provider jira --prefixes "PAY OPS" --level 1`. `kai init --help` lists every option.
 
@@ -74,7 +74,8 @@ Setup adds:
 | `CLAUDE.md` | A short kai block between markers | Only the block is managed |
 | `.claude/settings.json` | Registers the `makaidigital` marketplace, enables `kai`, and adds permission rules (deny `gh pr merge` and adding `kai:tests-changed`; ask before a push to the base branch) | Merged; your keys and rules are kept |
 | `.github/workflows/kai.yml` | Runs the gates on pull requests as the `kai` check | Kai's; updated in place when only the action versions Kai pins differ, otherwise the same `*.kai-new` rule |
-| `REVIEW.md` (level 3) | What the reviewer checks and how it rates findings; owned by the tech lead | Yours; never overwritten |
+| `REVIEW.md` (level 3) | What the reviewer checks (a Checks table of triggers the diff can show) and how it rates findings; owned by the tech lead | Yours; never overwritten |
+| `.claude/skills/verify/SKILL.md` | How to start and drive the application, so `/kai:prove` can watch a change run; written by `/kai:setup`, not `kai init` | Yours |
 | `.claude/agents/contract-reviewer.md`, `spec-critic.md` (level 3) | The read-only review agents the CI review runs | Kai's; same `*.kai-new` rule |
 | `.github/workflows/kai-review.yml` (level 3) | AI review comment on trusted PRs through `claude-code-action` | Kai's; same rule as `kai.yml` |
 | `.github/workflows/kai-metrics.yml` (level 4) | Weekly `kai metrics` report in the job summary | Kai's; same rule as `kai.yml` |
@@ -118,7 +119,7 @@ Kai adds only one gate at level 2. The rest comes from GitHub settings you confi
 - **CODEOWNERS**, for example `docs/specs/**/spec.md @your-org/product` and `docs/specs/ @your-org/product @your-org/eng-leads`, so product and engineering both sign off on the Definition PR. Add `.github/workflows/ @your-org/eng-leads` too: a PR runs the workflow files it changes, so an edit to `kai.yml` changes its own checks. Branches in `KAI_TICKET_EXEMPT` (`kai-setup*`, `kai-retro*`, and bot branches by default) skip every gate, so for those PRs the approval is the only check.
 - **High-risk paths:** list them in CODEOWNERS with the tech leads and require two approvals, so a human reads that code.
 
-3. **Independent verification.** Tests in a ticket's failing-tests commits are locked for that ticket's PRs: a hook blocks Claude from editing them, and the `tests-locked` gate fails if they change, unless a reviewer adds the `kai:tests-changed` label. The `contract` gate requires every criterion and planned test to be PASS with evidence. `/kai:implement` also runs the gates locally before it opens the PR (its read-only review runs at every level), and `kai-review.yml` posts the same review on trusted PRs (not forks or bots). The review informs the human approver; it never blocks or approves the merge by itself.
+3. **Independent verification.** Tests in a ticket's failing-tests commits are locked for that ticket's PRs: a hook blocks Claude from editing them, and the `tests-locked` gate fails if they change, unless a reviewer adds the `kai:tests-changed` label. The `contract` gate requires every criterion and planned test to be PASS with evidence. `/kai:implement` also runs the gates locally before it opens the PR (its read-only review runs at every level), and `kai-review.yml` posts the same review on trusted PRs (not forks or bots), once the `kai` check has passed on the commit. The review informs the human approver; it never blocks or approves the merge by itself.
 
 The CI review needs a Claude credential as a repository secret (`ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`, or switch the action to Bedrock or Vertex), pointed at an endpoint your security team has approved. It skips with a notice when neither is set. It passes the workflow's own token to the action, so no GitHub App is needed. The review uses the `contract-reviewer` and `spec-critic` agents that setup copies into `.claude/agents/`, so it installs nothing and works whether or not the Kai repository is public.
 
@@ -137,7 +138,7 @@ gh pr list --state merged --base main --limit 500 --search "merged:>=<last relea
     | "\(.mergedAt) #\(.number) \(.title)"'
 ```
 
-Measure a baseline before turning on levels 3 and 4, and keep reading speed and quality together: `kai metrics` shows lead time next to rework on purpose.
+Measure a baseline before turning on levels 3 and 4, and keep reading speed and quality together: `kai metrics` shows lead time next to rework and reverts on purpose.
 
 ## Contributing
 

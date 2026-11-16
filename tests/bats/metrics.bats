@@ -93,3 +93,20 @@ merge() {
   [ "$status" -eq 1 ]
   [[ "$output" == *"unknown ref 'nope'"* ]]
 }
+
+@test "counts reverts on the base branch by week, next to what shipped" {
+  at PAY-1 spec.md $((NOW - 10 * DAY))
+  at PAY-1 evidence.md $((NOW - 9 * DAY))
+  echo x >>README.md
+  GIT_COMMITTER_DATE="@$((NOW - 8 * DAY))" GIT_AUTHOR_DATE="@$((NOW - 8 * DAY))" git commit -qam 'Revert "PAY-1: save favorites"'
+  echo y >>README.md
+  GIT_COMMITTER_DATE="@$((NOW - 2 * DAY))" GIT_AUTHOR_DATE="@$((NOW - 2 * DAY))" git commit -qam 'Merge pull request #9 from acme/revert-7-PAY-2-work'
+  echo z >>README.md
+  GIT_COMMITTER_DATE="@$((NOW - 1 * DAY))" GIT_AUTHOR_DATE="@$((NOW - 1 * DAY))" git commit -qam 'PAY-3: revert to the old layout'
+  run "$KAI" metrics --weeks 4 --base main
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"| Reworked | Reverts |"* ]]
+  [[ "$output" == *"| 1 | 1.0 | 0 of 1 | 1 |"* ]]
+  [[ "$output" == *"| 0 | - | - | 1 |"* ]]
+  [[ "$output" == *"**0% reworked**, **2 reverts**."* ]]
+}

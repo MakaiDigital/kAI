@@ -25,7 +25,7 @@ Write everything a person reviews by `${CLAUDE_PLUGIN_ROOT}/references/writing.m
 
 ## 2. Verify
 
-Start from `${CLAUDE_PLUGIN_ROOT}/templates/accept.md` and save it as `docs/specs/<KEY>/accept.md`. It is a working file: never commit it; its summary goes in the cleanup PR description. Run the spec's end-to-end steps exactly as written (curl sequence, contract test, UI walkthrough with browser tools if you have them), then every check each criterion needs, and record the command, the output, and the criteria it shows. If a step cannot be run as written, record that and why rather than improvising a different check: a procedure that does not work is a finding. A step only production can show (real traffic, a production alert) is the exception: record it as not run, for the release owner.
+Start from `${CLAUDE_PLUGIN_ROOT}/templates/accept.md` and save it as `docs/specs/<KEY>/accept.md`. It is a working file: never commit it; its summary goes in the cleanup PR description. Run the spec's end-to-end steps exactly as written (curl sequence, contract test, UI walkthrough with browser tools if you have them), including each step the evidence's Observed table marks LATER, then every check each criterion needs, and record the command, the output, and the criteria it shows. If a step cannot be run as written, record that and why rather than improvising a different check: a procedure that does not work is a finding. A step only production can show (real traffic, a production alert) is the exception: record it as not run, for the release owner.
 
 ## 3. Try to break it
 

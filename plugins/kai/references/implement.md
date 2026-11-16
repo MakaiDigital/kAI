@@ -32,6 +32,7 @@ From here until the final report, do not stop to ask for permission to continue;
 Write every planned test first (the red step of `superpowers:test-driven-development` for each), then lock them together.
 
 - Each should fail because the behavior is missing, not because of a typo or an import error; a test that fails for the wrong reason proves nothing.
+- Write each test as the Kind the plan gives it. A `property` test states the rule and lets the repository's property library generate the inputs; do not replace it with a few examples. A `differential` test runs the code on the base branch and the new code on the same generated or sampled inputs, ignores differences that do not matter (whitespace, ordering the criteria do not fix), and allows only the differences the plan approves.
 - Lint the new tests with the repository's linter, so a rejected name or unused variable is not found after the lock.
 - Search the existing tests for constants and sentences the change will alter (limits, fixed messages, call counts, exact instruction text) and update them in this same commit.
 - When writing a file from a shell heredoc, quote the delimiter (`<<'EOF'`). An unquoted one expands `${...}` and can silently empty a test's assertions so it can never fail.
@@ -46,11 +47,12 @@ Write every planned test first (the red step of `superpowers:test-driven-develop
 - Work through the tasks in order.
 - When something fails unexpectedly, use `superpowers:systematic-debugging` instead of guessing.
 - Run `kai verify` after each task. The Stop hook runs it too and keeps you working while it fails.
+- A test that passes only on a second run is flaky. Find the root cause instead of running it again, as `prove.md` in this folder says.
 - If reality departs from the plan, update `plan.md` in the same commit and say so in the PR. A plan that silently disagrees with the code misleads every reviewer. A small departure, such as a moved function or one more helper in a planned file, needs nothing more. A departure that changes the approach, adds a file or dependency the plan does not list, or needs a criterion to change was never approved: stop and ask the person first. A criterion that must change goes in `spec.md` with its Contract row, and the PR description names it.
 
 ## 4. Prove it
 
-Follow `prove.md` in this folder. Until it has produced passing evidence, describe the work as implemented, not as done.
+Follow `prove.md` in this folder: the team's checks, then the change running end to end. Until it has produced passing evidence, describe the work as implemented, not as done.
 
 ## 5. Review before opening the PR
 
@@ -63,6 +65,8 @@ Then dispatch these read-only agents in parallel, in fresh contexts:
 - A general bug pass: the built-in `/code-review` skill, or the `feature-dev:code-reviewer` agent when that is unavailable.
 
 Treat each finding as in step 7. An Important contract-reviewer finding is a bug: fix it and prove it again (`prove.md` in this folder). A spec-critic gap is a question for product and engineering, not something to code on your own.
+
+When you dispatch a reviewer again after a fix, give it its earlier report and what you did about each finding, so the round builds on the last one instead of starting again.
 
 Before you open the PR, stop and settle every spec-critic gap and every finding you did not fix with the person. No PR opens while one is open. Ask in batches (AskUserQuestion when available, at most four questions to a call). The person may answer for product, engineering, or anyone else; record that. For each one, they choose:
 
@@ -88,7 +92,10 @@ Record each one under **Decisions** in the PR description as `<gap or finding>: 
 <the spec's Contract table, or the plan's Tests table when there is no spec, with the evidence column filled>
 
 ## Evidence
-[evidence.md](docs/specs/<KEY>/evidence.md). `kai verify` result: PASS
+[evidence.md](docs/specs/<KEY>/evidence.md). `kai verify` result: PASS. End-to-end: <the Observed steps that passed and what each showed in a few words, the steps left for acceptance, or "No end-to-end run: <reason>">
+
+## Needs a person
+<Each reason a person must read part of this change, with the file or thread to start from, or "No reason found." The reasons are: the tier is high; a file that changes how agents or CI behave (`CLAUDE.md`, `REVIEW.md`, `.kai/`, `.github/`, `.claude/`); a `REVIEW.md` check the diff triggered that found something; a criterion or the plan that changed after the Definition PR; a locked test that changed; a check or a finding still open after three rounds; an end-to-end step that failed or could not run; each entry under Decisions. Include every reason on the contract-reviewer's `Needs a person:` line.>
 
 ## Risk
 <the tier `kai tier` reports, and from the plan's Risks: what could break, and how you would notice>
@@ -97,7 +104,7 @@ Record each one under **Decisions** in the PR description as `<gap or finding>: 
 <from the plan's Risks: how to undo the change, for example revert this PR, turn a flag off, or run a data step>
 
 ## Review
-- contract-reviewer: <its count line and verdict, and the Important findings fixed>
+- contract-reviewer: <its count line, its `Checks run:` line and verdict, and the Important findings fixed>
 - spec-critic: <number of gaps>
 
 ## Decisions
@@ -112,7 +119,7 @@ Follow `answer-reviews.md` in this folder until the reviews are satisfied and th
 
 Finish with one report:
 
-- The PR link, the tier (`kai tier`), and what a reviewer should focus on.
+- The PR link, the tier (`kai tier`), and the PR's **Needs a person** reasons: where a person must look, or that no reason was found. The person still approves the merge either way.
 - What reviewers found and what you did about it: fixed, defended (with the evidence in one line), and conceded.
 - Stalemates and anything else that needs their decision, each with the thread link.
 - Why you stopped: done and waiting for approval, or handed back and what is blocking.
