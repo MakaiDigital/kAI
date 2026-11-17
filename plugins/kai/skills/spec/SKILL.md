@@ -72,7 +72,7 @@ Good criteria:
 - **Context**: the problem, outcome, success metric, constraints, and out of scope, taken from the ticket. Without a measurable success metric, say "none stated in the ticket" and list it under **Review here** as an open question for the product owner; do not invent one. Keep it short: the spec has to carry the goal because CI reviewers cannot read the ticket.
 - **Overview**: the diagram of the behavior, drawn once the criteria are final and by the template's rules. A wrong diagram misleads a reviewer more than a missing one, so leave out anything the text does not say.
 - **Interfaces touched**: surfaces such as endpoints, screens, tables, flags, and external systems, not file paths.
-- **End-to-end verification**: a procedure someone can actually run to watch the feature work. It becomes the acceptance check later.
+- **End-to-end verification**: a procedure someone can actually run to watch the feature work. `/kai:prove` runs the steps that can run locally before the PR, and `/kai:accept` runs all of them on the deployed system, so mark each step that needs the deployed system.
 - **Security**: required for high tier.
 - **Contract**: one row per criterion, status FAIL, evidence empty. Give each row a proposed test name taken from the criterion's own words, such as `If a request has no valid token, then return 401` → `rejects_missing_token_with_401`. When a local end-to-end run proves a criterion instead of a test, say so in the Test column (`e2e step 3`).
 

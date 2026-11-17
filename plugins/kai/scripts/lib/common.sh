@@ -29,6 +29,7 @@ kai_load_config() {
   : "${KAI_BASE_BRANCH:=main}"
   : "${KAI_PROD_DEPLOY_PATTERN:=}"
   : "${KAI_ENFORCE:=block}"
+  : "${KAI_OBSERVE:=}"
   case $KAI_LEVEL in
     1 | 2 | 3 | 4) ;;
     *) kai_die "KAI_LEVEL in .kai/config must be 1, 2, 3 or 4, not '$KAI_LEVEL'" ;;

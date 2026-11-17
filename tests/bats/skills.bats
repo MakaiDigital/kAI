@@ -107,3 +107,31 @@ SDLC="$REPO_ROOT/plugins/kai"
   grep -qx '## Risk' "$SDLC/references/implement.md"
   grep -qx '## How to revert' "$SDLC/references/implement.md"
 }
+
+@test "prove runs the change end to end and records it where the reviewer looks" {
+  grep -qx '## Observed' "$SDLC/references/prove.md"
+  grep -qF '`## Observed` table' "$SDLC/agents/contract-reviewer.md"
+  grep -qF "\`git log --grep '^Verified: checks\$'\`" "$SDLC/references/prove.md"
+  grep -qF "\`git log --grep '^Verified: checks\$'\`" "$SDLC/references/retro.md"
+  grep -qF '.claude/skills/verify/SKILL.md' "$SDLC/skills/setup/SKILL.md"
+}
+
+@test "the reviewer runs the REVIEW.md checks the diff triggers and says what needs a person" {
+  grep -qx '## Checks' "$SDLC/template/REVIEW.md"
+  grep -qF 'Checks table' "$SDLC/agents/contract-reviewer.md"
+  grep -qF '`Checks run:' "$SDLC/agents/contract-reviewer.md"
+  grep -qF '`Needs a person:' "$SDLC/agents/contract-reviewer.md"
+  grep -qx '## Needs a person' "$SDLC/references/implement.md"
+  grep -qF '`Needs a person:` line' "$SDLC/references/implement.md"
+}
+
+@test "the plan gives every test a kind, and its table keeps the test in the second column for the contract gate" {
+  grep -qxF '| Criterion | Test | File | Kind |' "$SDLC/templates/plan.md"
+  for kind in example property differential; do grep -q "\`$kind\`" "$SDLC/references/plan.md"; done
+}
+
+@test "a flaky test is not rerun until it passes, and the retro replays the reviewer on what it missed" {
+  grep -qF 'is flaky, not fixed' "$SDLC/references/prove.md"
+  grep -qx '### Review the reviewers' "$SDLC/references/retro.md"
+  grep -qF '.kai/escapes.md' "$SDLC/references/retro.md"
+}

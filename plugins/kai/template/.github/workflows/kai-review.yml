@@ -10,6 +10,7 @@ concurrency:
 
 permissions:
   contents: read
+  checks: read
   pull-requests: write
   id-token: write
 
@@ -27,8 +28,28 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - id: prep
+      # Cheap checks first: a review of a commit the gates reject spends a model run on code that must change.
+      - id: gates
         if: env.HAS_CREDENTIAL == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          tries=${KAI_REVIEW_WAIT_TRIES:-30}
+          conclusion=
+          while [ "$tries" -gt 0 ]; do
+            conclusion=$(gh api "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/check-runs?check_name=kai" \
+              --jq '[.check_runs[] | select(.status == "completed")] | sort_by(.completed_at) | last | .conclusion // ""') || conclusion=
+            [ -z "$conclusion" ] || break
+            tries=$((tries - 1))
+            sleep "${KAI_REVIEW_WAIT_SECONDS:-10}"
+          done
+          if [ "$conclusion" = failure ]; then
+            echo "::notice::Kai review skipped: the kai check failed on this commit. Fix what the gates report; the next push is reviewed."
+            echo "skip=true" >>"$GITHUB_OUTPUT"
+          fi
+      - id: prep
+        if: env.HAS_CREDENTIAL == 'true' && steps.gates.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
@@ -54,7 +75,7 @@ jobs:
             '{title: $title, head_branch: $head, base_branch: $base, previous_review_commit: $previous, review_round: $round}' >.git/kai-pull-request.json
       # Use a Claude endpoint your security team has approved (API key, Claude subscription token, Bedrock, or Vertex).
       - id: claude
-        if: env.HAS_CREDENTIAL == 'true'
+        if: env.HAS_CREDENTIAL == 'true' && steps.gates.outputs.skip != 'true'
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}

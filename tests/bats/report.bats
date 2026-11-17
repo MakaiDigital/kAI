@@ -88,3 +88,23 @@ record() {
   [ "$status" -eq 1 ]
   [[ "$output" == *"KAI_ENFORCE in .kai/config must be report or block, not 'warn'"* ]]
 }
+
+@test "an observed gate that fails is shown as would fail, with its output, and does not fail the verdict" {
+  record ticket-ref 0 "ticket-ref: PAY-1"
+  record verify 1 "FAIL  npm test (exit 1)"
+  echo "verify" >"$DIR/observe"
+  run "$KAI" report --dir "$DIR" --sha abc123 --run-url u
+  [[ "$output" == *"VERDICT: PASS"* ]]
+  [[ "$output" == *"KAI_OBSERVE: verify would have failed."* ]]
+  [[ "$output" == *"| verify | 👀 would fail | FAIL  npm test (exit 1) |"* ]]
+  [[ "$output" == *"### verify"* ]]
+}
+
+@test "a gate outside KAI_OBSERVE still fails the verdict" {
+  record contract 1 "contract: PAY-1 is not proven:"
+  record verify 1 "FAIL  npm test (exit 1)"
+  echo "verify" >"$DIR/observe"
+  run "$KAI" report --dir "$DIR" --sha abc123 --run-url u
+  [[ "$output" == *"VERDICT: FAIL"* ]]
+  [[ "$output" == *"| contract | ❌ fail |"* ]]
+}

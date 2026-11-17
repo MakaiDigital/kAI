@@ -155,6 +155,7 @@ KAI_VERIFY_CMDS=$(quote "$verify")
 $base_line
 # KAI_TICKET_EXEMPT="dependabot/* renovate/* kai-setup* kai-retro*"   # branches that need no ticket key; they skip every gate
 # KAI_ENFORCE=block                             # block = a failing gate fails the PR check; report = the gates comment on the PR and the check stays green
+# KAI_OBSERVE=""                                # gates that report but never fail the check, space-separated (for example "verify"); start a new gate here, then remove it
 # KAI_PROD_DEPLOY_PATTERN=""                    # regex for production deploys; they then need KAI_RELEASE_APPROVAL
 # KAI_WRITING_STE=100                           # how close what Kai writes for people gets to ASD-STE100 (Simplified Technical English): 0 = off, 100 = the full standard
 EOF

@@ -149,6 +149,26 @@ ci() {
   [ "$(cat "$BATS_TEST_TMPDIR/runner/kai-gates/mode")" = block ]
 }
 
+@test "an observed gate records its failure and the step stays green, while other gates still block" {
+  echo 'KAI_OBSERVE="tests-locked"' >>.kai/config && git commit -qam "observe tests-locked" && git push -q origin main
+  git switch -qc PAY-1-work
+  echo impl >app.js && git add -A && git commit -qm "PAY-1: implement" && git push -q origin PAY-1-work
+  run ci "ticket-ref tests-locked" PAY-1-work
+  [ "$status" -eq 0 ]
+  [ "$(cat "$BATS_TEST_TMPDIR/runner/kai-gates/tests-locked.status")" = 1 ]
+  [ "$(cat "$BATS_TEST_TMPDIR/runner/kai-gates/observe")" = tests-locked ]
+  run ci "ticket-ref tests-locked contract" PAY-1-work
+  [ "$status" -eq 1 ]
+}
+
+@test "a PR cannot put its own gates in observe mode" {
+  git switch -qc PAY-1-work
+  echo 'KAI_OBSERVE="tests-locked"' >>.kai/config
+  echo impl >app.js && git add -A && git commit -qm "PAY-1: implement" && git push -q origin PAY-1-work
+  run ci "ticket-ref tests-locked" PAY-1-work
+  [ "$status" -eq 1 ]
+}
+
 @test "report mode still fails the step when metrics fails" {
   echo KAI_ENFORCE=report >>.kai/config
   echo KAI_BASE_BRANCH=trunk >>.kai/config && git commit -qam "base is trunk" && git push -q origin main

@@ -7,7 +7,9 @@ Turn the spec (or, when there is none, the ticket) into a plan that someone who 
   - **Files touched**: real paths found by exploration. Call out every new file and new dependency; the expected number is zero.
   - **Tasks**, smallest first, each ending green.
   - **Tests** named by behavior (`rejects_expired_token`), each mapped to a spec criterion, or to a ticket outcome when there is no spec. Every criterion or outcome needs a test, and every test needs a criterion or outcome. Start from the spec's Contract rows, and use their test names.
+  - Give each test a **Kind**. An `example` test checks the cases you thought of. A `property` test states something that must hold for every input (a round trip returns the input, a balance is never negative, doing it twice equals doing it once, the fast path equals the simple one) and lets the repository's property library generate the inputs, so the edge cases do not share the author's blind spots. A `differential` test runs the old code and the new code on the same generated or sampled inputs and compares the results, for a criterion that says behavior stays the same (a refactor, a migration, a rewrite); list each approved difference in Risks. Use `property` or `differential` wherever a criterion allows it. A property library the repository does not have is a new dependency: list it.
   - **Risks**, and how to roll back.
+  - **Verification**: `kai verify`, and the end-to-end steps that will be run before the PR, taken from the spec's End-to-end verification.
   - **Existing decisions** (ADRs, conventions) the plan relies on, including the option any new ADR chose.
   - The **Summary** diagram of what changes, drawn last from Files touched and Tasks, by the template's rules.
 - Check each path, function, and behavior the plan names against the code. A plan that names code that is not there sends the implementer back to the spec.
