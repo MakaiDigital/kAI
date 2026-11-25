@@ -305,6 +305,54 @@ npm test" ]
   grep -qF 'for f in REVIEW.md CLAUDE.md .claude/agents/contract-reviewer.md .claude/agents/spec-critic.md; do' .github/workflows/kai-review.yml
 }
 
+@test "every level writes the steward rules that PR Steward and /steward follow" {
+  install_kai
+  cmp -s .claude/skills/steward/SKILL.md "$REPO_ROOT/plugins/kai/template/.claude/skills/steward/SKILL.md"
+  grep -qx 'name: steward' .claude/skills/steward/SKILL.md
+  grep -qx 'user-invocable: false' .claude/skills/steward/SKILL.md
+  grep -qx 'disable-model-invocation: true' .claude/skills/steward/SKILL.md
+  grep -q '^KAI_SHIP=0$' .kai/config
+}
+
+@test "without Claude Ship, level 3 keeps the Kai review and writes no approvals policy" {
+  install_kai --marketplace acme/kai --level 3
+  [ -f .github/workflows/kai-review.yml ]
+  [ ! -e .claude/approvals.yml ]
+}
+
+@test "with Claude Ship, Code Review replaces the Kai review and an approvals policy starts in observe mode" {
+  run install_kai --marketplace acme/kai --level 3 --ship
+  [ "$status" -eq 0 ]
+  grep -q '^KAI_SHIP=1$' .kai/config
+  [ ! -e .github/workflows/kai-review.yml ]
+  [ -f REVIEW.md ]
+  [ -f .claude/agents/contract-reviewer.md ]
+  cmp -s .claude/approvals.yml "$REPO_ROOT/plugins/kai/template/.claude/approvals.yml"
+  grep -qx 'mode: observe' .claude/approvals.yml
+  grep -q 'advisory: \[claude/code_review\]' .claude/approvals.yml
+}
+
+@test "Claude Ship works below level 3 too, with the approvals policy but no review agents" {
+  install_kai --level 1 --ship
+  [ -f .claude/approvals.yml ]
+  [ ! -e .github/workflows/kai-review.yml ] && [ ! -e .claude/agents ]
+}
+
+@test "with Claude Ship, an existing Kai review workflow is named for deletion, not deleted" {
+  install_kai --marketplace acme/kai --level 3
+  run install_kai --marketplace acme/kai --level 3 --ship
+  [ "$status" -eq 0 ]
+  [ -f .github/workflows/kai-review.yml ]
+  [[ "$output" == *".github/workflows/kai-review.yml duplicates Claude Code Review; delete it"* ]]
+}
+
+@test "the team's approvals policy is never overwritten" {
+  mkdir -p .claude
+  printf 'version: 1\nrules: []\n' >.claude/approvals.yml
+  install_kai --ship
+  [ "$(cat .claude/approvals.yml)" = "$(printf 'version: 1\nrules: []')" ]
+}
+
 @test "levels below 3 skip the review workflow" {
   install_kai --level 2
   [ ! -e REVIEW.md ] && [ ! -e .github/workflows/kai-review.yml ] && [ ! -e .github/workflows/kai-metrics.yml ] && [ ! -e .claude/agents ]

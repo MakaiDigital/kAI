@@ -71,7 +71,7 @@ SDLC="$REPO_ROOT/plugins/kai"
 }
 
 @test "answering reviews stops after three rounds" {
-  grep -q 'for up to three rounds' "$SDLC/references/answer-reviews.md"
+  grep -q 'after three rounds' "$SDLC/template/.claude/skills/steward/SKILL.md"
   run grep -rn 'five rounds\|fifth round' "$SDLC/skills" "$SDLC/references" "$REPO_ROOT/README.md" "$REPO_ROOT/docs"
   [ "$status" -eq 1 ]
 }
@@ -134,4 +134,30 @@ SDLC="$REPO_ROOT/plugins/kai"
   grep -qF 'is flaky, not fixed' "$SDLC/references/prove.md"
   grep -qx '### Review the reviewers' "$SDLC/references/retro.md"
   grep -qF '.kai/escapes.md' "$SDLC/references/retro.md"
+}
+
+@test "the PR is handed to Steward, in the cloud with Claude Ship or by the person's /steward otherwise" {
+  grep -qF '@claude steward' "$SDLC/references/answer-reviews.md"
+  grep -qF 'KAI_SHIP' "$SDLC/references/answer-reviews.md"
+  grep -qF 'type `/steward`' "$SDLC/references/answer-reviews.md"
+  grep -qF '${CLAUDE_PLUGIN_ROOT}/references/answer-reviews.md' "$SDLC/skills/spec/SKILL.md"
+  run grep -n 'Monitor\|graphql' "$SDLC/references/answer-reviews.md"
+  [ "$status" -eq 1 ]
+}
+
+@test "the steward rules run where the plugin is not installed" {
+  run grep -n 'CLAUDE_PLUGIN_ROOT\|/kai:\|references/' "$SDLC/template/.claude/skills/steward/SKILL.md"
+  [ "$status" -eq 1 ]
+  grep -qF 'KAI_WRITING_STE' "$SDLC/template/.claude/skills/steward/SKILL.md"
+}
+
+@test "the steward rules keep Kai's safety rules" {
+  f="$SDLC/template/.claude/skills/steward/SKILL.md"
+  grep -qF '`<KEY>: failing tests`' "$f"
+  grep -qF 'kai:tests-changed' "$f"
+  grep -qi 'never approve or merge' "$f"
+  grep -qF 'Pre-existing' "$f"
+  grep -qF 'Do not re-run a check until it passes' "$f"
+  grep -qF '`<KEY>: address review`' "$f"
+  grep -qF 'Verified: checks' "$f"
 }

@@ -70,7 +70,7 @@ The spec contains:
 
 What you do:
 1. Answer the grilling, then read the Definition PR: the **Review here** decisions first, then the criteria with product, then the plan with engineering. Each criterion must be testable, together they must cover the ticket, and the plan must be how you want it built. No question is left open: the `definition` check fails a spec that still holds a `⚠` marker.
-2. Comment on the PR to ask for changes. Claude answers the automated reviews while the session lasts; for comments people leave later, run `/kai:spec PAY-123` again on the branch.
+2. Comment on the PR to ask for changes. Steward answers the reviews, yours included, while it watches; `/steward` restarts a watch that ended.
 3. Merge it on its own. That merge approves the spec and the plan together, before any code. CI's `definition` check fails code for a medium- or high-tier ticket until its spec and plan are on the main branch. If Claude skipped the spec and the tier turns out higher, write it then.
 
 ### 3. Implement (all levels)
@@ -93,7 +93,7 @@ Then it keeps going without asking:
 4. **Proof.** It runs `/kai:prove`: `kai verify`, then the change itself, end to end, the way the repository's `verify` skill says (`/kai:setup` writes it). The evidence gets an **Observed** table of what was run and what was seen for each step of the spec's end-to-end verification, and a table matching every planned test to the output line that shows it passing. A planned test that never ran is **MISSING**, which counts as a failure. A step that needs the deployed system is marked **LATER**, for `/kai:accept`. The spec's contract table is updated and committed as `PAY-123: evidence`.
 5. **Review.** At level 3 it first runs the same gates CI will run. At every level, fresh-context, read-only reviewers then check the change: `kai:contract-reviewer` (every PASS is real, every change traces to a criterion), `kai:spec-critic` (behavior no criterion covers) and `/code-review` (or the `feature-dev:code-reviewer` agent). Important findings get fixed.
 6. **Pull request.** It pushes the ticket branch and opens the PR with the outcome, any departure from the plan, the contract, evidence and review in the description. A **Needs a person** section lists each reason a person must read part of the change (a high tier, a file that changes how agents or CI behave, a review check that found something, a changed criterion or locked test, a failed end-to-end step, a decision), with where to start, or says that no reason was found.
-7. **Watching the PR.** After every push it waits for CI and the automated reviewers CI runs (the Kai review, a PR review agent, an adversarial reviewer), not for people. It answers each finding from those reviewers and from the repository's members and collaborators: it fixes what is right and re-proves, and where it believes the code is correct it replies with evidence and leaves the code alone. Findings from anyone else are listed for you, not acted on. A defense gets one round; if the reviewer repeats the point it becomes a decision for you. Each finding is tagged Important, Nit or Pre-existing; a Pre-existing one becomes a follow-up rather than a fix. It stops after three rounds, and asks you to reconsider the approach if reviewers still find new problems; it stops earlier if it stops converging, a check is red for a reason it cannot fix, or only people are left to act. If the session ends while it waits, `/kai:implement PAY-123` picks it up again.
+7. **Steward watches the PR.** Claude hands the PR to Steward: with Claude Ship it starts PR Steward in the cloud, and otherwise it asks you to type `/steward`, which watches from your machine for up to seven days. Steward follows `.claude/skills/steward/SKILL.md`. After every push it waits for CI and the reviewers, and it answers each finding from them and from the repository's members and collaborators: it fixes what is right and re-proves, and where it believes the code is correct it replies with evidence and leaves the code alone. Findings from anyone else are listed for you, not acted on. A defense gets one round; if the reviewer repeats the point it becomes a decision for you. Each finding is tagged Important, Nit or Pre-existing; a Pre-existing one becomes a follow-up rather than a fix. A flaky check is a finding, not something to re-run. It stops after three rounds, and asks you to reconsider the approach if reviewers still find new problems. Steer it with `@claude <instruction>` on the PR (PR Steward) or in the session (`/steward`).
 8. **Report.** It tells you the PR link, the tier, where a person must look, what was fixed, what was defended and why, and what needs your decision. It never merges or approves.
 
 While it works:
@@ -115,7 +115,7 @@ In CI:
   | `verify` | opt-in | your test commands pass. Off by default: they already run locally and in your own CI |
 
 - Every run also posts one sticky PR comment, updated in place, with a `VERDICT: PASS` or `VERDICT: FAIL`, a row per gate and the full output of each failing gate. With `KAI_ENFORCE=report` the check stays green and that comment is the verdict; the default `block` also fails the check. On a PR from a fork the report goes to the job summary only. The workflow needs `pull-requests: write`, which `kai init` writes into its template; an existing repository adds it when it takes the new template.
-- At level 3, `kai review` posts an AI review comment. It waits for the `kai` check and skips a commit the gates reject, so a review is never spent on code that must change. It runs the rows of `REVIEW.md`'s Checks table that the diff triggers, names them on a `Checks run:` line, and ends with a `Needs a person:` line. It informs the reviewer but never blocks or approves the merge. A person always approves.
+- At level 3, `kai review` posts an AI review comment. It waits for the `kai` check and skips a commit the gates reject, so a review is never spent on code that must change. It runs the rows of `REVIEW.md`'s Checks table that the diff triggers, names them on a `Checks run:` line, and ends with a `Needs a person:` line. With Claude Ship, Claude Code Review comments on the lines instead, and the `Claude Approvals` check shows how many people the change needs; it blocks only once you enforce it. The review informs the reviewer but never blocks or approves the merge. A person always approves.
 - To try a gate without blocking anyone, list it in `KAI_OBSERVE`. An observed gate shows `👀 would fail` in the comment and the check stays green.
 
 What the reviewer does: judge the change against the spec and contract rather than reading every line. For high-tier changes, also read the code.
@@ -203,6 +203,7 @@ kai metrics              weekly shipped count, lead time, rework, and reverts
 | Setting | What it controls |
 |---|---|
 | `KAI_LEVEL` | Which steps are on |
+| `KAI_SHIP` | `1` when the organization has Claude Ship: Claude Code Review replaces Kai's review workflow, PR Steward answers reviews, and `kai init` adds a Claude Approvals policy. `0` by default |
 | `KAI_TICKET_PROVIDER` | `jira`, `linear`, or `github` |
 | `KAI_TICKET_PREFIXES` | Allowed ticket prefixes, for example `"PAY OPS"` |
 | `KAI_VERIFY_CMDS` | The commands that must pass, one per line, run from the repository root with `/bin/sh` |
@@ -215,6 +216,8 @@ kai metrics              weekly shipped count, lead time, rework, and reverts
 
 - `.kai/tiers` sets the risk tiers.
 - `.kai/constraints.md` is the minimal-code standard Claude follows.
+- `.claude/skills/steward/SKILL.md` tells Steward how to answer reviews.
+- `.claude/approvals.yml` (with Claude Ship) says who must approve which changes.
 - `REVIEW.md` (level 3) tells the reviewer what to check. Its Checks table holds one row for each mistake the owners of the code want caught: a trigger a diff can show, the question to ask, and the incident or PR behind it.
 - `.claude/skills/verify/SKILL.md` says how to start and drive the application, so `/kai:prove` can watch the change run. Keep it fast and reliable.
 - `.kai/escapes.md` lists the problems that got past a check or a review. `/kai:retro` writes it and replays it against the reviewer.

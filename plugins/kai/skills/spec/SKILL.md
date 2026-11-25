@@ -144,8 +144,8 @@ Open it only when nothing is open: no `⚠` left in the spec, every ADR Accepted
 - Rejected: <each finding not acted on, with its reason, or "None">
 ```
 
-## 10. Answer the Definition PR's reviews
+## 10. Hand the Definition PR to Steward
 
-Follow `${CLAUDE_PLUGIN_ROOT}/references/answer-reviews.md` for this PR. There is no code, so there is nothing to prove: a fix is an edit to the spec, the plan, or the ADR, committed as `<KEY>: address review` and pushed. A reviewer who changes what a criterion means, or the plan's approach, has made a decision: record it under **Review here** with who made it. People review this PR on their own time, so when the session ends before they do, tell the person that running `/kai:spec <KEY>` again on this branch answers their comments.
+Follow `${CLAUDE_PLUGIN_ROOT}/references/answer-reviews.md` for this PR. Steward's rules cover a Definition PR: a fix is an edit to the spec, the plan, or the ADR, committed as `<KEY>: address review`, and a reviewer who changes what a criterion means, or the plan's approach, has made a decision recorded under **Review here**. People review this PR on their own time, so tell the person that Steward answers their comments while it watches, and that `/steward` restarts a watch that ended.
 
 After it merges, `/kai:implement` builds from it on a fresh branch, without planning again.

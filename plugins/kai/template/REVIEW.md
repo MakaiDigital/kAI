@@ -1,6 +1,6 @@
 # Review guidelines
 
-Read by the `contract-reviewer` agent locally (`/kai:implement`) and in CI. In CI the review reads this file, `CLAUDE.md` and the review agents from the base branch, so a PR's changes to them apply from the next PR. Owned by the tech lead. Keep it short, and tune it when reviews get noisy or miss things: when the same comment keeps coming back, add it here or fix it at the source (a lint rule, a skill, or a `CLAUDE.md` line).
+Read by the `contract-reviewer` agent locally (`/kai:implement`) and in CI, and by Claude Code Review when the repository uses it. CI reads this file, `CLAUDE.md` and the review agents from the base branch, so a PR's changes to them apply from the next PR (Claude Code Review does so only when the default branch is protected). Owned by the tech lead. Keep it short, and tune it when reviews get noisy or miss things: when the same comment keeps coming back, add it here or fix it at the source (a lint rule, a skill, or a `CLAUDE.md` line).
 
 ## What failure looks like here
 
@@ -23,6 +23,8 @@ Each row is a mistake this repository has made, or one its owners expect. The re
 5. Security: injection (SQL, command, template), cross-site scripting, broken authentication or authorization, secrets in code, server-side request forgery, path traversal, insecure deserialization, sensitive data in logs.
 6. Performance: N+1 queries, unbounded queries or loops, missing indexes on new queries, resource leaks, quadratic work on hot paths.
 7. Observed: the evidence shows the change running end to end, not only its tests passing.
+
+For a ticket's change, also follow `.claude/agents/contract-reviewer.md` for the kind of PR it is and the contract, and `.claude/agents/spec-critic.md` when `docs/specs/<KEY>/spec.md` exists. Report the spec-critic's gaps as questions for product and engineering, not as code fixes.
 
 ## Severities
 

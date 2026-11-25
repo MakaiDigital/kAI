@@ -61,4 +61,4 @@ If `docs/specs/<KEY>/spec.md` exists, bring its Contract table in line. Set a ro
 - If the output in `evidence.md` shows a secret or personal data, stop and ask the person before committing it.
 - Commit `evidence.md` and any spec contract updates as `<KEY>: evidence`. End the commit message with a trailer that says how the change was verified: `Verified: checks, end-to-end` when the Observed table has a PASS step, otherwise `Verified: checks`. `git log --grep '^Verified: checks$'` then lists the changes nobody watched run.
 - Give the result in one line (PASS or FAIL, with counts, and how many end-to-end steps were observed), point to `docs/specs/<KEY>/evidence.md`, and list anything failing, MISSING or LATER.
-- Only when everything passes, point to the next step: `/kai:implement` continues from here (independent review, the pull request, and answering its reviews).
+- Only when everything passes, point to the next step: `/kai:implement` continues from here (independent review, the pull request, and the handoff to Steward).

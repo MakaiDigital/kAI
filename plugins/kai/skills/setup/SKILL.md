@@ -13,15 +13,16 @@ Write everything a person reviews by `${CLAUDE_PLUGIN_ROOT}/references/writing.m
 
 ## 1. Look before asking
 
-- The working directory must be a git repository. If `.kai/config` already exists, this is an **upgrade**: read the current `KAI_LEVEL` and settings from it, and skip to step 3 with `--dry-run` so the person sees what would change. `kai init` never touches their `.kai/config` or `.kai/tiers`, so if the person asks for a different level than the current `KAI_LEVEL`, set it in `.kai/config` yourself and pass the same `--level`.
+- The working directory must be a git repository. If `.kai/config` already exists, this is an **upgrade**: read the current `KAI_LEVEL` and settings from it, and skip to step 3 with `--dry-run` so the person sees what would change. `kai init` never touches their `.kai/config` or `.kai/tiers`, so if the person asks for a different level than the current `KAI_LEVEL`, set it in `.kai/config` yourself and pass the same `--level`. Do the same for `KAI_SHIP` and `--ship`, and add the `KAI_SHIP` line (with the comment `kai init` writes) when the config predates it.
 - On an upgrade, if `.claude/settings.json` sets `permissions.defaultMode` to `plan`, say that Kai before 0.10.0 set it so that every session started in plan mode, and offer to remove it: `/kai:implement` now enters plan mode itself, and other requests no longer need it. Remove it only if the person agrees, since they may have set it themselves.
 - Work out sensible defaults from the repository, so the questions are confirmations rather than blanks:
   - **Ticket system and prefixes:** look at branch names and recent commit messages (`git branch -a`, `git log --oneline -50`) for keys like `PAY-123` (Jira or Linear) or `#42` (GitHub).
   - **Test commands:** look at `package.json` scripts, `Makefile`, `pyproject.toml`, `go.mod`, `Cargo.toml`, or CI workflows. Prefer the commands CI already runs, including lint and type checks, one per line.
   - **CI:** GitHub Actions is used if `.github/workflows/` exists or the `origin` remote is on GitHub. Otherwise plan on `--no-ci`. Kai's workflow runs the gates, not your tests: those already run locally and in the repository's own CI. If no workflow runs the tests on a pull request, the evidence is only what the author's session reported: propose adding the toolchain steps and `gates: ticket-ref definition tests-locked contract verify` to `kai.yml`, so CI runs `KAI_VERIFY_CMDS` itself.
   - **How to run the application:** look for a dev server, a CLI entry point, a simulator, a compose file, or an existing `verify` skill under `.claude/skills/`. Step 5 writes the skill from this.
-  - **An existing Claude review workflow** (one using `anthropics/claude-code-action` for PR review): at level 3 and above, Kai adds its own review workflow. Point out the overlap and ask whether to keep both. Kai's review keeps its own single comment (marked `<!-- kai-review -->`, posted by `github-actions[bot]`), so the two coexist without overwriting each other, but two reviews on every PR may be one too many. If the person keeps only theirs, delete `.github/workflows/kai-review.yml` after step 3. One well-tuned reviewer finds more than two stacked ones: tune `REVIEW.md` before adding a reviewer.
-  - **Review credentials:** Kai's review reads an `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN` repository secret, and skips with a notice when neither exists.
+  - **Claude Ship:** whether the organization has it (Claude Team or Enterprise, with Claude Code Review and PR Steward turned on for this repository, and the Claude GitHub App installed). It is not available with Zero Data Retention, the HIPAA configuration, or customer-managed encryption keys. With it (`--ship`), Claude Code Review replaces Kai's review workflow, PR Steward answers reviews in the cloud, and `kai init` adds a Claude Approvals policy in observe mode. Without it, Kai adds its own review workflow at level 3 and above, and the person types `/steward` in Claude Code to answer reviews.
+  - **An existing Claude review workflow** (one using `anthropics/claude-code-action` for PR review): without Claude Ship, at level 3 and above, Kai adds its own review workflow. Point out the overlap and ask whether to keep both. Kai's review keeps its own single comment (marked `<!-- kai-review -->`, posted by `github-actions[bot]`), so the two coexist without overwriting each other, but two reviews on every PR may be one too many. If the person keeps only theirs, delete `.github/workflows/kai-review.yml` after step 3. One well-tuned reviewer finds more than two stacked ones: tune `REVIEW.md` before adding a reviewer.
+  - **Review credentials:** without Claude Ship, Kai's review reads an `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN` repository secret, and skips with a notice when neither exists.
 - Check `gh auth status`. For a private marketplace, git must also clone without a prompt (`gh auth setup-git`).
 
 ## 2. Confirm with the person
@@ -30,17 +31,20 @@ Ask in one batch (AskUserQuestion when available), with your detected defaults p
 
 - Ticket system (`jira`, `linear`, or `github`) and project prefixes.
 - The commands that must pass before work is done.
+- Whether the organization has Claude Ship.
 - The adoption level, from `$ARGUMENTS` if given. Recommend **1** for a team new to Kai: implement and prove, with guardrail hooks. Raise it later by re-running setup. Level 2 adds specs and risk tiers, 3 adds locked tests and AI review, 4 adds acceptance, retros, and metrics.
 
 ## 3. Preview, then write
 
-Run `kai init --dry-run` with the answers (`--provider`, `--prefixes`, `--verify` once per command, `--level`, and `--no-ci` if there is no GitHub Actions) and show what it would write. Then run it without `--dry-run`. `kai init --help` lists every option. Use `--marketplace <path>` only when testing Kai from a local clone.
+Run `kai init --dry-run` with the answers (`--provider`, `--prefixes`, `--verify` once per command, `--level`, `--ship` with Claude Ship, and `--no-ci` if there is no GitHub Actions) and show what it would write. Then run it without `--dry-run`. `kai init --help` lists every option. Use `--marketplace <path>` only when testing Kai from a local clone.
 
-Say that the settings it writes deny `gh pr merge` and adding the `kai:tests-changed` label, and make Claude ask before a push to the base branch.
+Say that the settings it writes deny `gh pr merge` and adding the `kai:tests-changed` label, and make Claude ask before a push to the base branch. If it says `kai-review.yml` duplicates Claude Code Review, offer to delete that file.
 
 ## 4. Set the risk tiers
 
 `.kai/tiers` maps paths to `low`, `medium`, or `high`; anything unlisted is medium. Scan the repository for surfaces that deserve `high` (authentication, authorization, payments, secrets, migrations, public API definitions, infrastructure, `.github/workflows/`), propose the exact lines, and add the ones the person agrees with. Getting this right matters from level 2, because the tier decides which changes need a spec and which need a human code read.
+
+With Claude Ship, offer to add each `high` path to the paths of the second rule in `.claude/approvals.yml`, so those changes need two people. Approvals globs differ: `src/auth/*` in `.kai/tiers` is `src/auth/**` there.
 
 ## 5. Write the verify skill
 
@@ -62,9 +66,11 @@ Say that the settings it writes deny `gh pr merge` and adding the `kai:tests-cha
 - Commit the setup on a branch named `kai-setup` with the message `Set up Kai (level <N>)`, and suggest opening a pull request so the team sees it. Branches starting with `kai-setup` need no ticket key, so the setup PR passes Kai's own checks.
 - Tell the person what happens next:
   - Teammates who open the repository in Claude Code are prompted to install Kai.
-  - A change must not be able to change the checks that judge it. Kai's gates and review already read `.kai/config`, `.kai/tiers`, `REVIEW.md` and the review agents from the base branch, but a workflow file runs as the pull request has it. Propose a `CODEOWNERS` entry that gives `.github/workflows/`, `.kai/`, `REVIEW.md` and `.claude/` to the tech lead, and tell the person to require code-owner review in branch protection.
+  - A change must not be able to change the checks that judge it. Kai's gates and review already read `.kai/config`, `.kai/tiers`, `REVIEW.md` and the review agents from the base branch (Claude Code Review reads the agents from the pull request, and `REVIEW.md` from the base only when it is protected), but a workflow file runs as the pull request has it. Propose a `CODEOWNERS` entry that gives `.github/workflows/`, `.kai/`, `REVIEW.md` and `.claude/` to the tech lead, and tell the person to require code-owner review in branch protection.
   - To add a gate to a repository that is already in use, list it in `KAI_OBSERVE` in `.kai/config` first. An observed gate reports what it would have blocked and never fails the check. Read a week of its reports, fix the false alarms, then remove it from `KAI_OBSERVE`.
   - On GitHub, protect the main branch: require a pull request, an approval, and the `kai` check. Branch protection and rulesets need a paid GitHub plan for private repositories; until then, only Kai's permission rules stand in the way of a push to the base branch.
   - From level 2, `/kai:spec` writes the plan into the Definition PR, and merging it approves the plan. When `/kai:implement` asks to approve a plan instead (level 1, a low-tier change, or a fix), approve it with "Yes, and use auto mode", so Claude carries the work to the pull request without asking again.
+  - With Claude Ship: set Code Review to run after every push, and set PR Steward to Manual, since Kai starts it on its own PRs. Watch the `Claude Approvals` check in observe mode for a while, then enforce it as `.claude/approvals.yml` says.
+  - Without Claude Ship: `/steward` answers a PR's reviews from Claude Code 2.1.330 or later, with a signed-in `gh`.
   - Start the first change with `/kai:spec <KEY>`.
 - If any `*.kai-new` files were written, list them and offer to merge each one. Until a workflow or agent `.kai-new` is merged, CI keeps running the old file, so the upgrade isn't finished. Require the `kai` check only once the new `kai.yml` is in, since an older one reports its check under another name.

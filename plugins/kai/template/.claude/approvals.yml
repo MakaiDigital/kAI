@@ -1,0 +1,14 @@
+# Claude Approvals policy, owned by the team. In observe mode the "Claude Approvals" check shows what it would decide and approves nothing.
+# To enforce it: delete the mode line, comment "@claude approvals rerun" on open pull requests, and require the "Claude Approvals" check.
+# Approvals can't read CI results or labels, so keep the kai check required on its own.
+version: 1
+mode: observe
+rules:
+  - purpose: "A change takes one person who did not write it. Claude reviews it and doesn't approve."
+    paths: ["**"]
+    verdict: { claude: comments, seats: [{ count: 1, from: [humans, "!pr/authors"] }] }
+    advisory: [claude/code_review]
+  - purpose: "A change to how agents and CI behave takes two people who did not write it."
+    paths: ["**/.claude/**", "**/.kai/**", ".github/**", "**/CLAUDE.md", "**/AGENTS.md", "REVIEW.md"]
+    nested: inherit
+    verdict: { claude: comments, seats: [{ count: 2, from: [humans, "!pr/authors"] }] }

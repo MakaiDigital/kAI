@@ -38,7 +38,7 @@ At the end, set **Verdict** in `accept.md` to Pass when every criterion held and
 A failure is a criterion that does not hold or a break that matters. For each:
 
 1. Reproduce it and record the exact steps and output in `accept.md`.
-2. Create the fix branch from the up-to-date base (`git fetch origin && git switch --no-track -c <KEY>-fix-<n> origin/<KAI_BASE_BRANCH>`) and leave `accept.md` uncommitted. Fix it there yourself: follow `${CLAUDE_PLUGIN_ROOT}/references/implement.md` for `<KEY>` with the reproduction as the ticket text, through its step 7, so the fix PR ends reviewed and green. Its failing test is the reproduction as an automated test, in a new test file when the original test file is locked. The person approves the fix's plan, as always.
+2. Create the fix branch from the up-to-date base (`git fetch origin && git switch --no-track -c <KEY>-fix-<n> origin/<KAI_BASE_BRANCH>`) and leave `accept.md` uncommitted. Fix it there yourself: follow `${CLAUDE_PLUGIN_ROOT}/references/implement.md` for `<KEY>` with the reproduction as the ticket text, through its step 7, so the fix PR is reviewed and Steward answers its reviewers. Its failing test is the reproduction as an automated test, in a new test file when the original test file is locked. The person approves the fix's plan, as always.
 3. Tell the person the fix PR is ready for them to merge. Once it is merged and they say it is deployed, start again from step 1 and re-run everything that failed plus the full verification. If the session ends first, the person runs `/kai:accept <KEY>` again.
 
 After 3 fix cycles, or if a failure needs a decision rather than a fix (the spec is wrong, or the behavior is disputed), stop and hand back to the person with `accept.md` and what you tried. A criterion that was wrong goes back to `/kai:spec`.
@@ -55,9 +55,9 @@ On `<KEY>-cleanup`:
 - The PR changes only Markdown: this deletion and the retro's instruction changes, each in its own commit so any one can be reverted alone. That keeps it low tier, so it passes every gate without an exemption; the retro puts changes to files `.kai/tiers` ranks higher in their own PR. Lessons that need a hook, script, setting, or workflow are listed for the person to ticket.
 - Push with `git push -u origin <KEY>-cleanup` and open a PR titled `<KEY>: cleanup`. Its description holds what the files held, since they no longer will: the outcome, the verification and QA summary from `accept.md` (what was run, what was attempted, what failed and was fixed in which PR), and the retro's lessons with the evidence for each. Then remove the untracked `accept.md`.
 
-## 7. Answer the cleanup PR's reviews
+## 7. Hand the cleanup PR to Steward
 
-Follow `${CLAUDE_PLUGIN_ROOT}/references/answer-reviews.md`: wait for CI and the automated reviewers, fix what is right, defend with evidence what is not, stop on stalemates and non-convergence, and never merge or approve.
+Follow `${CLAUDE_PLUGIN_ROOT}/references/answer-reviews.md`, so Steward answers the cleanup PR's reviews by the repository's rules and never merges or approves.
 
 ## 8. Tell the person
 

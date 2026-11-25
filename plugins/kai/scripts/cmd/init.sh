@@ -21,6 +21,8 @@ usage: kai init [options]
   --marketplace SRC     OWNER/REPO hosting the makaidigital marketplace, or a local directory
                         (default: MakaiDigital/kAI)
   --ref REF             marketplace and action ref (default: v<plugin version>)
+  --ship                the organization has Claude Ship: Claude Code Review replaces
+                        kai-review.yml, and .claude/approvals.yml starts in observe mode
   --no-ci               skip .github/workflows/kai.yml
   --dry-run             show what would change without writing
 EOF
@@ -38,6 +40,7 @@ verify=
 marketplace=${KAI_MARKETPLACE:-MakaiDigital/kAI}
 ref="v$VERSION"
 ci=1
+ship=0
 dry=0
 changed=0
 
@@ -51,6 +54,7 @@ while [ $# -gt 0 ]; do
 }${2:?}"; shift 2 ;;
     --marketplace) marketplace=${2:?}; shift 2 ;;
     --ref) ref=${2:?}; shift 2 ;;
+    --ship) ship=1; shift ;;
     --no-ci) ci=0; shift ;;
     --dry-run) dry=1; shift ;;
     -h | --help) init_usage; exit 0 ;;
@@ -143,6 +147,9 @@ cat >"$work/config" <<EOF
 # 1 = implement, prove. 2 = adds specs, tiers and the definition gate. 3 = adds locked tests, the contract gate and review. 4 = adds acceptance, retros and metrics.
 KAI_LEVEL=$level
 
+# 1 = the organization has Claude Ship (Code Review, PR Steward, Claude Approvals). 0 = Kai's own CI review, and /steward in Claude Code.
+KAI_SHIP=$ship
+
 # Ticket system: jira | linear | github
 KAI_TICKET_PROVIDER=$provider
 # Jira/Linear project keys allowed in branch names and PR titles, space-separated (empty = any KEY-123)
@@ -176,7 +183,10 @@ if [ "$ci" -eq 1 ]; then
     "$TEMPLATE/.github/workflows/kai.yml" >"$work/kai.yml"
   place .github/workflows/kai.yml "$work/kai.yml"
   [ ! -d "$marketplace" ] || say "  CI uses MakaiDigital/kAI's kai-gates action; change it if you host Kai elsewhere."
-  if [ "$level" -ge 3 ]; then
+  if [ "$ship" -eq 1 ]; then
+    [ ! -e "$target/.github/workflows/kai-review.yml" ] ||
+      say "  .github/workflows/kai-review.yml duplicates Claude Code Review; delete it"
+  elif [ "$level" -ge 3 ]; then
     place .github/workflows/kai-review.yml "$TEMPLATE/.github/workflows/kai-review.yml"
   fi
   if [ "$level" -ge 4 ]; then
@@ -185,6 +195,8 @@ if [ "$ci" -eq 1 ]; then
     place .github/workflows/kai-metrics.yml "$work/kai-metrics.yml"
   fi
 fi
+place .claude/skills/steward/SKILL.md "$TEMPLATE/.claude/skills/steward/SKILL.md"
+[ "$ship" -eq 0 ] || create .claude/approvals.yml "$TEMPLATE/.claude/approvals.yml"
 if [ "$level" -ge 3 ]; then
   create REVIEW.md "$TEMPLATE/REVIEW.md"
   place .claude/agents/contract-reviewer.md "$KAI_ROOT/agents/contract-reviewer.md"

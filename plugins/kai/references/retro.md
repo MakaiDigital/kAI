@@ -10,7 +10,7 @@ The argument is either a ticket key (the retro of one finished ticket, which `/k
 
 - `kai metrics` for speed next to quality. Look at weeks marked ▲ and at the reworked share.
 - Success metrics whose evaluation date falls in the period (in a spec's Context, or in a merged PR's description): did the metric reach its target? Check with the source named in the metric, or ask the product owner. A feature that shipped cleanly but missed its target is a lesson about the spec, not the code.
-- Merged PRs in the period (`gh pr list --state merged --limit 500 --search "merged:>=<date>"`), their review comments from `contract-reviewer` and `spec-critic`, and any human review comments.
+- Merged PRs in the period (`gh pr list --state merged --limit 500 --search "merged:>=<date>"`), their review comments (Claude Code Review or the Kai review, `contract-reviewer` and `spec-critic`), Steward's replies, and any human review comments.
 - Tickets whose specs changed after the plan or after evidence landed: that is where criteria were incomplete.
 - What verification and QA caught that tests did not, and every fix PR it took.
 - Escapes: each problem that got past a check or a review. They are the fix PRs, the reverts (`kai metrics` counts them), the failures `/kai:accept` found, and the valid findings a person raised on a PR that no check or reviewer had raised.
