@@ -7,14 +7,17 @@ state=$(kai_state_dir)
 max=3
 start_file="$state/session-$session.start"
 blocks_file="$state/session-$session.blocks"
+gave_up_file="$state/session-$session.gave-up"
 fingerprint=$(kai_fingerprint)
 
 if [ ! -f "$start_file" ]; then
   printf '%s\n' "$fingerprint" >"$start_file"
   exit 0
 fi
+[ "$hook_stop_active" = true ] || rm -f "$blocks_file"
 [ "$fingerprint" != "$(cat "$start_file")" ] || exit 0
 [ "$fingerprint" != "$(cat "$state/verified" 2>/dev/null)" ] || exit 0
+[ "$fingerprint" != "$(cat "$gave_up_file" 2>/dev/null)" ] || exit 0
 blocks=$(cat "$blocks_file" 2>/dev/null || echo 0)
 [ "$blocks" -lt "$max" ] || exit 0
 
@@ -26,6 +29,7 @@ fi
 blocks=$((blocks + 1))
 printf '%s\n' "$blocks" >"$blocks_file"
 if [ "$blocks" -ge "$max" ]; then
+  printf '%s\n' "$fingerprint" >"$gave_up_file"
   jq -n --arg m "kai: verification still failing after $blocks attempts; stopping anyway. Run 'kai verify' and fix the failures before shipping." '{systemMessage: $m}'
   exit 0
 fi

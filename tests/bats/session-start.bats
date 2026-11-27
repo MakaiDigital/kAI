@@ -56,7 +56,7 @@ message() { jq -r .systemMessage <<<"$output"; }
   git switch -qc PAY-9-thing
   artifacts plan evidence
   run run_hook session-start
-  [ "$(message)" = "$(ticket "/kai:implement to review the change, open the PR, and answer its reviews.")" ]
+  [ "$(message)" = "$(ticket "/kai:implement to review the change, open the PR, and hand it to Steward.")" ]
 }
 
 @test "a definition branch finishes the spec and plan, whatever the case of its name" {
@@ -125,7 +125,7 @@ message() { jq -r .systemMessage <<<"$output"; }
   [ -z "$output" ]
 }
 
-@test "says first that the guards are off when jq is missing" {
+@test "says first that the guard is off when jq is missing" {
   git switch -qc PAY-9-thing
   bin="$BATS_TEST_TMPDIR/bin"
   mkdir -p "$bin"
@@ -133,7 +133,7 @@ message() { jq -r .systemMessage <<<"$output"; }
   run --separate-stderr env PATH="$bin" "$KAI" hook session-start </dev/null
   [ "$status" -eq 0 ]
   [ "${#lines[@]}" -eq 1 ]
-  [ "$(message)" = "kai: jq is not installed, so Kai's Bash and Edit guards are off. Install jq to turn them on.
+  [ "$(message)" = "kai: jq is not installed, so Kai's guard on locked tests is off. Install jq to turn it on.
 $(ticket "/kai:implement (plan first, then tests, code, review, and the PR).")" ]
 }
 
@@ -143,7 +143,7 @@ $(ticket "/kai:implement (plan first, then tests, code, review, and the PR).")" 
   for c in cat cp dirname find git grep head mkdir mktemp rm sed sh tr; do ln -s "$(command -v "$c")" "$bin/$c"; done
   run --separate-stderr env PATH="$bin" "$KAI" hook session-start </dev/null
   [ "$status" -eq 0 ]
-  [ "$(message)" = "kai: jq is not installed, so Kai's Bash and Edit guards are off. Install jq to turn them on." ]
+  [ "$(message)" = "kai: jq is not installed, so Kai's guard on locked tests is off. Install jq to turn it on." ]
 }
 
 @test "a later SessionStart in the same session (resume, compact) keeps the baseline" {
@@ -160,4 +160,14 @@ $(ticket "/kai:implement (plan first, then tests, code, review, and the PR).")" 
   run run_hook session-start
   [ "$status" -eq 0 ]
   [ -z "$output" ]
+}
+
+@test "a deploy pattern left in the config gets a warning, since no hook enforces it any more" {
+  echo 'KAI_PROD_DEPLOY_PATTERN="deploy.*prod"' >>.kai/config
+  run run_hook session-start
+  [ "$status" -eq 0 ]
+  [[ "$(message)" == "kai: KAI_PROD_DEPLOY_PATTERN in .kai/config is no longer enforced"*"permissions.ask"* ]] || false
+  git switch -qc PAY-9-thing
+  run run_hook session-start
+  [[ "$(message)" == "kai: KAI_PROD_DEPLOY_PATTERN in .kai/config is no longer enforced"*"kai: ticket PAY-9."* ]]
 }

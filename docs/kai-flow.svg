@@ -74,8 +74,8 @@
 <rect x="309" y="407" width="262" height="84" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="1.2"/>
 <text x="440.0" y="428" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="bold">Change PR</tspan></text>
 <text x="440.0" y="445" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">CI gates post a verdict comment.</tspan></text>
-<text x="440.0" y="462" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">Claude fixes or defends each</tspan></text>
-<text x="440.0" y="479" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">finding, for up to three rounds</tspan></text>
+<text x="440.0" y="462" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">Steward fixes or defends each</tspan></text>
+<text x="440.0" y="479" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">finding; you prove again after a fix</tspan></text>
 <line x1="440.0" y1="492" x2="440.0" y2="500" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
 <rect x="309" y="502" width="262" height="50" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
 <text x="440.0" y="523" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#451a03" text-anchor="middle"><tspan font-weight="normal">A person approves and merges;</tspan></text>
@@ -99,7 +99,7 @@
 <text x="749.0" y="272" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="bold">Cleanup PR</tspan></text>
 <text x="749.0" y="289" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">Deletes docs/specs/PAY-123,</tspan></text>
 <text x="749.0" y="306" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">keeps ADRs, applies the retro,</tspan></text>
-<text x="749.0" y="323" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">answers its reviews</tspan></text>
+<text x="749.0" y="323" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#052e16" text-anchor="middle"><tspan font-weight="normal">and waits for your review</tspan></text>
 <line x1="749.0" y1="336" x2="749.0" y2="344" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
 <rect x="618" y="346" width="262" height="50" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
 <text x="749.0" y="367" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#451a03" text-anchor="middle"><tspan font-weight="normal">A person merges it: the ticket</tspan></text>
@@ -115,6 +115,6 @@
 <path d="M 262 162.5 H 285.5 V 101.5 H 306" fill="none" stroke="#8c959f" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
 <path d="M 618 469.0 H 594.5 V 101.5 H 574" fill="none" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow-fail)"/>
 <rect x="0" y="692" width="880" height="50" rx="8" fill="#334155"/>
-<text x="440.0" y="713" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#f1f5f9" text-anchor="middle"><tspan font-weight="bold">In every session:</tspan><tspan font-weight="normal"> hooks block skipping git hooks, production deploys without a named approval,</tspan></text>
-<text x="440.0" y="730" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#f1f5f9" text-anchor="middle"><tspan font-weight="normal">and, from level 3, edits to locked tests. Claude can't merge, and asks before pushing to the base branch.</tspan></text>
+<text x="440.0" y="713" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#f1f5f9" text-anchor="middle"><tspan font-weight="bold">In every session:</tspan><tspan font-weight="normal"> from level 3, a hook blocks edits to locked tests.</tspan></text>
+<text x="440.0" y="730" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#f1f5f9" text-anchor="middle"><tspan font-weight="normal">Claude can't merge, and asks before pushing to the base branch.</tspan></text>
 </svg>

@@ -58,6 +58,8 @@ $(printf '%s\n' "$bad" | sed 's/^/    /')
   [ -z "$planned" ] || [ -z "$left_out" ] || problems="$problems  tests in $dir/plan.md missing from $dir/evidence.md:
 $(printf '%s\n' "$left_out" | sed 's/^/    /')
 "
+  git log -1 --remerge-diff --format= >/dev/null 2>&1 ||
+    kai_die "contract: needs git 2.36 or newer to see what a merge commit changed"
   sha=$(sed -n 's/^kai verify on commit \([0-9a-f]\{7,\}\) at .*/\1/p' "$dir/evidence.md" | head -n 1)
   merge_base=$(git merge-base "$base" HEAD)
   if { git cat-file -e "$merge_base:$dir/evidence.md" 2>/dev/null &&
@@ -65,6 +67,12 @@ $(printf '%s\n' "$left_out" | sed 's/^/    /')
     [ -z "$sha" ] || ! git merge-base --is-ancestor "$sha" HEAD 2>/dev/null ||
     git merge-base --is-ancestor "$sha" "$base" 2>/dev/null; then
     problems="$problems  $dir/evidence.md was not updated on this branch (run /kai:prove)
+"
+  elif [ -n "$(git log -n1 --no-merges --full-history --format=%h "$sha..HEAD" --not "$base" -- ':(top)' ':(exclude,top)docs/specs' 2>/dev/null)" ] ||
+    [ -n "$(git log --merges --full-history --remerge-diff --format= "$sha..HEAD" --not "$base" -- ':(top)' ':(exclude,top)docs/specs' 2>/dev/null)" ]; then
+    [ "$(git rev-parse --is-shallow-repository 2>/dev/null)" != true ] ||
+      kai_die "contract: cannot tell what changed after the evidence in a shallow clone; in CI, check out with fetch-depth: 0"
+    problems="$problems  $dir/evidence.md describes an earlier commit: the code changed after it (run /kai:prove again)
 "
   fi
 fi

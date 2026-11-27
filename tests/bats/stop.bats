@@ -12,6 +12,8 @@ start_session() {
   mark_workflow
 }
 
+stop_again() { hook_input "${1:-s1}" | jq -c '.stop_hook_active = true' | "$KAI" hook stop; }
+
 runs() { wc -l <"$(git rev-parse --absolute-git-dir)/runs" | tr -d ' '; }
 COUNTING_VERIFY='echo run >>"$(git rev-parse --absolute-git-dir)/runs"'
 
@@ -29,7 +31,7 @@ COUNTING_VERIFY='echo run >>"$(git rev-parse --absolute-git-dir)/runs"'
 @test "a workflow command in another session does not turn the checks on here" {
   start_session "exit 1"
   echo change >>README.md
-  run run_hook stop "" s2
+  run run_hook stop s2
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }
@@ -56,14 +58,39 @@ COUNTING_VERIFY='echo run >>"$(git rev-parse --absolute-git-dir)/runs"'
   [ "$status" -eq 2 ]
   [[ "$output" == *"attempt 1 of 3"* ]]
   [[ "$output" == *"expected 2 got 3"* ]]
-  run run_hook stop
+  run stop_again
   [ "$status" -eq 2 ]
-  run run_hook stop
+  [[ "$output" == *"attempt 2 of 3"* ]] || false
+  run stop_again
   [ "$status" -eq 0 ]
   [[ "$(echo "$output" | jq -r .systemMessage)" == *"still failing after 3 attempts"* ]]
   run run_hook stop
   [ "$status" -eq 0 ]
   [ -z "$output" ]
+}
+
+@test "after giving up, a new change gets three attempts of its own" {
+  start_session 'exit 1'
+  echo change >>README.md
+  run_hook stop || true
+  stop_again || true
+  run stop_again
+  [ "$status" -eq 0 ]
+  echo another >>README.md
+  run run_hook stop
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"attempt 1 of 3"* ]]
+}
+
+@test "a new turn starts its attempts again" {
+  start_session 'exit 1'
+  echo change >>README.md
+  run_hook stop || true
+  run stop_again
+  [[ "$output" == *"attempt 2 of 3"* ]] || false
+  run run_hook stop
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"attempt 1 of 3"* ]]
 }
 
 @test "a resumed or compacted session still checks the edits made before it" {

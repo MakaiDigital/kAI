@@ -25,7 +25,7 @@ CFG
 }
 
 run_hook() {
-  hook_input "${2-}" "${3:-s1}" | "$KAI" hook "$1"
+  hook_input "${2:-s1}" | "$KAI" hook "$1"
 }
 
 commit_config() {
@@ -33,8 +33,7 @@ commit_config() {
 }
 
 hook_input() {
-  jq -cn --arg cmd "${1-}" --arg cwd "$PWD" --arg sid "${2:-s1}" \
-    '{session_id: $sid, cwd: $cwd, tool_name: "Bash", tool_input: {command: $cmd}}'
+  jq -cn --arg cwd "$PWD" --arg sid "${1:-s1}" '{session_id: $sid, cwd: $cwd}'
 }
 
 expansion_input() {

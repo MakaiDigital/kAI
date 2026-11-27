@@ -314,28 +314,47 @@ npm test" ]
   grep -q '^KAI_SHIP=0$' .kai/config
 }
 
-@test "without Claude Ship, level 3 keeps the Kai review and writes no approvals policy" {
-  install_kai --marketplace acme/kai --level 3
-  [ -f .github/workflows/kai-review.yml ]
-  [ ! -e .claude/approvals.yml ]
+@test "the steward rules belong to the team: a rule they add is never overwritten" {
+  install_kai
+  echo "- Regenerate the lockfile with npm install." >>.claude/skills/steward/SKILL.md
+  before=$(cat .claude/skills/steward/SKILL.md)
+  run install_kai
+  [ "$status" -eq 0 ]
+  [ "$(cat .claude/skills/steward/SKILL.md)" = "$before" ]
+  [ ! -e .claude/skills/steward/SKILL.md.kai-new ]
 }
 
-@test "with Claude Ship, Code Review replaces the Kai review and an approvals policy starts in observe mode" {
+@test "no hook of the plugin runs before a shell command, so a /steward watch can start" {
+  hooks="$REPO_ROOT/plugins/kai/hooks/hooks.json"
+  [ "$(jq -r '.hooks.PreToolUse | map(.matcher) | join(",")' "$hooks")" = "Edit|Write|MultiEdit|NotebookEdit" ]
+  [ "$(jq -r '.hooks | has("PermissionRequest")' "$hooks")" = false ]
+  install_kai
+  [ "$(jq -r 'has("hooks")' .claude/settings.json)" = false ]
+}
+
+@test "without Claude Ship, level 3 keeps the Kai review and its agents" {
+  install_kai --marketplace acme/kai --level 3
+  [ -f .github/workflows/kai-review.yml ]
+  [ -f .claude/agents/contract-reviewer.md ]
+}
+
+@test "with Claude Ship, Code Review replaces the Kai review and its agents" {
   run install_kai --marketplace acme/kai --level 3 --ship
   [ "$status" -eq 0 ]
   grep -q '^KAI_SHIP=1$' .kai/config
   [ ! -e .github/workflows/kai-review.yml ]
+  [ ! -e .claude/agents ]
   [ -f REVIEW.md ]
-  [ -f .claude/agents/contract-reviewer.md ]
-  cmp -s .claude/approvals.yml "$REPO_ROOT/plugins/kai/template/.claude/approvals.yml"
-  grep -qx 'mode: observe' .claude/approvals.yml
-  grep -q 'advisory: \[claude/code_review\]' .claude/approvals.yml
+  [ -f .claude/skills/steward/SKILL.md ]
 }
 
-@test "Claude Ship works below level 3 too, with the approvals policy but no review agents" {
-  install_kai --level 1 --ship
-  [ -f .claude/approvals.yml ]
-  [ ! -e .github/workflows/kai-review.yml ] && [ ! -e .claude/agents ]
+@test "kai init never writes a Claude Approvals policy: /kai:setup has the bundled skill write one" {
+  install_kai --level 3 --ship
+  [ ! -e .claude/approvals.yml ]
+  mkdir -p .claude
+  printf 'version: 1\nrules: []\n' >.claude/approvals.yml
+  install_kai --level 3 --ship
+  [ "$(cat .claude/approvals.yml)" = "$(printf 'version: 1\nrules: []')" ]
 }
 
 @test "with Claude Ship, an existing Kai review workflow is named for deletion, not deleted" {
@@ -343,14 +362,11 @@ npm test" ]
   run install_kai --marketplace acme/kai --level 3 --ship
   [ "$status" -eq 0 ]
   [ -f .github/workflows/kai-review.yml ]
-  [[ "$output" == *".github/workflows/kai-review.yml duplicates Claude Code Review; delete it"* ]]
-}
-
-@test "the team's approvals policy is never overwritten" {
-  mkdir -p .claude
-  printf 'version: 1\nrules: []\n' >.claude/approvals.yml
-  install_kai --ship
-  [ "$(cat .claude/approvals.yml)" = "$(printf 'version: 1\nrules: []')" ]
+  [ -f .claude/agents/contract-reviewer.md ]
+  [[ "$output" == *".github/workflows/kai-review.yml is not used with Claude Code Review; delete it"* ]] || false
+  [[ "$output" == *".claude/agents/spec-critic.md is not used with Claude Code Review; delete it"* ]] || false
+  run install_kai --marketplace acme/kai --level 3 --ship --no-ci
+  [[ "$output" == *".claude/agents/contract-reviewer.md is not used with Claude Code Review; delete it"* ]]
 }
 
 @test "levels below 3 skip the review workflow" {

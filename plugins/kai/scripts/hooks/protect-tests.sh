@@ -4,7 +4,7 @@
 dir=$(dirname -- "$hook_file")
 if [ -d "$dir" ]; then
   cd "$dir" || exit 0
-  unset KAI_LEVEL KAI_TICKET_PROVIDER KAI_TICKET_PREFIXES KAI_TICKET_EXEMPT KAI_VERIFY_CMDS KAI_BASE_BRANCH KAI_PROD_DEPLOY_PATTERN
+  unset KAI_LEVEL KAI_TICKET_PROVIDER KAI_TICKET_PREFIXES KAI_TICKET_EXEMPT KAI_VERIFY_CMDS KAI_BASE_BRANCH
   kai_load_config || exit 0
   hook_file="$(pwd -P)/${hook_file##*/}"
 fi

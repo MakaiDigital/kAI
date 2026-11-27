@@ -33,7 +33,7 @@ Smallest first. Each task ends green.
 
 ## Tests
 
-Named by behavior. Every test maps to a spec criterion (or, without a spec, a ticket outcome); every criterion has at least one test. Kind is `example`, `property` (must hold for every generated input) or `differential` (old and new code agree on the same inputs).
+Named by behavior. Every test maps to a spec criterion (or, without a spec, a ticket outcome); every criterion has at least one test. Kind is `example`, `e2e` (a real user flow through the running application), `property` (must hold for every generated input) or `differential` (old and new code agree on the same inputs).
 
 | Criterion | Test | File | Kind |
 |---|---|---|---|

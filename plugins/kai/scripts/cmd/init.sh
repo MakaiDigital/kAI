@@ -21,8 +21,8 @@ usage: kai init [options]
   --marketplace SRC     OWNER/REPO hosting the makaidigital marketplace, or a local directory
                         (default: MakaiDigital/kAI)
   --ref REF             marketplace and action ref (default: v<plugin version>)
-  --ship                the organization has Claude Ship: Claude Code Review replaces
-                        kai-review.yml, and .claude/approvals.yml starts in observe mode
+  --ship                Claude Code Review is on for this repository: Kai installs no review
+                        workflow or review agents of its own, and asks PR Steward to look after change PRs
   --no-ci               skip .github/workflows/kai.yml
   --dry-run             show what would change without writing
 EOF
@@ -147,7 +147,7 @@ cat >"$work/config" <<EOF
 # 1 = implement, prove. 2 = adds specs, tiers and the definition gate. 3 = adds locked tests, the contract gate and review. 4 = adds acceptance, retros and metrics.
 KAI_LEVEL=$level
 
-# 1 = the organization has Claude Ship (Code Review, PR Steward, Claude Approvals). 0 = Kai's own CI review, and /steward in Claude Code.
+# 1 = Claude Code Review reviews this repository's pull requests, and Kai asks PR Steward to look after them. 0 = Kai's own CI review, and /steward in Claude Code.
 KAI_SHIP=$ship
 
 # Ticket system: jira | linear | github
@@ -163,7 +163,6 @@ $base_line
 # KAI_TICKET_EXEMPT="dependabot/* renovate/* kai-setup* kai-retro*"   # branches that need no ticket key; they skip every gate
 # KAI_ENFORCE=block                             # block = a failing gate fails the PR check; report = the gates comment on the PR and the check stays green
 # KAI_OBSERVE=""                                # gates that report but never fail the check, space-separated (for example "verify"); start a new gate here, then remove it
-# KAI_PROD_DEPLOY_PATTERN=""                    # regex for production deploys; they then need KAI_RELEASE_APPROVAL
 # KAI_WRITING_STE=100                           # how close what Kai writes for people gets to ASD-STE100 (Simplified Technical English): 0 = off, 100 = the full standard
 EOF
 create .kai/config "$work/config"
@@ -183,10 +182,7 @@ if [ "$ci" -eq 1 ]; then
     "$TEMPLATE/.github/workflows/kai.yml" >"$work/kai.yml"
   place .github/workflows/kai.yml "$work/kai.yml"
   [ ! -d "$marketplace" ] || say "  CI uses MakaiDigital/kAI's kai-gates action; change it if you host Kai elsewhere."
-  if [ "$ship" -eq 1 ]; then
-    [ ! -e "$target/.github/workflows/kai-review.yml" ] ||
-      say "  .github/workflows/kai-review.yml duplicates Claude Code Review; delete it"
-  elif [ "$level" -ge 3 ]; then
+  if [ "$ship" -eq 0 ] && [ "$level" -ge 3 ]; then
     place .github/workflows/kai-review.yml "$TEMPLATE/.github/workflows/kai-review.yml"
   fi
   if [ "$level" -ge 4 ]; then
@@ -195,12 +191,18 @@ if [ "$ci" -eq 1 ]; then
     place .github/workflows/kai-metrics.yml "$work/kai-metrics.yml"
   fi
 fi
-place .claude/skills/steward/SKILL.md "$TEMPLATE/.claude/skills/steward/SKILL.md"
-[ "$ship" -eq 0 ] || create .claude/approvals.yml "$TEMPLATE/.claude/approvals.yml"
+if [ "$ship" -eq 1 ]; then
+  for f in .github/workflows/kai-review.yml .claude/agents/contract-reviewer.md .claude/agents/spec-critic.md; do
+    [ ! -e "$target/$f" ] || say "  $f is not used with Claude Code Review; delete it"
+  done
+fi
+create .claude/skills/steward/SKILL.md "$TEMPLATE/.claude/skills/steward/SKILL.md"
 if [ "$level" -ge 3 ]; then
   create REVIEW.md "$TEMPLATE/REVIEW.md"
-  place .claude/agents/contract-reviewer.md "$KAI_ROOT/agents/contract-reviewer.md"
-  place .claude/agents/spec-critic.md "$KAI_ROOT/agents/spec-critic.md"
+  if [ "$ship" -eq 0 ]; then
+    place .claude/agents/contract-reviewer.md "$KAI_ROOT/agents/contract-reviewer.md"
+    place .claude/agents/spec-critic.md "$KAI_ROOT/agents/spec-critic.md"
+  fi
 fi
 
 { printf '%s\n' "$BEGIN_MARK"; cat "$TEMPLATE/claude-block.md"; printf '%s\n' "$END_MARK"; } >"$work/block"
