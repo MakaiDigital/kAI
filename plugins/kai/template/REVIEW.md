@@ -1,6 +1,6 @@
 # Review guidelines
 
-Read by the `contract-reviewer` agent locally (`/kai:implement`) and in CI. In CI the review reads this file, `CLAUDE.md` and the review agents from the base branch, so a PR's changes to them apply from the next PR. Owned by the tech lead. Keep it short, and tune it when reviews get noisy or miss things: when the same comment keeps coming back, add it here or fix it at the source (a lint rule, a skill, or a `CLAUDE.md` line).
+Read by the `contract-reviewer` agent locally (`/kai:implement`) and in Kai's CI review, and by Claude Code Review and PR Steward when the repository uses them. The local `/code-review` does not read it, so a convention the code must follow belongs in `CLAUDE.md`. A review in CI reads this file from the base branch, never from the PR, so a change to it applies from the next PR. Claude Code Review follows the Skip list, the Nit limit and a lowered severity only when the default branch is protected. Owned by the tech lead. Keep it short, and tune it when reviews get noisy or miss things: when the same comment keeps coming back, add it here or fix it at the source (a lint rule, a skill, or a `CLAUDE.md` line).
 
 ## What failure looks like here
 
@@ -23,6 +23,8 @@ Each row is a mistake this repository has made, or one its owners expect. The re
 5. Security: injection (SQL, command, template), cross-site scripting, broken authentication or authorization, secrets in code, server-side request forgery, path traversal, insecure deserialization, sensitive data in logs.
 6. Performance: N+1 queries, unbounded queries or loops, missing indexes on new queries, resource leaks, quadratic work on hot paths.
 7. Observed: the evidence shows the change running end to end, not only its tests passing.
+
+A ticket's documents are in `docs/specs/<KEY>/`, where `<KEY>` is the ticket key in the branch name or the PR title. A PR that changes only those documents and ADRs is a Definition PR: check that each criterion can be tested and, when the PR has a plan, has a planned test. A `<KEY>-cleanup` PR deletes those documents after acceptance: do not flag the deletion. In any other PR, flag each criterion or plan step that the diff edits and the PR description does not name, because that changes what was approved. Report behavior the change enables that no criterion covers as a question for product and engineering, not as a code fix.
 
 ## Severities
 

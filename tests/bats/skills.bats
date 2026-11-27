@@ -15,7 +15,6 @@ SDLC="$REPO_ROOT/plugins/kai"
   grep -qF '${CLAUDE_PLUGIN_ROOT}/references/retro.md' "$SDLC/skills/retro/SKILL.md"
   grep -qF '${CLAUDE_PLUGIN_ROOT}/references/retro.md' "$SDLC/skills/accept/SKILL.md"
   grep -qF '`answer-reviews.md` in this folder' "$SDLC/references/implement.md"
-  grep -qF '${CLAUDE_PLUGIN_ROOT}/references/answer-reviews.md' "$SDLC/skills/accept/SKILL.md"
 }
 
 @test "every skill and review agent writes for people by the same rules" {
@@ -44,6 +43,7 @@ SDLC="$REPO_ROOT/plugins/kai"
 }
 
 @test "acceptance fixes a failure itself instead of handing the fix to the person" {
+  grep -qF 'through its step 8' "$SDLC/skills/accept/SKILL.md"
   run grep -n 'run `/kai:implement' "$SDLC/skills/accept/SKILL.md" "$REPO_ROOT/README.md" "$REPO_ROOT/docs/using-kai.md"
   [ "$status" -eq 1 ]
 }
@@ -70,8 +70,10 @@ SDLC="$REPO_ROOT/plugins/kai"
   grep -qF 'Nothing to fix.' "$SDLC/template/REVIEW.md"
 }
 
-@test "answering reviews stops after three rounds" {
-  grep -q 'for up to three rounds' "$SDLC/references/answer-reviews.md"
+@test "Steward stops on an issue after three pushes, and on the approach after three rounds" {
+  grep -q 'After three pushes for the same finding' "$SDLC/template/.claude/skills/steward/SKILL.md"
+  grep -q 'after three rounds' "$SDLC/template/.claude/skills/steward/SKILL.md"
+  grep -q 'still fails after three fixes' "$SDLC/references/prove.md"
   run grep -rn 'five rounds\|fifth round' "$SDLC/skills" "$SDLC/references" "$REPO_ROOT/README.md" "$REPO_ROOT/docs"
   [ "$status" -eq 1 ]
 }
@@ -110,6 +112,7 @@ SDLC="$REPO_ROOT/plugins/kai"
 
 @test "prove runs the change end to end and records it where the reviewer looks" {
   grep -qx '## Observed' "$SDLC/references/prove.md"
+  grep -qF "Prove on the ticket's own branch" "$SDLC/references/prove.md"
   grep -qF '`## Observed` table' "$SDLC/agents/contract-reviewer.md"
   grep -qF "\`git log --grep '^Verified: checks\$'\`" "$SDLC/references/prove.md"
   grep -qF "\`git log --grep '^Verified: checks\$'\`" "$SDLC/references/retro.md"
@@ -127,11 +130,91 @@ SDLC="$REPO_ROOT/plugins/kai"
 
 @test "the plan gives every test a kind, and its table keeps the test in the second column for the contract gate" {
   grep -qxF '| Criterion | Test | File | Kind |' "$SDLC/templates/plan.md"
-  for kind in example property differential; do grep -q "\`$kind\`" "$SDLC/references/plan.md"; done
+  for kind in example e2e property differential; do grep -q "\`$kind\`" "$SDLC/references/plan.md"; grep -q "\`$kind\`" "$SDLC/templates/plan.md"; done
 }
 
 @test "a flaky test is not rerun until it passes, and the retro replays the reviewer on what it missed" {
   grep -qF 'is flaky, not fixed' "$SDLC/references/prove.md"
   grep -qx '### Review the reviewers' "$SDLC/references/retro.md"
   grep -qF '.kai/escapes.md' "$SDLC/references/retro.md"
+}
+
+@test "a change PR is handed to Steward: PR Steward with Claude Ship, or the person's /steward watch otherwise" {
+  f="$SDLC/references/answer-reviews.md"
+  grep -qF '@claude steward' "$f"
+  grep -qF 'claude-pr-steward-watching' "$f"
+  grep -qF 'KAI_SHIP' "$f"
+  grep -qF 'type `/steward +github-actions`' "$f"
+  grep -qF 'user.login == "github-actions[bot]"' "$SDLC/template/.github/workflows/kai-review.yml"
+  grep -qF 'trust everyone who can merge to the base branch' "$f"
+  grep -qF 'PR Steward has not started yet' "$f"
+  grep -qF 'which can be after this check' "$f"
+  grep -qF 'headed **Claude PR Steward**' "$f"
+  grep -qF 'Steward never proves a change' "$SDLC/references/implement.md"
+  run grep -n 'until it is green' "$SDLC/references/implement.md"
+  [ "$status" -eq 1 ]
+  grep -qF 'second clone' "$f"
+  grep -qF 'second clone' "$REPO_ROOT/docs/using-kai.md"
+  run grep -n 'claude --worktree' "$f" "$SDLC/skills/setup/SKILL.md" "$REPO_ROOT/docs/using-kai.md"
+  [ "$status" -eq 1 ]
+  run grep -n 'Monitor\|graphql' "$f"
+  [ "$status" -eq 1 ]
+}
+
+@test "the Definition PR and the cleanup PR are answered with the person, not handed to Steward" {
+  run grep -n 'answer-reviews.md' "$SDLC/skills/spec/SKILL.md" "$SDLC/skills/accept/SKILL.md"
+  [ "$status" -eq 1 ]
+  grep -qF '<!-- claude-pr-steward-disable -->' "$SDLC/skills/spec/SKILL.md"
+  grep -qF '<!-- claude-pr-steward-disable -->' "$SDLC/skills/accept/SKILL.md"
+  grep -qF '`<KEY>: address review`' "$SDLC/skills/spec/SKILL.md"
+  grep -qF 'Never record a decision' "$SDLC/template/.claude/skills/steward/SKILL.md"
+}
+
+@test "the review template states its own checks, since Code Review cannot include the agents" {
+  run grep -n '\.claude/agents' "$SDLC/template/REVIEW.md"
+  [ "$status" -eq 1 ]
+}
+
+@test "lessons go where their readers are, and never into a hook that stops a watch" {
+  f="$SDLC/references/retro.md"
+  grep -qF '.claude/skills/steward/SKILL.md' "$f"
+  grep -qF '.claude/skills/verify/SKILL.md' "$f"
+  grep -qF 'no `/ship` or `/steward` watch starts with one' "$f"
+  run grep -n 'hookify' "$f"
+  [ "$status" -eq 1 ]
+}
+
+@test "setup hands the approvals policy to the bundled skill and names what a watch needs" {
+  f="$SDLC/skills/setup/SKILL.md"
+  grep -qF '`claude-approvals` skill' "$f"
+  grep -qF 'permissions.ask' "$f"
+  grep -qF 'Dismiss stale pull request approvals when new commits are pushed' "$f"
+  grep -qF 'kai-setup-approvals' "$f"
+  grep -qF 'no longer blocks a command that skips them' "$f"
+  grep -qF 'second clone' "$f"
+  [ ! -e "$SDLC/template/.claude/approvals.yml" ]
+}
+
+@test "the steward rules run where the plugin is not installed" {
+  run grep -n 'CLAUDE_PLUGIN_ROOT\|/kai:\|references/\|kai verify\|kai gate' "$SDLC/template/.claude/skills/steward/SKILL.md"
+  [ "$status" -eq 1 ]
+  grep -qF 'KAI_WRITING_STE' "$SDLC/template/.claude/skills/steward/SKILL.md"
+}
+
+@test "the steward rules keep Kai's safety rules" {
+  f="$SDLC/template/.claude/skills/steward/SKILL.md"
+  grep -qF '`<KEY>: failing tests`' "$f"
+  grep -qF 'kai:tests-changed' "$f"
+  grep -qi 'never approve or merge' "$f"
+  grep -qF 'Pre-existing' "$f"
+  grep -qF 'Do not re-run a check until it passes' "$f"
+  grep -qF '`<KEY>: address review`' "$f"
+  grep -qF "That proof is the author's" "$f"
+  grep -qF 'core.hooksPath=/dev/null' "$f"
+  grep -qF 'describes an earlier commit' "$f"
+  grep -qF 'describes an earlier commit' "$SDLC/scripts/gates/contract.sh"
+  grep -qF 'never write PASS for a test or a step you did not run' "$f"
+  run grep -rn 'proves it again' "$REPO_ROOT/docs" "$REPO_ROOT/README.md"
+  [ "$status" -eq 1 ]
+  grep -qx '## This repository' "$f"
 }

@@ -16,7 +16,7 @@ usage: kai <command> [args]
   metrics [--weeks N]     weekly speed and quality report from the docs/specs/ history
   gate <name> [args]      CI gate: ticket-ref, definition, tests-locked or contract
   report --dir D [opts]   Markdown report of the gate results in D, for the PR comment
-  hook <name>             Claude Code hook: session-start, prompt-expansion, guard-bash, protect-tests or stop
+  hook <name>             Claude Code hook: session-start, prompt-expansion, protect-tests or stop
 EOF
 }
 
@@ -36,12 +36,12 @@ if [ "$cmd" = hook ]; then
     IFS= read -r session || :
     IFS= read -r hook_file || :
     IFS= read -r hook_command_name || :
+    IFS= read -r hook_stop_active || :
     hook_command=$(cat)
   } <<EOF
-$(jq -r '(.cwd // ""), (.session_id // "default"), (.tool_input.file_path // .tool_input.notebook_path // ""), (.command_name // ""), (.tool_input.command // .prompt // "")')
+$(jq -r '(.cwd // ""), (.session_id // "default"), (.tool_input.file_path // .tool_input.notebook_path // ""), (.command_name // ""), (.stop_hook_active // false | tostring), (.prompt // "")')
 EOF
   [ -z "$hook_cwd" ] || cd "$hook_cwd" 2>/dev/null || true
-  [ "$script" != hooks/guard-bash ] || kai_die_status=2
   kai_load_config || exit 0
 fi
 . "$KAI_ROOT/scripts/$script.sh"

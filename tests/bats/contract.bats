@@ -92,6 +92,93 @@ Result: **PASS**'
   [[ "$output" == *"evidence.md was not updated on this branch"* ]]
 }
 
+@test "evidence from before a later code commit fails" {
+  evidence '| C1 | `saves` | PASS | `✔ saves` |'
+  git add docs/specs && git commit -qm "PAY-1: evidence"
+  run gate
+  [ "$status" -eq 0 ]
+  echo fix >>app.js && git commit -qam "PAY-1: address review"
+  run gate
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"evidence.md describes an earlier commit"* ]]
+}
+
+@test "commits that change only docs/specs, and clean merges of the base branch, leave the evidence current" {
+  evidence '| C1 | `saves` | PASS | `✔ saves` |'
+  git add docs/specs && git commit -qm "PAY-1: evidence"
+  echo note >docs/specs/PAY-1/plan.md && git add docs/specs && git commit -qm "PAY-1: plan note"
+  git switch -q main
+  echo other >other.js && git add other.js && git commit -qm "another change"
+  git switch -q PAY-1-work && git merge -q --no-ff --no-edit main
+  run gate
+  [ "$status" -eq 0 ]
+}
+
+@test "a merge of the base branch resolved by hand makes the evidence stale" {
+  evidence '| C1 | `saves` | PASS | `✔ saves` |'
+  git add docs/specs && git commit -qm "PAY-1: evidence"
+  git switch -q main
+  echo base >app.js && git add app.js && git commit -qm "the base changes the same file"
+  git switch -q PAY-1-work
+  git merge -q --no-edit main || true
+  echo resolved >app.js && git add app.js && git commit -qm "merge main"
+  run gate
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"evidence.md describes an earlier commit"* ]]
+}
+
+@test "a hand-resolved merge that the base branch already holds, and a conflict inside docs/specs, leave the evidence current" {
+  echo plan >docs/specs/PAY-1/plan.md
+  evidence '| C1 | `saves` | PASS | `✔ saves` |'
+  git add docs/specs && git commit -qm "PAY-1: evidence"
+  git switch -q main
+  echo main >shared.js && git add shared.js && git commit -qm "main changes a file"
+  git switch -qc other HEAD~1
+  echo other >shared.js && git add shared.js && git commit -qm "another branch changes the same file"
+  git switch -q main
+  git merge -q --no-edit other || true
+  echo resolved >shared.js && git add shared.js && git commit -qm "merge other"
+  mkdir -p docs/specs/PAY-1 && echo "the base plan" >docs/specs/PAY-1/plan.md
+  git add docs/specs && git commit -qm "the base changes the plan"
+  git switch -q PAY-1-work
+  git merge -q --no-edit main || true
+  echo "both plans" >docs/specs/PAY-1/plan.md && git add docs/specs && git commit -qm "merge main"
+  run gate
+  [ "$status" -eq 0 ]
+}
+
+@test "fails closed when git cannot show what a merge changed" {
+  evidence '| C1 | `saves` | PASS | `✔ saves` |'
+  git add docs/specs && git commit -qm "PAY-1: evidence"
+  shim="$BATS_TEST_TMPDIR/oldgit"
+  mkdir -p "$shim"
+  real=$(command -v git)
+  printf '#!/bin/sh\nfor a; do [ "$a" != --remerge-diff ] || { echo "fatal: unrecognized argument: --remerge-diff" >&2; exit 128; }; done\nexec %s "$@"\n' "$real" >"$shim/git"
+  chmod +x "$shim/git"
+  PATH="$shim:$PATH" run gate
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"git 2.36"* ]]
+}
+
+@test "a shallow clone that cannot tell what changed after the evidence says so" {
+  evidence '| C1 | `saves` | PASS | `✔ saves` |'
+  spec '| C1 | `saves` | PASS | evidence.md |
+| C2 | `refuses` | PASS | evidence.md |'
+  git add docs/specs && git commit -qm "PAY-1: evidence"
+  for n in 1 2; do
+    git switch -q main
+    for m in a b c d; do echo "$n$m" >>base.js && git add base.js && git commit -qm "base $n$m"; done
+    git switch -q PAY-1-work && git merge -q --no-ff --no-edit main
+  done
+  run gate
+  [ "$status" -eq 0 ]
+  git clone -q --depth 4 --no-single-branch --branch PAY-1-work "file://$TEST_REPO" "$BATS_TEST_TMPDIR/shallow"
+  cd "$BATS_TEST_TMPDIR/shallow"
+  run "$KAI" gate contract --base origin/main
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"shallow clone; in CI, check out with fetch-depth: 0"* ]]
+}
+
 @test "a passing test whose name mentions FAILED passes" {
   evidence '| C1 | `rejects FAILED payments` | PASS | `✔ rejects FAILED payments` |'
   run gate

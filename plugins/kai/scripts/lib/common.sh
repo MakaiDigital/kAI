@@ -2,7 +2,7 @@
 
 kai_die() {
   printf 'kai: %s\n' "$*" >&2
-  exit "${kai_die_status:-1}"
+  exit 1
 }
 
 kai_system_message() {
@@ -27,7 +27,6 @@ kai_load_config() {
   : "${KAI_TICKET_EXEMPT:=dependabot/* renovate/* kai-setup* kai-retro*}"
   : "${KAI_VERIFY_CMDS:=}"
   : "${KAI_BASE_BRANCH:=main}"
-  : "${KAI_PROD_DEPLOY_PATTERN:=}"
   : "${KAI_ENFORCE:=block}"
   : "${KAI_OBSERVE:=}"
   case $KAI_LEVEL in

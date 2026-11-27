@@ -107,5 +107,5 @@ Run `/kai:setup`, and ask it to use `--marketplace ~/Development/Makai/kai`. The
 
 ## Moving past the pilot
 
-- Move to a paid GitHub plan, and add a ruleset on the main branch that requires a pull request, an approval, and the `kai` check. Until then, only Kai's permission rules stand in the way of a push to the main branch.
+- Move to a paid GitHub plan, and add a ruleset on the main branch that requires a pull request, an approval, a new approval after every push, and the `kai` check. Until then, only Kai's permission rules stand in the way of a push to the main branch.
 - For the level 3 AI review, add a Claude credential as a repository secret, pointed at an endpoint your security team has approved.

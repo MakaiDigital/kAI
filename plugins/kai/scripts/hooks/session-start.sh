@@ -1,7 +1,9 @@
 # shellcheck shell=sh disable=SC2154
 
 jq_note=
-command -v jq >/dev/null || jq_note="kai: jq is not installed, so Kai's Bash and Edit guards are off. Install jq to turn them on."
+command -v jq >/dev/null || jq_note="kai: jq is not installed, so Kai's guard on locked tests is off. Install jq to turn it on."
+deploy_note=
+[ -z "${KAI_PROD_DEPLOY_PATTERN:-}" ] || deploy_note="kai: KAI_PROD_DEPLOY_PATTERN in .kai/config is no longer enforced, because a hook on shell commands stops /ship and /steward from starting a watch. Add each production deploy command to permissions.ask in .claude/settings.json (/kai:setup does it), then delete the line."
 state=$(kai_state_dir)
 find "$state" -name 'session-*' -mtime +7 -exec rm -f {} + 2>/dev/null || true
 if [ -z "$session" ] || [ ! -f "$state/session-$session.start" ]; then
@@ -10,7 +12,7 @@ fi
 
 branch=$(kai_branch)
 if ! key=$(kai_key_from "$branch"); then
-  kai_system_message "$jq_note"
+  kai_system_message "$jq_note" "$deploy_note"
   exit 0
 fi
 dir="$KAI_REPO_ROOT/docs/specs/$key"
@@ -42,8 +44,8 @@ case $(printf '%s' "$branch" | tr '[:lower:]' '[:upper:]') in
     elif ! changed_here evidence.md; then
       next="/kai:implement continues with the failing tests, the code, and /kai:prove."
     else
-      next="/kai:implement to review the change, open the PR, and answer its reviews."
+      next="/kai:implement to review the change, open the PR, and hand it to Steward."
     fi
     ;;
 esac
-kai_system_message "$jq_note" "kai: ticket $key. Artifacts are in docs/specs/$key/. Next: $next"
+kai_system_message "$jq_note" "$deploy_note" "kai: ticket $key. Artifacts are in docs/specs/$key/. Next: $next"
